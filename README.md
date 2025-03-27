@@ -21,6 +21,9 @@ Unser Ziel ist es, eine digitale Version des Spiels zu entwickeln mit:
 - Fortschritt wird in Echtzeit synchronisiert
 
 ## Team
+Eduard Klaus
+Stefanie Pirhofer
+Pablo Pirker Garcia
+Mihaela Topalovic
 
-ToDo
 
