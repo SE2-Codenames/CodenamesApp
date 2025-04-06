@@ -19,50 +19,66 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Role
-import android.app.Activity
-import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
 fun GameBoardScreen(
     gameState: GameState,
-    onRestart: () -> Unit,
+    onRestartGame: () -> Unit,
+    onExitToMenu: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val activity = context as? Activity
-
     var isSpymaster by remember { mutableStateOf(false) }
     var isGameOver by remember { mutableStateOf(false) }
 
-    Column(modifier = modifier.padding(16.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
         SpymasterToggleButton(isSpymaster) { isSpymaster = !isSpymaster }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            if (isGameOver) {
+                ShowGameOverMenu(
+                    onRestart = {
+                        isGameOver = false
+                        onRestartGame()
+                    },
+                    onExit = {
+                        isGameOver = false
+                        onExitToMenu()
+                    }
+                )
+            }
 
-        if (isGameOver) {
-            ShowGameOverMenu(
-                onRestart = {
-                    onRestart()
-                    isGameOver = false
-                },
-                onClose = { activity?.finish() }
+            GameBoardGrid(
+                board = gameState.board,
+                isSpymaster = isSpymaster,
+                isGameOver = isGameOver,
+                onCardRevealed = { card ->
+                    card.isRevealed = true
+                    if (card.role == Role.ASSASSIN) {
+                        isGameOver = true
+                    }
+                }
             )
         }
 
-        GameBoardGrid(
-            board = gameState.board,
-            isSpymaster = isSpymaster,
-            isGameOver = isGameOver,
-            onCardRevealed = { card ->
-                card.isRevealed = true
-                if (isAssassin(card)) {
-                    isGameOver = true
-                }
-            }
-        )
+        Button(
+            onClick = onBack,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+        ) {
+            Text("Go back to Main Menu")
+        }
     }
 }
+
+
 
 @Composable
 fun SpymasterToggleButton(isSpymaster: Boolean, onToggle: () -> Unit) {
@@ -75,7 +91,7 @@ fun SpymasterToggleButton(isSpymaster: Boolean, onToggle: () -> Unit) {
 }
 
 @Composable
-fun ShowGameOverMenu(onRestart: () -> Unit, onClose: () -> Unit) {
+fun ShowGameOverMenu(onRestart: () -> Unit, onExit: () -> Unit) {
     AlertDialog(
         onDismissRequest = {},
         title = { Text("Game Over!") },
@@ -86,12 +102,13 @@ fun ShowGameOverMenu(onRestart: () -> Unit, onClose: () -> Unit) {
             }
         },
         dismissButton = {
-            Button(onClick = onClose) {
+            Button(onClick = onExit) {
                 Text("Exit")
             }
         }
     )
 }
+
 
 @Composable
 fun GameBoardGrid(

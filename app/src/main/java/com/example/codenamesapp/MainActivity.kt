@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import com.example.codenamesapp.gamelogic.GameManager
 import androidx.compose.runtime.*
-
+import androidx.compose.runtime.saveable.rememberSaveable
 
 
 class MainActivity : ComponentActivity() {
@@ -25,20 +25,50 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             var gameState by remember { mutableStateOf(gameManager.gameState) }
+            var screen by rememberSaveable { mutableStateOf("menu") }
 
             CodenamesAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    GameBoardScreen(
-                        gameState = gameState,
-                        onRestart = {
-                            gameManager.startNewGame()
-                            gameState = gameManager.gameState
-                        },
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    when (screen) {
+                        "menu" -> MainMenuScreen(
+                            onPlayClicked = {
+                                gameManager.startNewGame()
+                                gameState = gameManager.gameState
+                                screen = "game"
+                            },
+
+                            onRulesClicked = {
+                                screen = "rules"
+                            },
+                            onSettingsClicked = {
+                                // TODO - does nothing, needs to be addressed on todays meeting
+                            }
+                        )
+
+                        "rules" -> RulesScreen(
+                            onBack = { screen = "menu" }
+                        )
+
+                        "game" -> GameBoardScreen(
+                            gameState = gameState,
+                            onRestartGame = {
+                                gameManager.startNewGame()
+                                gameState = gameManager.gameState
+                            },
+                            onExitToMenu = {
+                                screen = "menu"
+                            },
+                            onBack = {
+                                screen = "menu"
+                            },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+
+                    }
                 }
             }
         }
+
     }
 }
 
