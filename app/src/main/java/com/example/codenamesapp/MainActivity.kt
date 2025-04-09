@@ -1,47 +1,76 @@
 package com.example.codenamesapp
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
+import com.example.codenamesapp.gamelogic.GameManager
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var gameManager: GameManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        gameManager = GameManager(this)
+        gameManager.startNewGame()
+
         setContent {
+            var gameState by remember { mutableStateOf(gameManager.gameState) }
+            var screen by rememberSaveable { mutableStateOf("menu") }
+
             CodenamesAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    when (screen) {
+                        "menu" -> MainMenuScreen(
+                            onPlayClicked = {
+                                gameManager.startNewGame()
+                                gameState = gameManager.gameState
+                                screen = "game"
+                            },
+
+                            onRulesClicked = {
+                                screen = "rules"
+                            },
+                            onSettingsClicked = {
+                                // TODO - does nothing, needs to be addressed on todays meeting
+                            }
+                        )
+
+                        "rules" -> RulesScreen(
+                            onBack = { screen = "menu" }
+                        )
+
+                        "game" -> GameBoardScreen(
+                            gameState = gameState,
+                            onRestartGame = {
+                                gameManager.startNewGame()
+                                gameState = gameManager.gameState
+                            },
+                            onExitToMenu = {
+                                screen = "menu"
+                            },
+                            onBack = {
+                                screen = "menu"
+                            },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+
+                    }
                 }
             }
         }
+
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CodenamesAppTheme {
-        Greeting("Android")
-    }
-}
+
