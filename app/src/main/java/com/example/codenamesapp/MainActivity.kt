@@ -1,4 +1,5 @@
 package com.example.codenamesapp
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import com.example.codenamesapp.gamelogic.GameManager
+import com.example.codenamesapp.LobbyScreen
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 
@@ -41,7 +43,7 @@ class MainActivity : ComponentActivity() {
                                 screen = "rules"
                             },
                             onSettingsClicked = {
-                                // TODO - does nothing, needs to be addressed on todays meeting
+                                screen = "lobby"
                             }
                         )
 
@@ -61,6 +63,10 @@ class MainActivity : ComponentActivity() {
                             onBack = {
                                 screen = "menu"
                             },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                        "lobby" -> LobbyScreen(
+                            onBackToMain = { screen = "menu" },
                             modifier = Modifier.padding(innerPadding)
                         )
 
