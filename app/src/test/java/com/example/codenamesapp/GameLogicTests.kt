@@ -1,21 +1,24 @@
 package com.example.codenamesapp
 
-import androidx.test.core.app.ApplicationProvider
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.model.Role
 import org.junit.Before
 import android.content.Context
+import android.content.res.Resources
 import org.junit.Test
 import org.junit.Assert.*
+
 
 class GameLogicTest {
 
     private lateinit var gameManager: GameManager
+    private lateinit var context: Context
+    private lateinit var resources: Resources
 
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        gameManager = GameManager(context)
+        val fakeWords = (1..100).map { "Word$it" }
+        gameManager = GameManager { fakeWords }
         gameManager.startNewGame()
     }
 
