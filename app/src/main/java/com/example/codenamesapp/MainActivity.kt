@@ -19,14 +19,24 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var gameManager: GameManager
 
+    private fun loadWords(): List<String> {
+        val inputStream = resources.openRawResource(R.raw.words)
+        return inputStream.bufferedReader().readLines().filter { it.isNotBlank() }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        gameManager = GameManager(this)
-        gameManager.startNewGame()
+        gameManager = GameManager{loadWords()}
+        gameManager = GameManager { loadWords() }
 
         setContent {
-            var gameState by remember { mutableStateOf(gameManager.gameState) }
+            val initialGameState = remember {
+                gameManager.startNewGame()
+                gameManager.gameState
+            }
+
+            var gameState by remember { mutableStateOf(initialGameState) }
             var screen by rememberSaveable { mutableStateOf("menu") }
 
             CodenamesAppTheme {
