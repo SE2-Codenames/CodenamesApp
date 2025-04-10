@@ -13,7 +13,7 @@ sonar {
         property("sonar.projectKey", "SE2-Codenames_CodenamesApp")
         property("sonar.organization", "se2-codenames")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/testDebugUnitTest/jacocoTestReport.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
     }
 }
 
@@ -61,11 +61,44 @@ tasks.withType<Test> {
     finalizedBy("jacocoTestReport")
 }
 
-task<JacocoReport>("jacocoTestReport") {
+tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports"
+
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/*\$Lambda$*.*",
+        "**/*\$inlined$*.*"
+    )
+
+    val javaTree = fileTree("${project.buildDir}/intermediates/javac/debug/classes") {
+        exclude(fileFilter)
+    }
+    val kotlinTree = fileTree("${project.buildDir}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+
+    classDirectories.setFrom(files(javaTree, kotlinTree))
+    sourceDirectories.setFrom(files(
+        "${project.projectDir}/src/main/java",
+        "${project.projectDir}/src/main/kotlin"
+    ))
+    executionData.setFrom(fileTree(project.buildDir) {
+        include("jacoco/testDebugUnitTest.exec", "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+    })
+
     reports{
         xml.required.set(true)
+        xml.outputLocation.set(file("${buildDir}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
         html.required.set(true)
+        html.outputLocation.set(file("${buildDir}/reports/jacoco/html"))
     }
 }
 
