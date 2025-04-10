@@ -4,13 +4,13 @@ import android.content.Context
 import com.example.codenamesapp.R
 import com.example.codenamesapp.model.*
 
-class GameManager(private val context: Context) {
+class GameManager(private val wordProvider: () -> List<String>) {
 
     lateinit var gameState: GameState
         private set
 
     fun startNewGame() {
-        val allWords = loadWords()
+        val allWords = wordProvider()
         val selectedWords = allWords.shuffled().take(25)
         val roles = generateRoles()
 
@@ -21,10 +21,14 @@ class GameManager(private val context: Context) {
         gameState = GameState(board = board)
     }
 
+    /*
     private fun loadWords(): List<String> {
         val inputStream = context.resources.openRawResource(R.raw.words)
         return inputStream.bufferedReader().readLines().filter { it.isNotBlank() }
     }
+
+     */
+
 
     private fun generateRoles(): List<Role> {
         return mutableListOf<Role>().apply {
