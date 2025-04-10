@@ -1,4 +1,7 @@
+
+
 plugins {
+    id("jacoco")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -10,6 +13,7 @@ sonar {
         property("sonar.projectKey", "SE2-Codenames_CodenamesApp")
         property("sonar.organization", "se2-codenames")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/testDebugUnitTest/jacocoTestReport.xml")
     }
 }
 
@@ -45,6 +49,23 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    testOptions{
+        unitTests.isIncludeAndroidResources = true;
+    }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    finalizedBy("jacocoTestReport")
+}
+
+task<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+    reports{
+        xml.required.set(true)
+        html.required.set(true)
     }
 }
 
