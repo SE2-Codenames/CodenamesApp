@@ -1,12 +1,13 @@
 package com.example.codenamesapp
-
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.model.Role
-import org.junit.Before
+import org.junit.jupiter.api.BeforeEach
 import android.content.Context
 import android.content.res.Resources
-import org.junit.Test
-import org.junit.Assert.*
+
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertEquals
 
 
 class GameLogicTest {
@@ -15,7 +16,7 @@ class GameLogicTest {
     private lateinit var context: Context
     private lateinit var resources: Resources
 
-    @Before
+    @BeforeEach
     fun setUp() {
         val fakeWords = (1..100).map { "Word$it" }
         gameManager = GameManager { fakeWords }
@@ -40,18 +41,18 @@ class GameLogicTest {
     fun checkUniqueWords() {
         val words = gameManager.gameState.board.map { it.word }
         val distinctWords = words.toSet()
-        assertEquals("Words on board should be unique", 25, distinctWords.size)
+        assertEquals(25, distinctWords.size, "Words on board should be unique")
     }
 
     @Test
     fun checkIfCardsAreUnrevealed() {
         val unrevealed = gameManager.gameState.board.all { !it.isRevealed }
-        assertTrue("All cards should be unrevealed at start", unrevealed)
+        Assertions.assertTrue(unrevealed, "All cards should be unrevealed at start")
     }
 
     @Test
     fun checkStartingTeam() {
-        assertEquals("RED team always start first", Role.RED, gameManager.gameState.currentTeam)
+        assertEquals(Role.RED, gameManager.gameState.currentTeam, "RED team always start first")
     }
 
     @Test
@@ -59,13 +60,16 @@ class GameLogicTest {
         val assassinCard = gameManager.gameState.board.firstOrNull { it.role == Role.ASSASSIN }
         assassinCard?.isRevealed = true
         gameManager.gameState.isGameOver = assassinCard?.isRevealed == true
-        assertTrue("Game ends when assassin card is revealed", gameManager.gameState.isGameOver)
+        Assertions.assertTrue(
+            gameManager.gameState.isGameOver,
+            "Game ends when assassin card is revealed"
+        )
     }
 
     @Test
     fun checkNumberOfAssassinCards() {
         val count = gameManager.gameState.board.count { it.role == Role.ASSASSIN }
-        assertEquals("It must be only one assassin card", 1, count)
+        assertEquals(1, count, "It must be only one assassin card")
     }
 
     @Test
@@ -73,6 +77,6 @@ class GameLogicTest {
         val oldBoardWords = gameManager.gameState.board.map { it.word }
         gameManager.startNewGame()
         val newBoardWords = gameManager.gameState.board.map { it.word }
-        assertNotEquals("Board should be reset", oldBoardWords, newBoardWords)
+        Assertions.assertNotEquals(oldBoardWords, newBoardWords, "Board should be reset")
     }
 }
