@@ -12,6 +12,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
+import java.net.InetSocketAddress
 
 @Composable
 fun LobbyScreen(
@@ -50,37 +51,43 @@ fun LobbyScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = {
-                coroutineScope.launch {
+                coroutineScope.launch(Dispatchers.IO) {  // <- WICHTIG: IO-Thread
                     try {
-                        val socket = Socket(host, port.toInt())
-                        client = socket
-                        out = PrintWriter(socket.getOutputStream(), true)
-                        inStream = BufferedReader(InputStreamReader(socket.getInputStream()))
+                        val socket = Socket()
+                        socket.connect(InetSocketAddress(host, port.toInt()), 5000)
 
-                        connected = true
-                        errorMessage = ""
-
-                        // Empfange Nachrichten vom Server
-                        launch(Dispatchers.IO) {
-                            try {
-                                var line: String?
-                                while (inStream?.readLine().also { line = it } != null) {
-                                    withContext(Dispatchers.Main) {
-                                        receivedMessages += "\n$line"
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                Log.e("SocketError", "Fehler beim Lesen vom Server", e)
-                            }
+                        // Stream Setup im UI-Thread
+                        withContext(Dispatchers.Main) {
+                            client = socket
+                            out = PrintWriter(socket.getOutputStream(), true)
+                            inStream = BufferedReader(InputStreamReader(socket.getInputStream()))
+                            connected = true
+                            errorMessage = ""
                         }
+
+                        // Nachrichtenempfang im IO-Thread
+                        try {
+                            var line: String?
+                            while (inStream?.readLine().also { line = it } != null) {
+                                withContext(Dispatchers.Main) {
+                                    receivedMessages += "\n$line"
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("SocketError", "Fehler beim Lesen vom Server", e)
+                        }
+
                     } catch (e: Exception) {
-                        errorMessage = "Fehler beim Verbinden mit dem Server"
-                        Log.e("SocketError", "Verbindungsfehler: ${e.localizedMessage}", e)
+                        withContext(Dispatchers.Main) {
+                            errorMessage = "Fehler beim Verbinden mit dem Server"
+                            Log.e("SocketError", "Verbindungsfehler: ${e.localizedMessage}", e)
+                        }
                     }
                 }
             }) {
                 Text("Connect")
             }
+
             if (errorMessage.isNotEmpty()) {
                 Text(errorMessage, color = androidx.compose.ui.graphics.Color.Red)
             }
@@ -92,9 +99,11 @@ fun LobbyScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = {
-                coroutineScope.launch {
+                coroutineScope.launch(Dispatchers.IO) {
                     out?.println(username)
-                    chatEnabled = true
+                    withContext(Dispatchers.Main) {
+                        chatEnabled = true
+                    }
                 }
             }) {
                 Text("Set Username")
@@ -107,12 +116,17 @@ fun LobbyScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = {
-                coroutineScope.launch {
+                coroutineScope.launch(Dispatchers.IO) { // Netzwerkoperationen im IO-Thread
                     out?.println(message)
+
                     if (message == "bye") {
                         client?.close()
-                        connected = false
-                        chatEnabled = false
+                        inStream?.close()
+                        out?.close()
+                        withContext(Dispatchers.Main) { // Statusänderungen im UI-Thread
+                            connected = false
+                            chatEnabled = false
+                        }
                     }
                 }
             }) {
