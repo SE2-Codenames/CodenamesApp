@@ -1,11 +1,13 @@
 
 
 plugins {
+
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.sonarqube") version "5.1.0.4882"
     id("jacoco")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
 }
 
 sonar {
@@ -13,6 +15,7 @@ sonar {
         property("sonar.projectKey", "SE2-Codenames_CodenamesApp")
         property("sonar.organization", "se2-codenames")
         property("sonar.host.url", "https://sonarcloud.io")
+
         property("sonar.java.coveragePlugin", "jacoco")
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
@@ -124,6 +127,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.core.ktx)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     //implementation(libs.androidx.junit.ktx)
     //implementation(libs.test.core.ktx)
     testImplementation(libs.junit)
