@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import com.example.codenamesapp.gamelogic.GameManager
-import com.example.codenamesapp.LobbyScreen
+import com.example.codenamesapp.lobby.LobbyScreen
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 
@@ -44,8 +44,6 @@ class MainActivity : ComponentActivity() {
                     when (screen) {
                         "menu" -> MainMenuScreen(
                             onPlayClicked = {
-                                gameManager.startNewGame()
-                                gameState = gameManager.gameState
                                 screen = "game"
                             },
 
@@ -61,21 +59,11 @@ class MainActivity : ComponentActivity() {
                             onBack = { screen = "menu" }
                         )
 
-                        "game" -> GameBoardScreen(
-                            gameState = gameState,
-                            onRestartGame = {
-                                gameManager.startNewGame()
-                                gameState = gameManager.gameState
-                            },
-                            onExitToMenu = {
-                                screen = "menu"
-                            },
-                            onBack = {
-                                screen = "menu"
-                            },
+                        "game" -> LobbyScreen(
+                            onBackToMain = { screen = "menu" },
                             modifier = Modifier.padding(innerPadding)
                         )
-                        "lobby" -> LobbyScreen(
+                        "lobby" -> Connection(
                             onBackToMain = { screen = "menu" },
                             modifier = Modifier.padding(innerPadding)
                         )
