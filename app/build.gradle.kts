@@ -128,6 +128,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.core.ktx)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     //implementation(libs.androidx.junit.ktx)
     //implementation(libs.test.core.ktx)
     testImplementation(libs.junit)
