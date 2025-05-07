@@ -11,96 +11,109 @@ import com.example.codenamesapp.model.TeamRole
 
 @Composable
 fun LobbyScreen(
-    onBackToMain: () -> Unit,
+    playerName: String,
+    playerList: List<Player>,
+    onTeamJoin: (TeamRole) -> Unit,
+    onSpymasterToggle: () -> Unit,
+    onBackToConnection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var username by remember { mutableStateOf("") }
-    var players by remember { mutableStateOf(listOf<Player>()) }
+    val currentPlayer = playerList.find { it.name == playerName }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Team-Anzeigen (oben)
         Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            // Rotes Team
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Red Team", color = MaterialTheme.colorScheme.error)
-                players.filter { it.team == TeamRole.RED }.forEach { player ->
-                    PlayerItem(player, players) { updatedPlayer ->
-                        players = players.map { if (it.name == updatedPlayer.name) updatedPlayer else it }
-                    }
-                }
-            }
-            // Blaues Team
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Blue Team", color = MaterialTheme.colorScheme.primary)
-                players.filter { it.team == TeamRole.BLUE }.forEach { player ->
-                    PlayerItem(player, players) { updatedPlayer ->
-                        players = players.map { if (it.name == updatedPlayer.name) updatedPlayer else it }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            TextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Enter Username") },
-                modifier = Modifier.weight(1f)
+            TeamDisplay(
+                team = TeamRole.RED,
+                players = playerList.filter { it.team == TeamRole.RED },
+                currentPlayerName = playerName,
+                onSpymasterToggle = onSpymasterToggle.takeIf { currentPlayer?.team == TeamRole.RED }
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {
-                if (username.isNotBlank()) {
-                    players = players + Player(name = username, team = TeamRole.RED) // Standard RED
-                    username = ""
+            TeamDisplay(
+                team = TeamRole.BLUE,
+                players = playerList.filter { it.team == TeamRole.BLUE },
+                currentPlayerName = playerName,
+                onSpymasterToggle = onSpymasterToggle.takeIf { currentPlayer?.team == TeamRole.BLUE }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Spieler ohne Team (Mitte)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f)
+        ) {
+            Text("Spieler ohne Team", style = MaterialTheme.typography.headlineSmall)
+            playerList.filter { it.team == null }.forEach { player ->
+                Text(player.name)
+            }
+            if (currentPlayer?.team == null) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                ) {
+                    Button(onClick = { onTeamJoin(TeamRole.RED) }) {
+                        Text("Join Red Team")
+                    }
+                    Button(onClick = { onTeamJoin(TeamRole.BLUE) }) {
+                        Text("Join Blue Team")
+                    }
                 }
-            }) {
-                Text("Add Player")
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = onBackToMain) {
-            Text("Back to Main")
+
+        Button(onClick = onBackToConnection) {
+            Text("Verbindung trennen")
         }
     }
 }
 
 @Composable
-fun PlayerItem(player: Player, allPlayers: List<Player>, onPlayerUpdated: (Player) -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(8.dp)
-    ) {
-        Text(player.name)
+fun TeamDisplay(
+    team: TeamRole,
+    players: List<Player>,
+    currentPlayerName: String,
+    onSpymasterToggle: (() -> Unit)?
+) {
+    val isCurrentUserInTeam = players.any { it.name == currentPlayerName }
+    val isSpymasterSet = players.any { it.isSpymaster }
+    val isCurrentUserSpymaster = players.find { it.name == currentPlayerName }?.isSpymaster == true
 
-        Row {
-            Button(onClick = {
-                val newTeam = if (player.team == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
-                onPlayerUpdated(player.copy(team = newTeam))
-            }) {
-                Text("Switch Team")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    val isAlreadySpymaster = allPlayers.any { it.team == player.team && it.isSpymaster }
-                    if (!isAlreadySpymaster || player.isSpymaster) {
-                        onPlayerUpdated(player.copy(isSpymaster = !player.isSpymaster))
-                    }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            "${team.name} Team",
+            color = when (team) {
+                TeamRole.RED -> MaterialTheme.colorScheme.error
+                TeamRole.BLUE -> MaterialTheme.colorScheme.primary
+            },
+            style = MaterialTheme.typography.headlineSmall
+        )
+        players.forEach { player ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(player.name)
+                if (player.isSpymaster) {
+                    Text(" (Spymaster)", style = MaterialTheme.typography.bodySmall)
                 }
+            }
+        }
+        if (onSpymasterToggle != null && isCurrentUserInTeam) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = onSpymasterToggle,
+                enabled = !isSpymasterSet || isCurrentUserSpymaster
             ) {
-                Text(if (player.isSpymaster) "Unset Spymaster" else "Set Spymaster")
+                Text(if (isCurrentUserSpymaster) "Unset Spymaster" else "Set Spymaster")
             }
         }
     }
