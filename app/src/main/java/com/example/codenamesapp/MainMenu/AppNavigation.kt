@@ -1,13 +1,13 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.MainMenu
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.codenamesapp.Connection
 import com.example.codenamesapp.lobby.LobbyScreen
+import com.example.codenamesapp.model.Player
 
 @Composable
 fun AppNavigation(
@@ -30,12 +30,14 @@ fun AppNavigation(
             RulesScreen(onBack = { navController.popBackStack() })
         }
         composable("connection") {
-            Connection(navController = navController, onBackToMain = { navController.popBackStack() })
+            Connection(
+                navController = navController,
+                onBackToMain = { navController.popBackStack() })
         }
         composable("lobby") {
             val connectionScreenState = navController.previousBackStackEntry?.savedStateHandle
             val playerName = connectionScreenState?.get<String>("playerName") ?: ""
-            val playerList = connectionScreenState?.get<List<com.example.codenamesapp.model.Player>>("playerList") ?: emptyList()
+            val playerList = connectionScreenState?.get<List<Player>>("playerList") ?: emptyList()
 
             LobbyScreen(
                 playerName = playerName,

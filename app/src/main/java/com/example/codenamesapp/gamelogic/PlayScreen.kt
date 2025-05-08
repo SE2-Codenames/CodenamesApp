@@ -1,4 +1,4 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.gamelogic
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid

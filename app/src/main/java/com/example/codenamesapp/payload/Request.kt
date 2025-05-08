@@ -1,5 +1,6 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.payload
 
+import com.example.codenamesapp.Payload
 import kotlinx.serialization.Serializable
 
 @Serializable

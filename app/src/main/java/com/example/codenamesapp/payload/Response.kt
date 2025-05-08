@@ -1,4 +1,6 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.payload
+
+import com.example.codenamesapp.PayloadResponses
 
 data class Response(
     val stat: String,

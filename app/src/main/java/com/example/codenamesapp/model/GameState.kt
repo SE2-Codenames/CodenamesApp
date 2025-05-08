@@ -1,8 +1,8 @@
 package com.example.codenamesapp.model
 
-data class GameState(
-    val board: List<Card>,
-    var currentTeam: Role = Role.RED, // team red starts first!
-    var isGameOver: Boolean = false,
-    var winner: Role? = null
-)
+enum class GameState {
+    LOBBY,          // Players joining/selecting teams
+    SPYMASTER_TURN, // Spymaster giving clue
+    OPERATIVE_TURN, // Operatives guessing
+    GAME_OVER       // Game ended
+}
