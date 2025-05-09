@@ -1,4 +1,8 @@
 package com.example.codenamesapp
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -17,77 +21,71 @@ import androidx.compose.ui.Modifier
 import com.example.codenamesapp.model.Card
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Role
+import com.example.codenamesapp.ui.theme.ButtonsGui
+import com.example.codenamesapp.ui.theme.CustomBlack
+import com.example.codenamesapp.ui.theme.DarkRed
+import com.example.codenamesapp.ui.theme.LightBlue
 
 
 @Composable
-fun GameBoardScreen(
-    gameState: GameState,
-    onRestartGame: () -> Unit,
-    onExitToMenu: () -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var isSpymaster by remember { mutableStateOf(false) }
-    var isGameOver by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        SpymasterToggleButton(isSpymaster) { isSpymaster = !isSpymaster }
-
-        Column(modifier = Modifier.weight(1f)) {
-            if (isGameOver) {
-                ShowGameOverMenu(
-                    onRestart = {
-                        isGameOver = false
-                        onRestartGame()
-                    },
-                    onExit = {
-                        isGameOver = false
-                        onExitToMenu()
-                    }
-                )
-            }
-
-            GameBoardGrid(
-                board = gameState.board,
-                isSpymaster = isSpymaster,
-                isGameOver = isGameOver,
-                onCardRevealed = { card ->
-                    card.isRevealed = true
-                    if (card.role == Role.ASSASSIN) {
-                        isGameOver = true
-                    }
-                }
-            )
-        }
-
-        Button(
-            onClick = onBack,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-        ) {
-            Text("Go back to Main Menu")
-        }
-    }
-}
+//fun GameBoardScreen(
+//    gameState: GameState,
+//    onRestartGame: () -> Unit,
+//    onExitToMenu: () -> Unit,
+//    onBack: () -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    var isSpymaster by remember { mutableStateOf(false) }
+//    var isGameOver by remember { mutableStateOf(false) }
+//
+//    Column(
+//        modifier = modifier
+//            .fillMaxSize()
+//            .padding(16.dp),
+//        verticalArrangement = Arrangement.SpaceBetween
+//    ) {
+//        SpymasterToggleButton(isSpymaster) { isSpymaster = !isSpymaster }
+//
+//        Column(modifier = Modifier.weight(1f)) {
+//            if (isGameOver) {
+//                ShowGameOverMenu(
+//                    onRestart = {
+//                        isGameOver = false
+//                        onRestartGame()
+//                    },
+//                    onExit = {
+//                        isGameOver = false
+//                        onExitToMenu()
+//                    }
+//                )
+//            }
+//
+//            GameBoardGrid(
+//                board = gameState.board,
+//                isSpymaster = isSpymaster,
+//                isGameOver = isGameOver,
+//                onCardRevealed = { card ->
+//                    card.isRevealed = true
+//                    if (card.role == Role.ASSASSIN) {
+//                        isGameOver = true
+//                    }
+//                }
+//            )
+//        }
+//
+//        ButtonsGui(text = "Go back to Main Menu", onClick = { onBack() }, Modifier.fillMaxWidth().padding(top = 12.dp))
+//    }
+//}
 
 
 
-@Composable
+//@Composable
 fun SpymasterToggleButton(isSpymaster: Boolean, onToggle: () -> Unit) {
-    Button(
-        onClick = onToggle,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(text = if (isSpymaster) "Switch to Player View" else "Switch to Spymaster View")
-    }
+    ButtonsGui(text = if (isSpymaster) "Switch to Player View" else "Switch to Spymaster View", onClick = { onToggle() }, Modifier.fillMaxWidth())
 }
 
 @Composable
@@ -181,5 +179,93 @@ private fun getCardColor(card: Card, isRevealed: Boolean, isSpymaster: Boolean):
             Role.ASSASSIN -> Color.Black
         }
         else -> Color.LightGray
+    }
+}
+
+// Platzhalter für jetzt als Wörter
+val wordList = arrayOf("Haus", "Hund", "Katze", "Baumhaus", "Auto", "Blume", "Buch", "Wolke", "Mond", "Wasser", "Sonne", "Karte", "Glas", "Gold", "Berg", "Computer", "Fisch", "Schütze", "Feuer", "Schnee", "Sonnenblume", "Student", "Wahl", "Getränk", "Stift")
+var isSpymaster = false
+
+@Composable
+fun GameBoardScreen (
+    gameState: GameState,
+    onRestartGame: () -> Unit,
+    onExitToMenu: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) { // general layout of gameboard
+    LockLandscapeOrientation()
+    Row (
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        Box ( // first column with "points", hint-button, expose-button and player role
+            modifier = Modifier
+                .weight(0.4f)
+                .fillMaxHeight()
+                .background(DarkRed)
+        ) {
+            PlayerRoleScreen()
+        }
+        Box ( // second column with card grid
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(LightBlue)
+        ) {
+            GameBoardCards()
+        }
+        Box ( // third colum with chat
+            modifier = Modifier
+                .weight(0.3f)
+                .fillMaxHeight()
+                .background(CustomBlack)
+        ) {
+
+        }
+    }
+}
+
+@Composable
+fun GameBoardCards () { // layout of part/grid where cards are on
+    //val items = {1..25}.map { "Feld $it"}
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(5),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        contentPadding = PaddingValues(4.dp)
+    ) {
+
+    }
+}
+
+@Composable
+fun PlayerRoleScreen () {
+    Row (
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        val image = painterResource(R.drawable.muster_logo)
+        Image(
+            painter = image,
+            contentDescription = null
+        )
+        if (isSpymaster)
+            Text("Spymaster")
+        else
+            Text("Operative")
+    }
+}
+
+@Composable
+fun LockLandscapeOrientation() { // fixed landscape orientation
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 }
