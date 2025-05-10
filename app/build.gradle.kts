@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("org.sonarqube") version "5.1.0.4882"
     id("jacoco")
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
 }
 
 sonar {

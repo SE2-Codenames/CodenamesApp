@@ -1,31 +1,57 @@
 package com.example.codenamesapp
 
-
 import com.example.codenamesapp.model.Card
-import com.example.codenamesapp.model.GameState
+import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.model.Role
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 
-class Communication{
+class Communication {
+
+    var latestGameState: PayloadResponseMove? = null
+        private set
+
     //give Information from the Server
     //________________________________
     //Spymaster give a hint and the number of hints
-    fun giveHint(hint: Array<String>){
-
+    fun giveHint(hint: Array<String>): String {
+        return "HINT:${hint[0]}:${hint[1]}"
     }
 
     //Operater give a Clue     (-1 ENDTURN)
-    fun giveCard(postion: Int){
-
+    fun giveCard(position: Int): String {
+        return "SELECT:$position"
     }
 
+    // Prepare game start command
+    fun gameStart(): String {
+        return "START_GAME"
+    }
+
+    // Parse incoming GAME_STATE:{json} from server
+    fun updateFromServerMessage(line: String) {
+        if (line.startsWith("GAME_STATE:")) {
+            val jsonPart = line.removePrefix("GAME_STATE:")
+            try {
+                val response = Json.decodeFromString<PayloadResponseMove>(jsonPart)
+                latestGameState = response
+            } catch (e: Exception) {
+                println("[Communication] Failed to parse GAME_STATE: ${e.message}")
+            }
+        }
+    }
+
+    fun reset() {
+        latestGameState = null
+    }
 
     //get Information to the Server
     //______________________________
 
     //get Gamestate, TeamState, Cardlist and Score
     fun getGame(): PayloadResponseMove{
-        val exampleGameState = GameState.SPYMASTER_TURN
+        val exampleGameState = GamePhase.SPYMASTER_TURN
         val exampleTeamRole = TeamRole.BLUE
         val exampleCardList = listOf(
             // Rote Karten (9)
