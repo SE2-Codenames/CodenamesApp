@@ -3,6 +3,7 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,6 +15,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -32,6 +37,7 @@ import com.example.codenamesapp.ui.theme.ButtonsGui
 import com.example.codenamesapp.ui.theme.CustomBlack
 import com.example.codenamesapp.ui.theme.DarkRed
 import com.example.codenamesapp.ui.theme.LightBlue
+import com.example.codenamesapp.ui.theme.LightGrey
 import com.example.codenamesapp.ui.theme.LightRed
 
 
@@ -191,6 +197,7 @@ val wordList = arrayOf("Haus", "Hund", "Katze", "Baumhaus", "Auto", "Blume", "Bu
 val roundRed = 5
 val roundBlue = 4
 var isSpymaster = true
+var messages = listOf("Willkommen!", "Erster Hint: Sonnenblume.", "Team Rot hat \"Sonne\" erraten.", "Zweiter Hint: Autofahren", "Team Blau hat \"Auto\" erraten.", "Dritter Hint: Freizeit", "Team Rot hat \"Karte\" erraten.")
 
 @Composable
 fun GameBoardScreen (
@@ -257,10 +264,11 @@ fun GameBoardScreen (
         Box ( // third colum with chat
             modifier = Modifier
                 .weight(0.3f)
-                .fillMaxHeight()
-                .background(CustomBlack)
+                .fillMaxHeight(),
+//                .background(DarkRed),
+            contentAlignment = Alignment.BottomCenter
         ) {
-
+            ChatBox(messages = messages)
         }
     }
 }
@@ -314,6 +322,34 @@ fun PlayerRoleScreen () { // displays the role-image and player role
         Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge)
     else
         Text(text = "Operative", style = MaterialTheme.typography.headlineLarge)
+}
+
+@Composable
+fun ChatBox (messages : List<String>) { // displays server chat messages
+    LazyColumn (
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.66f)
+            .padding(8.dp)
+            .border(1.dp, CustomBlack, shape = RoundedCornerShape(2.dp))
+            .background(Color.White),
+        verticalArrangement = Arrangement.Bottom,
+        reverseLayout = true
+    ) {
+        itemsIndexed(messages.reversed()) {
+            index, messages ->
+
+            val backgroundColor = if (index % 2 != 0) LightGrey else Color.Transparent
+            Box (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .background(backgroundColor)
+            ) {
+                Text(text = messages, color = CustomBlack)
+            }
+        }
+    }
 }
 
 @Composable
