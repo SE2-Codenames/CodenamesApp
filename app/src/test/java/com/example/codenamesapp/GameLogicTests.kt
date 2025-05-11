@@ -1,20 +1,19 @@
 package com.example.codenamesapp
+
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.model.Role
 import org.junit.jupiter.api.BeforeEach
-import android.content.Context
-import android.content.res.Resources
-
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertEquals
-
+import org.junit.jupiter.api.Assertions.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import com.example.codenamesapp.model.Card
+import com.example.codenamesapp.model.GamePhase
+import com.example.codenamesapp.model.TeamRole
 
 class GameLogicTest {
 
     private lateinit var gameManager: GameManager
-    private lateinit var context: Context
-    private lateinit var resources: Resources
 
     @BeforeEach
     fun setUp() {
@@ -47,7 +46,7 @@ class GameLogicTest {
     @Test
     fun checkIfCardsAreUnrevealed() {
         val unrevealed = gameManager.gameState.board.all { !it.isRevealed }
-        Assertions.assertTrue(unrevealed, "All cards should be unrevealed at start")
+        assertTrue(unrevealed, "All cards should be unrevealed at start")
     }
 
     @Test
@@ -60,10 +59,7 @@ class GameLogicTest {
         val assassinCard = gameManager.gameState.board.firstOrNull { it.role == Role.ASSASSIN }
         assassinCard?.isRevealed = true
         gameManager.gameState.isGameOver = assassinCard?.isRevealed == true
-        Assertions.assertTrue(
-            gameManager.gameState.isGameOver,
-            "Game ends when assassin card is revealed"
-        )
+        assertTrue(gameManager.gameState.isGameOver, "Game ends when assassin card is revealed")
     }
 
     @Test
@@ -77,6 +73,45 @@ class GameLogicTest {
         val oldBoardWords = gameManager.gameState.board.map { it.word }
         gameManager.startNewGame()
         val newBoardWords = gameManager.gameState.board.map { it.word }
-        Assertions.assertNotEquals(oldBoardWords, newBoardWords, "Board should be reset")
+        assertNotEquals(oldBoardWords, newBoardWords, "Board should be reset")
+    }
+
+    // Communication tests
+    @Test
+    fun parseValidGameStateJson() {
+        val jsonString = """
+            {
+              "gameState": "SPYMASTER_TURN",
+              "teamRole": "BLUE",
+              "card": [
+                {"word": "Test1", "role": "RED", "isRevealed": false},
+                {"word": "Test2", "role": "BLUE", "isRevealed": true}
+              ],
+              "score": [5, 4]
+            }
+        """.trimIndent()
+
+        val communication = Communication()
+        communication.updateFromServerMessage("GAME_STATE:$jsonString")
+
+        val game = communication.latestGameState
+        assertNotNull(game)
+        assertEquals(GamePhase.SPYMASTER_TURN, game?.gameState)
+        assertEquals(TeamRole.BLUE, game?.teamRole)
+        assertEquals(2, game?.card?.size)
+        assertEquals(false, game?.card?.get(0)?.isRevealed)
+        assertEquals(true, game?.card?.get(1)?.isRevealed)
+        assertEquals(5, game?.score?.get(0))
+        assertEquals(4, game?.score?.get(1))
+    }
+
+    @Test
+    fun testPrepareHintAndCardMessage() {
+        val communication = Communication()
+        val hintMessage = communication.giveHint(arrayOf("animal", "3"))
+        val cardMessage = communication.giveCard(12)
+
+        assertEquals("HINT:animal:3", hintMessage)
+        assertEquals("SELECT:12", cardMessage)
     }
 }
