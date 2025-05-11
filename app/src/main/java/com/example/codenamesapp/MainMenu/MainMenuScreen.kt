@@ -1,12 +1,34 @@
+<<<<<<< HEAD:app/src/main/java/com/example/codenamesapp/MainMenuScreen.kt
+package com.example.codenamesapp
+
+import android.content.res.Configuration
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+=======
 package com.example.codenamesapp.MainMenu
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+>>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13:app/src/main/java/com/example/codenamesapp/MainMenu/MainMenuScreen.kt
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+
+import com.example.codenamesapp.ui.theme.*
+
 
 @Composable
 fun MainMenuScreen(
@@ -14,35 +36,84 @@ fun MainMenuScreen(
     onRulesClicked: () -> Unit,
     onSettingsClicked: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "CODENAMES", style = MaterialTheme.typography.headlineLarge)
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Button(onClick = onPlayClicked, modifier = Modifier.fillMaxWidth()) {
-            Text("Play")
+    if (isPortrait) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            MainHeading()
+            ButtonsContent(
+                onPlayClicked,
+                onRulesClicked,
+                onSettingsClicked
+            )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = onRulesClicked, modifier = Modifier.fillMaxWidth()) {
-            Text("Rules")
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            MainHeading()
+            Spacer(modifier = Modifier.height(100.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = onSettingsClicked, modifier = Modifier.fillMaxWidth()) {
-            Text("Settings")
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Bottom // TODO: better solution for buttons not overlapping text
+        ) {
+            ButtonsContent(
+                onPlayClicked,
+                onRulesClicked,
+                onSettingsClicked
+            )
         }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // TODO - add icon for Codenames logo (as on GUI prototype)
     }
+}
+
+@Composable
+fun MainHeading () { // Logo & Title
+    // image for logo (just prototype for now)
+    val image = painterResource(R.drawable.muster_logo)
+    Box(Modifier
+        .height(160.dp)
+        .padding(bottom = 25.dp)) {
+        Image(
+            painter = image,
+            contentDescription = null
+        )
+    }
+    // title
+    Text(text = "CODENAMES", style = MaterialTheme.typography.headlineLarge)
+
+    Spacer(modifier = Modifier.height(48.dp))
+}
+
+@Composable
+fun ButtonsContent ( // the 3 Buttons
+    onPlayClicked: () -> Unit,
+    onRulesClicked: () -> Unit,
+    onSettingsClicked: () -> Unit
+) {
+    ButtonsGui(text = "Play", onClick = { onPlayClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    ButtonsGui(text = "Rules", onClick = { onRulesClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    ButtonsGui(text = "Settings", onClick = { onSettingsClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+
+    Spacer(modifier = Modifier.height(48.dp))
 }

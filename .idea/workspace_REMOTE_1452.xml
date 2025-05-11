@@ -10,16 +10,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="26591ce6-469e-466e-8f67-5b1509f44b28" name="Changes" comment="">
-<<<<<<< HEAD
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/PlayScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/PlayScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/model/Card.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/model/Card.kt" afterDir="false" />
-=======
       <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/Communication.kt" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/payload/Request.kt" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/payload/Response.kt" afterDir="false" />
@@ -35,7 +25,6 @@
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/Response.kt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/model/GameState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/model/GameState.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/payload/PayloadResponseMove.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/codenamesapp/payload/PayloadResponseMove.kt" afterDir="false" />
->>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,11 +34,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-<<<<<<< HEAD
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\stefa\.android\avd\virtual_device_Pixel_8_Pro.avd)]" />
-=======
   <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\Madel\.android\avd\Medium_Phone.avd)]" />
->>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -119,12 +104,8 @@
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-<<<<<<< HEAD
-    &quot;git-widget-placeholder&quot;: &quot;steffi-trying-design&quot;,
-=======
     &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;Clientverbindung&quot;,
->>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/Madel/Desktop/ProgrammierProjekte/Codename/App/Clientverbindung&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -132,7 +113,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;device.mirroring&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -317,20 +298,12 @@
       <map>
         <entry key="com.example.codenamesapp">
           <value>
-<<<<<<< HEAD
-            <CheckInfo lastCheckTimestamp="1746817015247" />
-=======
             <CheckInfo lastCheckTimestamp="1746649563704" />
->>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13
           </value>
         </entry>
         <entry key="com.example.codenamesapp.test">
           <value>
-<<<<<<< HEAD
-            <CheckInfo lastCheckTimestamp="1746817015250" />
-=======
             <CheckInfo lastCheckTimestamp="1746649563703" />
->>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13
           </value>
         </entry>
       </map>
