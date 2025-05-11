@@ -1,3 +1,4 @@
+<<<<<<< HEAD:app/src/main/java/com/example/codenamesapp/PlayScreen.kt
 package com.example.codenamesapp
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -6,6 +7,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+=======
+package com.example.codenamesapp.gamelogic
+>>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13:app/src/main/java/com/example/codenamesapp/gamelogic/PlayScreen.kt
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid

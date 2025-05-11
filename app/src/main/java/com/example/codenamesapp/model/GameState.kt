@@ -1,5 +1,8 @@
 package com.example.codenamesapp.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GameState(
     val board: List<Card>,
     var currentTeam: Role = Role.RED, // team red starts first!
