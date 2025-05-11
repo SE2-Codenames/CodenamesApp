@@ -6,7 +6,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.codenamesapp.Connection
+import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.MainMenuScreen
 import com.example.codenamesapp.lobby.LobbyScreen
+import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Player
 
 @Composable
@@ -23,7 +26,7 @@ fun AppNavigation(
             MainMenuScreen(
                 onPlayClicked = { navController.navigate("connection") },
                 onRulesClicked = { navController.navigate("rules") },
-                onSettingsClicked = { /* TODO: Implement settings navigation */ }
+                onSettingsClicked = { navController.navigate("settings") }
             )
         }
         composable("rules") {

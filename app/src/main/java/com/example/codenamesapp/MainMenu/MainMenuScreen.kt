@@ -1,4 +1,3 @@
-<<<<<<< HEAD:app/src/main/java/com/example/codenamesapp/MainMenuScreen.kt
 package com.example.codenamesapp
 
 import android.content.res.Configuration
@@ -12,12 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-=======
-package com.example.codenamesapp.MainMenu
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
->>>>>>> 875d12e71b1fd5e365d4d15f337e70bd31b79a13:app/src/main/java/com/example/codenamesapp/MainMenu/MainMenuScreen.kt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
