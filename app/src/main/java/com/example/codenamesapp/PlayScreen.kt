@@ -1,6 +1,8 @@
 package com.example.codenamesapp
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,16 +14,15 @@ import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.example.codenamesapp.model.Card
 import androidx.compose.runtime.*
@@ -35,13 +36,15 @@ import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Role
 import com.example.codenamesapp.ui.theme.ButtonsGui
 import com.example.codenamesapp.ui.theme.CustomBlack
+import com.example.codenamesapp.ui.theme.DarkBlue
+import com.example.codenamesapp.ui.theme.DarkGrey
 import com.example.codenamesapp.ui.theme.DarkRed
 import com.example.codenamesapp.ui.theme.LightBlue
 import com.example.codenamesapp.ui.theme.LightGrey
 import com.example.codenamesapp.ui.theme.LightRed
 
 
-@Composable
+//@Composable
 //fun GameBoardScreen(
 //    gameState: GameState,
 //    onRestartGame: () -> Unit,
@@ -93,104 +96,104 @@ import com.example.codenamesapp.ui.theme.LightRed
 
 
 
+////@Composable
+//fun SpymasterToggleButton(isSpymaster: Boolean, onToggle: () -> Unit) {
+//    ButtonsGui(text = if (isSpymaster) "Switch to Player View" else "Switch to Spymaster View", onClick = { onToggle() }, Modifier.fillMaxWidth())
+//}
+//
 //@Composable
-fun SpymasterToggleButton(isSpymaster: Boolean, onToggle: () -> Unit) {
-    ButtonsGui(text = if (isSpymaster) "Switch to Player View" else "Switch to Spymaster View", onClick = { onToggle() }, Modifier.fillMaxWidth())
-}
-
-@Composable
-fun ShowGameOverMenu(onRestart: () -> Unit, onExit: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text("Game Over!") },
-        text = { Text("The assassin was revealed!") },
-        confirmButton = {
-            Button(onClick = onRestart) {
-                Text("Play Again")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onExit) {
-                Text("Exit")
-            }
-        }
-    )
-}
-
-
-@Composable
-fun GameBoardGrid(
-    board: List<Card>,
-    isSpymaster: Boolean,
-    isGameOver: Boolean,
-    onCardRevealed: (Card) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(5),
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(board) { card ->
-            GameBoardTiles(
-                card = card,
-                isSpymaster = isSpymaster,
-                isGameOver = isGameOver,
-                onClick = { onCardRevealed(card) }
-            )
-        }
-    }
-}
-
-@Composable
-fun GameBoardTiles(
-    card: Card,
-    isSpymaster: Boolean,
-    isGameOver: Boolean,
-    onClick: () -> Unit
-) {
-    val isRevealed = card.isRevealed
-    val backgroundColor = getCardColor(card, isRevealed, isSpymaster)
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .clickable(enabled = isCardClickable(isRevealed, isSpymaster, isGameOver)) {
-                onClick()
-            },
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = card.word,
-                color = if (backgroundColor == Color.Black) Color.White else Color.Black
-            )
-        }
-    }
-}
-
-private fun isAssassin(card: Card): Boolean = card.role == Role.ASSASSIN
-
-private fun isCardClickable(isRevealed: Boolean, isSpymaster: Boolean, isGameOver: Boolean): Boolean {
-    return !isRevealed && !isSpymaster && !isGameOver
-}
-
-private fun getCardColor(card: Card, isRevealed: Boolean, isSpymaster: Boolean): Color {
-    return when {
-        isSpymaster || isRevealed -> when (card.role) {
-            Role.RED -> Color.Red
-            Role.BLUE -> Color.Blue
-            Role.NEUTRAL -> Color.Gray
-            Role.ASSASSIN -> Color.Black
-        }
-        else -> Color.LightGray
-    }
-}
+//fun ShowGameOverMenu(onRestart: () -> Unit, onExit: () -> Unit) {
+//    AlertDialog(
+//        onDismissRequest = {},
+//        title = { Text("Game Over!") },
+//        text = { Text("The assassin was revealed!") },
+//        confirmButton = {
+//            Button(onClick = onRestart) {
+//                Text("Play Again")
+//            }
+//        },
+//        dismissButton = {
+//            Button(onClick = onExit) {
+//                Text("Exit")
+//            }
+//        }
+//    )
+//}
+//
+//
+//@Composable
+//fun GameBoardGrid(
+//    board: List<Card>,
+//    isSpymaster: Boolean,
+//    isGameOver: Boolean,
+//    onCardRevealed: (Card) -> Unit
+//) {
+//    LazyVerticalGrid(
+//        columns = GridCells.Fixed(5),
+//        modifier = Modifier.fillMaxSize(),
+//        verticalArrangement = Arrangement.spacedBy(8.dp),
+//        horizontalArrangement = Arrangement.spacedBy(8.dp)
+//    ) {
+//        items(board) { card ->
+//            GameBoardTiles(
+//                card = card,
+//                isSpymaster = isSpymaster,
+//                isGameOver = isGameOver,
+//                onClick = { onCardRevealed(card) }
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun GameBoardTiles(
+//    card: Card,
+//    isSpymaster: Boolean,
+//    isGameOver: Boolean,
+//    onClick: () -> Unit
+//) {
+//    val isRevealed = card.isRevealed
+//    val backgroundColor = getCardColor(card, isRevealed, isSpymaster)
+//
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .aspectRatio(1f)
+//            .clickable(enabled = isCardClickable(isRevealed, isSpymaster, isGameOver)) {
+//                onClick()
+//            },
+//        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+//        elevation = CardDefaults.cardElevation(4.dp)
+//    ) {
+//        Box(
+//            modifier = Modifier.fillMaxSize(),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Text(
+//                text = card.word,
+//                color = if (backgroundColor == Color.Black) Color.White else Color.Black
+//            )
+//        }
+//    }
+//}
+//
+//private fun isAssassin(card: Card): Boolean = card.role == Role.ASSASSIN
+//
+//private fun isCardClickable(isRevealed: Boolean, isSpymaster: Boolean, isGameOver: Boolean): Boolean {
+//    return !isRevealed && !isSpymaster && !isGameOver
+//}
+//
+//private fun getCardColor(card: Card, isRevealed: Boolean, isSpymaster: Boolean): Color {
+//    return when {
+//        isSpymaster || isRevealed -> when (card.role) {
+//            Role.RED -> Color.Red
+//            Role.BLUE -> Color.Blue
+//            Role.NEUTRAL -> Color.Gray
+//            Role.ASSASSIN -> Color.Black
+//        }
+//        else -> Color.LightGray
+//    }
+//}
 
 // Platzhalter für jetzt als Wörter
 val wordList = arrayOf("Haus", "Hund", "Katze", "Baumhaus", "Auto", "Blume", "Buch", "Wolke", "Mond", "Wasser", "Sonne", "Karte", "Glas", "Gold", "Berg", "Computer", "Fisch", "Schütze", "Feuer", "Schnee", "Sonnenblume", "Student", "Wahl", "Getränk", "Stift")
@@ -198,6 +201,9 @@ val roundRed = 5
 val roundBlue = 4
 var isSpymaster = true
 var messages = listOf("Willkommen!", "Erster Hint: Sonnenblume.", "Team Rot hat \"Sonne\" erraten.", "Zweiter Hint: Autofahren", "Team Blau hat \"Auto\" erraten.", "Dritter Hint: Freizeit", "Team Rot hat \"Karte\" erraten.")
+// Card-Class auch als Platzhalter
+val cardList = listOf(Card("Haus", Role.RED), Card("Hund", Role.NEUTRAL), Card("Katze", Role.RED), Card("Baumhaus", Role.NEUTRAL), Card("Auto", Role.BLUE), Card("Blume", Role.ASSASSIN), Card("Buch", Role.BLUE), Card("Wolke", Role.NEUTRAL), Card("Mond", Role.NEUTRAL), Card("Wasser", Role.RED), Card("Sonne", Role.RED), Card("Karte", Role.NEUTRAL), Card("Glas", Role.NEUTRAL), Card("Gold", Role.BLUE), Card("Berg", Role.NEUTRAL), Card("Computer", Role.BLUE), Card("Fisch", Role.NEUTRAL), Card("Schütze", Role.NEUTRAL), Card("Feuer", Role.NEUTRAL), Card("Schnee", Role.NEUTRAL), Card("Sonnenblume", Role.NEUTRAL), Card("Student", Role.NEUTRAL), Card("Wahl", Role.NEUTRAL), Card("Getränk", Role.NEUTRAL), Card("Stift", Role.NEUTRAL))
+
 
 @Composable
 fun GameBoardScreen (
@@ -236,9 +242,15 @@ fun GameBoardScreen (
                     .padding(8.dp)
             ) { // TODO: fix link target!!
                 if (isSpymaster) {
-                    ButtonsGui(text = "Give A Hint!", onClick = { onBack() },Modifier.width(250.dp).height(48.dp).padding(4.dp))
+                    ButtonsGui(text = "Give A Hint!", onClick = { onBack() },Modifier
+                        .width(250.dp)
+                        .height(48.dp)
+                        .padding(4.dp))
                 }
-                ButtonsGui(text = "Expose!", onClick = { onBack() }, Modifier.width(250.dp).height(48.dp).padding(4.dp))
+                ButtonsGui(text = "Expose!", onClick = { onBack() }, Modifier
+                    .width(250.dp)
+                    .height(48.dp)
+                    .padding(4.dp))
             }
             Column (
                 modifier = Modifier
@@ -255,9 +267,12 @@ fun GameBoardScreen (
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(LightBlue)
+                //.background(LightBlue)
         ) {
-            GameBoardCards()
+            GameBoardGrid(
+                onCardClicked = { /*TODO*/ },
+                onCardMarked = { /*TODO*/ }
+            )
         }
 
     // ---------------------------------------------------------------------------------------
@@ -273,23 +288,19 @@ fun GameBoardScreen (
     }
 }
 
-@Composable
-fun GameBoardCards () { // layout of part/grid where cards are on
-    //val items = {1..25}.map { "Feld $it"}
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(5),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        contentPadding = PaddingValues(4.dp)
-    ) {
 
+@Composable
+fun LockLandscapeOrientation() { // fixed landscape orientation
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 }
 
 
+// --- column one ----------------------------------------------------------------------------------
 @Composable
 fun CardsRemaining () { // displays how many cards each team has remaining
     Text(roundRed.toString(), style = TextStyle(
@@ -308,11 +319,11 @@ fun CardsRemaining () { // displays how many cards each team has remaining
 
 @Composable
 fun PlayerRoleScreen () { // displays the role-image and player role
-   val image = painterResource(R.drawable.muster_logo)
-   Box(Modifier
+    val image = painterResource(R.drawable.muster_logo)
+    Box(Modifier
         .height(80.dp)
         .padding(bottom = 10.dp),
-       contentAlignment = Alignment.Center) {
+        contentAlignment = Alignment.Center) {
         Image(
             painter = image,
             contentDescription = null
@@ -324,6 +335,81 @@ fun PlayerRoleScreen () { // displays the role-image and player role
         Text(text = "Operative", style = MaterialTheme.typography.headlineLarge)
 }
 
+
+// --- column two ----------------------------------------------------------------------------------
+@Composable
+fun GameBoardGrid ( // layout of part/grid where cards are on
+    onCardClicked : (Card) -> Unit,
+    onCardMarked : (Card) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(5),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        contentPadding = PaddingValues(4.dp)
+    ) {
+        items(cardList) {card ->
+            GameCard (
+                card = card,
+                onClick = { onCardClicked(card) },
+                onLongClick = { onCardMarked(card) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun GameCard ( // creates displayable card
+    card : Card,
+    onClick : () -> Unit,
+    onLongClick : () -> Unit
+) {
+    // if card is marked by player, card appears with thicker border
+    val border = if (card.isMarked) BorderStroke(3.dp, CustomBlack) else BorderStroke(0.5.dp, CustomBlack)
+
+    // if card is revealed or player is spymaster, cards appear with role as background, otherwise they are grey
+    val backgroundImage = if (card.isRevealed || isSpymaster) {
+        when (card.role) {
+            Role.RED -> DarkRed
+            Role.BLUE -> DarkBlue
+            Role.NEUTRAL -> DarkGrey
+            Role.ASSASSIN -> CustomBlack
+            // später: painterResource(R.drawable.[...]) für image einfügen
+        }
+    } else {
+        DarkGrey
+    }
+
+    // creating displayable card
+    Card (
+        modifier = Modifier
+            .aspectRatio(1f)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(2.dp),
+        border = border,
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Box (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundImage)
+        ) {
+            Text (
+                text = card.word,
+                color = LightGrey,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(4.dp)
+            )
+        }
+    }
+}
+
+// --- column three --------------------------------------------------------------------------------
 @Composable
 fun ChatBox (messages : List<String>) { // displays server chat messages
     LazyColumn (
@@ -349,15 +435,5 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
                 Text(text = messages, color = CustomBlack)
             }
         }
-    }
-}
-
-@Composable
-fun LockLandscapeOrientation() { // fixed landscape orientation
-    val context = LocalContext.current
-    val activity = context as? Activity
-
-    LaunchedEffect(Unit) {
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 }

@@ -9,5 +9,6 @@ data class Card(
     val role: Role
 ) {
     var isRevealed by mutableStateOf(false)
+    var isMarked by mutableStateOf(false)
 }
 
