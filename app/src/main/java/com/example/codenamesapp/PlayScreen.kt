@@ -23,12 +23,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Role
 import com.example.codenamesapp.ui.theme.ButtonsGui
 import com.example.codenamesapp.ui.theme.CustomBlack
 import com.example.codenamesapp.ui.theme.DarkRed
 import com.example.codenamesapp.ui.theme.LightBlue
+import com.example.codenamesapp.ui.theme.LightRed
 
 
 @Composable
@@ -184,7 +188,9 @@ private fun getCardColor(card: Card, isRevealed: Boolean, isSpymaster: Boolean):
 
 // Platzhalter für jetzt als Wörter
 val wordList = arrayOf("Haus", "Hund", "Katze", "Baumhaus", "Auto", "Blume", "Buch", "Wolke", "Mond", "Wasser", "Sonne", "Karte", "Glas", "Gold", "Berg", "Computer", "Fisch", "Schütze", "Feuer", "Schnee", "Sonnenblume", "Student", "Wahl", "Getränk", "Stift")
-var isSpymaster = false
+val roundRed = 5
+val roundBlue = 4
+var isSpymaster = true
 
 @Composable
 fun GameBoardScreen (
@@ -200,14 +206,44 @@ fun GameBoardScreen (
             .fillMaxSize()
             .padding(8.dp)
     ) {
+        // ---------------------------------------------------------------------------------------
         Box ( // first column with "points", hint-button, expose-button and player role
             modifier = Modifier
                 .weight(0.4f)
                 .fillMaxHeight()
-                .background(DarkRed)
+                //.background(DarkRed)
         ) {
-            PlayerRoleScreen()
+            Row (
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.TopCenter)
+                    .padding(top = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                CardsRemaining()
+            }
+            Column (
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(8.dp)
+            ) { // TODO: fix link target!!
+                if (isSpymaster) {
+                    ButtonsGui(text = "Give A Hint!", onClick = { onBack() },Modifier.width(250.dp).height(48.dp).padding(4.dp))
+                }
+                ButtonsGui(text = "Expose!", onClick = { onBack() }, Modifier.width(250.dp).height(48.dp).padding(4.dp))
+            }
+            Column (
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.Bottom,
+            ) {
+                PlayerRoleScreen()
+            }
         }
+
+        // ---------------------------------------------------------------------------------------
         Box ( // second column with card grid
             modifier = Modifier
                 .weight(1f)
@@ -216,6 +252,8 @@ fun GameBoardScreen (
         ) {
             GameBoardCards()
         }
+
+    // ---------------------------------------------------------------------------------------
         Box ( // third colum with chat
             modifier = Modifier
                 .weight(0.3f)
@@ -243,21 +281,39 @@ fun GameBoardCards () { // layout of part/grid where cards are on
     }
 }
 
+
 @Composable
-fun PlayerRoleScreen () {
-    Row (
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        val image = painterResource(R.drawable.muster_logo)
+fun CardsRemaining () { // displays how many cards each team has remaining
+    Text(roundRed.toString(), style = TextStyle(
+        color = LightRed,
+        fontSize = 80.sp,
+        fontWeight = FontWeight.Bold
+    )
+    )
+    Spacer(Modifier.width(50.dp))
+    Text(roundBlue.toString(), style = TextStyle(
+        color = LightBlue,
+        fontSize = 80.sp,
+        fontWeight = FontWeight.Bold
+    ))
+}
+
+@Composable
+fun PlayerRoleScreen () { // displays the role-image and player role
+   val image = painterResource(R.drawable.muster_logo)
+   Box(Modifier
+        .height(80.dp)
+        .padding(bottom = 10.dp),
+       contentAlignment = Alignment.Center) {
         Image(
             painter = image,
             contentDescription = null
         )
-        if (isSpymaster)
-            Text("Spymaster")
-        else
-            Text("Operative")
     }
+    if (isSpymaster)
+        Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge)
+    else
+        Text(text = "Operative", style = MaterialTheme.typography.headlineLarge)
 }
 
 @Composable
