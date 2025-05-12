@@ -9,3 +9,4 @@ data class PayloadStart(
 ) : Payload{
     override fun valid(): Boolean = gameId.isNotEmpty() && players.isNotEmpty()
 }
+

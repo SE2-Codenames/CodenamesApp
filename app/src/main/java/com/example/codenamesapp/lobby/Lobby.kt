@@ -15,13 +15,14 @@ fun LobbyScreen(
     playerList: List<Player>,
     onTeamJoin: (TeamRole) -> Unit,
     onSpymasterToggle: () -> Unit,
+    onStartGame: () -> Unit,
     onBackToConnection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val currentPlayer = playerList.find { it.name == playerName }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -71,13 +72,34 @@ fun LobbyScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = onBackToConnection) {
-            Text("Verbindung trennen")
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = onStartGame,
+                modifier = Modifier
+                    .width(250.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text("Spiel starten")
+            }
+
+            Button(
+                onClick = onBackToConnection,
+                modifier = Modifier
+                    .width(250.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text("Verbindung trennen")
+            }
         }
     }
 }
+
 
 @Composable
 fun TeamDisplay(

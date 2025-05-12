@@ -11,6 +11,7 @@ import com.example.codenamesapp.MainMenuScreen
 import com.example.codenamesapp.lobby.LobbyScreen
 import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Player
+import java.io.PrintWriter
 
 @Composable
 fun AppNavigation(
@@ -42,13 +43,16 @@ fun AppNavigation(
             val playerName = connectionScreenState?.get<String>("playerName") ?: ""
             val playerList = connectionScreenState?.get<List<Player>>("playerList") ?: emptyList()
 
+
             LobbyScreen(
                 playerName = playerName,
                 playerList = playerList,
                 onTeamJoin = { team -> println("Beitreten des Teams: $team") },
                 onSpymasterToggle = { println("Spymaster-Toggle") },
+                onStartGame = { println("START_GAME") },
                 onBackToConnection = { navController.popBackStack() }
             )
         }
+
     }
 }
