@@ -11,6 +11,8 @@ data class PayloadResponseMove(
     val gameState: GamePhase,
     val teamRole: TeamRole,
     val card: List<Card>,
-    val score: Array<Int>
+    val score: Array<Int>,
+    val hint: String,
+    val remainingGuesses: Int
 
 ):PayloadResponses
