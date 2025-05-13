@@ -1,4 +1,5 @@
 package com.example.codenamesapp
+import com.example.codenamesapp.Communication
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.BorderStroke
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -31,9 +33,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
+import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.GameState
+import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.Role
+import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.ui.theme.ButtonsGui
 import com.example.codenamesapp.ui.theme.CustomBlack
 import com.example.codenamesapp.ui.theme.DarkBlue
@@ -45,95 +51,162 @@ import com.example.codenamesapp.ui.theme.LightRed
 
 
 // Platzhalter für jetzt als Wörter
-val wordList = arrayOf("Haus", "Hund", "Katze", "Baumhaus", "Auto", "Blume", "Buch", "Wolke", "Mond", "Wasser", "Sonne", "Karte", "Glas", "Gold", "Berg", "Computer", "Fisch", "Schütze", "Feuer", "Schnee", "Sonnenblume", "Student", "Wahl", "Getränk", "Stift")
 val roundRed = 5
 val roundBlue = 4
-var isSpymaster = true
 var messages = listOf("Willkommen!", "Erster Hint: Sonnenblume.", "Team Rot hat \"Sonne\" erraten.", "Zweiter Hint: Autofahren", "Team Blau hat \"Auto\" erraten.", "Dritter Hint: Freizeit", "Team Rot hat \"Karte\" erraten.")
-// Card-Class auch als Platzhalter
-val cardList = listOf(Card("Haus", Role.RED), Card("Hund", Role.NEUTRAL), Card("Katze", Role.RED), Card("Baumhaus", Role.NEUTRAL), Card("Auto", Role.BLUE), Card("Blume", Role.ASSASSIN), Card("Buch", Role.BLUE), Card("Wolke", Role.NEUTRAL), Card("Mond", Role.NEUTRAL), Card("Wasser", Role.RED), Card("Sonne", Role.RED), Card("Karte", Role.NEUTRAL), Card("Glas", Role.NEUTRAL), Card("Gold", Role.BLUE), Card("Berg", Role.NEUTRAL), Card("Computer", Role.BLUE), Card("Fisch", Role.NEUTRAL), Card("Schütze", Role.NEUTRAL), Card("Feuer", Role.NEUTRAL), Card("Schnee", Role.NEUTRAL), Card("Sonnenblume", Role.NEUTRAL), Card("Student", Role.NEUTRAL), Card("Wahl", Role.NEUTRAL), Card("Getränk", Role.NEUTRAL), Card("Stift", Role.NEUTRAL))
-
 
 @Composable
 fun GameBoardScreen (
-    gameState: GameState,
-    onRestartGame: () -> Unit,
-    onExitToMenu: () -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    playername: String,
+    playerList: List<Player>,
+    helper: Communication,
+    //messageList: List<String> // TODO: messages from server
 ) { // general layout of gameboard
     LockLandscapeOrientation()
-    Row (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
-        // ---------------------------------------------------------------------------------------
-        Box ( // first column with "points", hint-button, expose-button and player role
+
+    // current player for GUI for either Spymaster or Operator
+    val currentPlayer = playerList.find { it.name == playername }
+    val isSpymaster = currentPlayer?.isSpymaster == true
+
+    //val messageList = remember { mutableStateListOf<String>() } // remember message list, just add new ones from server
+
+    // getting TeamRole, Cards and GameState
+    val payload = remember { helper.getGame() }
+    val cardList = remember { mutableStateListOf<Card>().apply { addAll(payload.card) } } // for isMarked cards
+    val teamRole = payload.teamRole
+    val gameState = payload.gameState
+
+    // for Overlay for "Give A Hint!"-Button and Input
+    var showOverlay by remember { mutableStateOf(false) }
+
+    Box (modifier = Modifier.fillMaxSize()) {
+        Row(
             modifier = Modifier
-                .weight(0.4f)
-                .fillMaxHeight()
-                //.background(DarkRed)
+                .fillMaxSize()
+                .padding(8.dp)
         ) {
-            Row (
+            // ---------------------------------------------------------------------------------------
+            Box( // first column with "points", hint-button, expose-button and player role
                 modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopCenter)
-                    .padding(top = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .weight(0.4f)
+                    .fillMaxHeight()
             ) {
-                CardsRemaining()
-            }
-            Column (
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(8.dp)
-            ) { // TODO: fix link target!!
-                if (isSpymaster) {
-                    ButtonsGui(text = "Give A Hint!", onClick = { onBack() },Modifier
-                        .width(250.dp)
-                        .height(48.dp)
-                        .padding(4.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.TopCenter)
+                        .padding(top = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    CardsRemaining()
                 }
-                ButtonsGui(text = "Expose!", onClick = { onBack() }, Modifier
-                    .width(250.dp)
-                    .height(48.dp)
-                    .padding(4.dp))
+                Column( // Buttons für "Expose!" und "Give A Hint!"
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(8.dp)
+                ) {
+                    if (isSpymaster) {
+                        ButtonsGui(
+                            text = "Give A Hint!", onClick = { showOverlay = true }, Modifier
+                                .width(250.dp)
+                                .height(48.dp)
+                                .padding(4.dp)
+                        )
+                    }
+                    ButtonsGui(
+                        text = "Expose!", onClick = { /*TODO: send word to server to check cheating*/ }, Modifier
+                            .width(250.dp)
+                            .height(48.dp)
+                            .padding(4.dp)
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.Bottom,
+                ) {
+                    PlayerRoleScreen(isSpymaster, teamRole)
+                }
             }
-            Column (
+
+            // ---------------------------------------------------------------------------------------
+            Box( // second column with card grid
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.Bottom,
+                    .weight(1f)
+                    .fillMaxHeight()
             ) {
-                PlayerRoleScreen()
+                GameBoardGrid(
+                    onCardClicked = { card ->
+                        val index = cardList.indexOf(card)
+                        if (index != -1)
+                            helper.giveCard(index)
+                    },
+                    onCardMarked = { card -> card.isMarked = !card.isMarked },
+                    cardList,
+                    isSpymaster
+                )
+            }
+
+            // ---------------------------------------------------------------------------------------
+            Box( // third colum with chat
+                modifier = Modifier
+                    .weight(0.3f)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                ChatBox(messages = messages) // TODO: messageList
             }
         }
+    }
 
-        // ---------------------------------------------------------------------------------------
-        Box ( // second column with card grid
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                //.background(LightBlue)
-        ) {
-            GameBoardGrid(
-                onCardClicked = { /*TODO*/ },
-                onCardMarked = { /*TODO*/ }
-            )
-        }
+        if (showOverlay) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable (enabled = false) {  },
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    shape = RoundedCornerShape(0.dp),
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    modifier = Modifier
+                        .width(300.dp)
+                        .wrapContentHeight()
+                        .background(Color.White)
+                ) {
+                    Column (
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Enter Hint:")
+                        Spacer(modifier = Modifier.height(8.dp))
 
-    // ---------------------------------------------------------------------------------------
-        Box ( // third colum with chat
-            modifier = Modifier
-                .weight(0.3f)
-                .fillMaxHeight(),
-//                .background(DarkRed),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            ChatBox(messages = messages)
-        }
+                        var hintWord by remember { mutableStateOf("") }
+                        var hintNumber by remember { mutableStateOf("") }
+                        TextField(
+                            value = hintWord,
+                            onValueChange = { hintWord = it},
+                            label = { Text("Word") })
+                        TextField(
+                            value = hintNumber,
+                            onValueChange = { hintNumber = it.filter { c -> c.isDigit() }},
+                            label = { Text("Number") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ButtonsGui("Send", onClick = {
+                            showOverlay = false
+                            if (hintWord.isNotBlank() && hintNumber.isNotBlank()) {
+                                val hintArray = arrayOf(hintWord.trim(), hintNumber.trim())
+                                helper.giveHint(hintArray)
+                            }
+                        }, Modifier.height(10.dp))
+                    }
+                }
+            }
     }
 }
 
@@ -152,7 +225,7 @@ fun LockLandscapeOrientation() { // fixed landscape orientation
 // --- column one ----------------------------------------------------------------------------------
 @Composable
 fun CardsRemaining () { // displays how many cards each team has remaining
-    Text(roundRed.toString(), style = TextStyle(
+    Text(roundRed.toString(), style = TextStyle( // TODO: no "cards remaining" from server
         color = LightRed,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
@@ -167,7 +240,10 @@ fun CardsRemaining () { // displays how many cards each team has remaining
 }
 
 @Composable
-fun PlayerRoleScreen () { // displays the role-image and player role
+fun PlayerRoleScreen (
+    isSpymaster: Boolean,
+    teamRole: TeamRole
+) { // displays the role-image and player role
     val image = painterResource(R.drawable.muster_logo)
     Box(Modifier
         .height(80.dp)
@@ -178,10 +254,11 @@ fun PlayerRoleScreen () { // displays the role-image and player role
             contentDescription = null
         )
     }
+    val textColor = if (teamRole == TeamRole.RED) DarkRed else DarkBlue
     if (isSpymaster)
-        Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge)
+        Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
     else
-        Text(text = "Operative", style = MaterialTheme.typography.headlineLarge)
+        Text(text = "Operative", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
 }
 
 
@@ -189,7 +266,9 @@ fun PlayerRoleScreen () { // displays the role-image and player role
 @Composable
 fun GameBoardGrid ( // layout of part/grid where cards are on
     onCardClicked : (Card) -> Unit,
-    onCardMarked : (Card) -> Unit
+    onCardMarked : (Card) -> Unit,
+    cardList: List<Card>,
+    isSpymaster: Boolean
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -200,11 +279,12 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
         horizontalArrangement = Arrangement.SpaceEvenly,
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(cardList) {card ->
+        items(cardList) { card ->
             GameCard (
                 card = card,
                 onClick = { onCardClicked(card) },
-                onLongClick = { onCardMarked(card) }
+                onLongClick = { onCardMarked(card) },
+                isSpymaster = isSpymaster
             )
         }
     }
@@ -215,7 +295,8 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
 fun GameCard ( // creates displayable card
     card : Card,
     onClick : () -> Unit,
-    onLongClick : () -> Unit
+    onLongClick : () -> Unit,
+    isSpymaster: Boolean
 ) {
     // if card is marked by player, card appears with thicker border
     val border = if (card.isMarked) BorderStroke(3.dp, CustomBlack) else BorderStroke(0.5.dp, CustomBlack)
@@ -236,7 +317,7 @@ fun GameCard ( // creates displayable card
     // creating displayable card
     Card (
         modifier = Modifier
-            .aspectRatio(1f)
+            .height(70.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(2.dp),
         border = border,

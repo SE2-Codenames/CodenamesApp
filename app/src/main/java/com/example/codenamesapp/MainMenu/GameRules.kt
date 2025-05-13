@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.codenamesapp.ui.theme.ButtonsGui
 
 @Composable
 fun RulesScreen(onBack: () -> Unit) {
@@ -37,14 +38,7 @@ fun RulesScreen(onBack: () -> Unit) {
             }
         }
 
-        Button(
-            onClick = onBack,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text("Go Back")
-        }
+        ButtonsGui("Go Back", onClick = onBack, Modifier.fillMaxWidth().padding(16.dp))
     }
 }
 

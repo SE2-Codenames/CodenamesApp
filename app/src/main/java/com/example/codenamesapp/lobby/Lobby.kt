@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
+import com.example.codenamesapp.ui.theme.ButtonsGui
 
 @Composable
 fun LobbyScreen(
@@ -61,21 +62,15 @@ fun LobbyScreen(
                     horizontalArrangement = Arrangement.SpaceAround,
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                 ) {
-                    Button(onClick = { onTeamJoin(TeamRole.RED) }) {
-                        Text("Join Red Team")
-                    }
-                    Button(onClick = { onTeamJoin(TeamRole.BLUE) }) {
-                        Text("Join Blue Team")
-                    }
+                    ButtonsGui("Join Red Team", onClick = { onTeamJoin(TeamRole.RED) }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+                    ButtonsGui("Join Blue Team", onClick = { onTeamJoin(TeamRole.BLUE) }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = onBackToConnection) {
-            Text("Verbindung trennen")
-        }
+        ButtonsGui("Verbindung trennen", onClick = onBackToConnection, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
     }
 }
 
