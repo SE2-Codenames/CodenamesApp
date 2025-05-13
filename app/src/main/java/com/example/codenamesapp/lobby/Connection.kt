@@ -93,7 +93,7 @@ fun Connection(
                                     Log.d("ServerMessage", "Received: $line")
                                     if (line?.startsWith("PLAYERS:") == true) {
                                         Log.d("ServerMessage", "Verarbeite Spielerliste: $line")
-                                        val playerStrings = line.substringAfter("PLAYERS:").split(";")
+                                        val playerStrings = line!!.substringAfter("PLAYERS:").split(";")
                                         val updatedPlayers = playerStrings.mapNotNull { playerString ->
                                             val parts = playerString.split(",")
                                             if (parts.size == 3) {
@@ -114,6 +114,7 @@ fun Connection(
                                         withContext(Dispatchers.Main) {
                                             navController.currentBackStackEntry?.savedStateHandle?.set("playerName", username)
                                             navController.currentBackStackEntry?.savedStateHandle?.set("playerList", playerListFromServer)
+
                                             navController.navigate("lobby")
                                             coroutineScope.launch(Dispatchers.IO) {
                                                 out?.println("CLIENT_READY")
@@ -121,7 +122,7 @@ fun Connection(
                                             }
                                         }
                                     } else if (line?.startsWith("MESSAGE:") == true) {
-                                        val receivedMessage = line.substringAfter("MESSAGE:")
+                                        val receivedMessage = line!!.substringAfter("MESSAGE:")
                                         Log.d("ChatMessage", "Received: $receivedMessage")
                                     }
                                 }
@@ -193,6 +194,12 @@ fun Connection(
                     Log.d("ClientSend", "SPYMASTER_TOGGLE gesendet.")
                 }
             },
+            onStartGame = {
+                coroutineScope.launch(Dispatchers.IO) {
+                    out?.println("START_GAME")
+                    Log.d("ClientSend", "START_GAME gesendet.")
+                }
+            },
             onBackToConnection = {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 connected = false
@@ -202,6 +209,7 @@ fun Connection(
                 navController.popBackStack()
             }
         )
+
     }
 }
 
