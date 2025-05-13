@@ -50,31 +50,30 @@ import com.example.codenamesapp.ui.theme.LightGrey
 import com.example.codenamesapp.ui.theme.LightRed
 
 
-// Platzhalter für jetzt als Wörter
-val roundRed = 5
-val roundBlue = 4
-var messages = listOf("Willkommen!", "Erster Hint: Sonnenblume.", "Team Rot hat \"Sonne\" erraten.", "Zweiter Hint: Autofahren", "Team Blau hat \"Auto\" erraten.", "Dritter Hint: Freizeit", "Team Rot hat \"Karte\" erraten.")
-
 @Composable
 fun GameBoardScreen(
-    gameState: PayloadResponseMove,
+    gameState: PayloadResponseMove, // Verwende den Payload direkt
     playerRole: Boolean,
     team: TeamRole,
-    helper: Communication,
-    //messageList: List<String> // TODO: messages from server
+    communication: Communication // Übergabe der Communication-Instanz
 ) { // general layout of gameboard
     LockLandscapeOrientation()
 
     // current player for GUI for either Spymaster or Operator
     val isSpymaster = playerRole
 
-    //val messageList = remember { mutableStateListOf<String>() } // remember message list, just add new ones from server
-
     // getting TeamRole, Cards and GameState
-    val payload = remember { helper.getGame() }
-    val cardList = remember { mutableStateListOf<Card>().apply { addAll(payload.card) } } // for isMarked cards
-    val teamRole = payload.teamRole
-    val gameState = payload.gameState
+    val cardList = remember { mutableStateListOf<Card>().apply { addAll(gameState.card) } } // for isMarked cards
+    val teamRole = gameState.teamRole
+    val currentGameState = gameState.gameState
+    val scoreRed = gameState.score.getOrNull(0) ?: 0
+    val scoreBlue = gameState.score.getOrNull(1) ?: 0
+    val initialHint = gameState.hint
+    val initialRemainingGuesses = gameState.remainingGuesses
+
+    val messages = remember {
+        mutableStateListOf("Willkommen!", "Erster Hinweis: $initialHint ($initialRemainingGuesses).")
+    }
 
     // for Overlay for "Give A Hint!"-Button and Input
     var showOverlay by remember { mutableStateOf(false) }
@@ -99,7 +98,7 @@ fun GameBoardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    CardsRemaining()
+                    CardsRemaining(redScore = scoreRed, blueScore = scoreBlue)
                 }
                 Column( // Buttons für "Expose!" und "Give A Hint!"
                     modifier = Modifier
@@ -141,7 +140,7 @@ fun GameBoardScreen(
                     onCardClicked = { card ->
                         val index = cardList.indexOf(card)
                         if (index != -1)
-                            helper.giveCard(index)
+                            communication.giveCard(index) // Verwende die übergebene Instanz
                     },
                     onCardMarked = { card -> card.isMarked = !card.isMarked },
                     cardList,
@@ -156,57 +155,58 @@ fun GameBoardScreen(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                ChatBox(messages = messages) // TODO: messageList
+                ChatBox(messages = messages)
             }
         }
     }
 
-        if (showOverlay) {
-            Box(
+    if (showOverlay) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+                .clickable (enabled = false) {  },
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                shape = RoundedCornerShape(0.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable (enabled = false) {  },
-                contentAlignment = Alignment.Center
+                    .width(300.dp)
+                    .wrapContentHeight()
+                    .background(Color.White)
             ) {
-                Card(
-                    shape = RoundedCornerShape(0.dp),
-                    elevation = CardDefaults.cardElevation(8.dp),
-                    modifier = Modifier
-                        .width(300.dp)
-                        .wrapContentHeight()
-                        .background(Color.White)
+                Column (
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column (
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Enter Hint:")
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Text("Enter Hint:")
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        var hintWord by remember { mutableStateOf("") }
-                        var hintNumber by remember { mutableStateOf("") }
-                        TextField(
-                            value = hintWord,
-                            onValueChange = { hintWord = it},
-                            label = { Text("Word") })
-                        TextField(
-                            value = hintNumber,
-                            onValueChange = { hintNumber = it.filter { c -> c.isDigit() }},
-                            label = { Text("Number") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                    var hintWordInput by remember { mutableStateOf("") }
+                    var hintNumberInput by remember { mutableStateOf("") }
+                    TextField(
+                        value = hintWordInput,
+                        onValueChange = { hintWordInput = it},
+                        label = { Text("Wort") })
+                    TextField(
+                        value = hintNumberInput,
+                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() }},
+                        label = { Text("Anzahl") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ButtonsGui("Send", onClick = {
-                            showOverlay = false
-                            if (hintWord.isNotBlank() && hintNumber.isNotBlank()) {
-                                val hintArray = arrayOf(hintWord.trim(), hintNumber.trim())
-                                helper.giveHint(hintArray)
-                            }
-                        }, Modifier.height(10.dp))
-                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ButtonsGui("Senden", onClick = {
+                        showOverlay = false
+                        if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
+                            val hintArray = arrayOf(hintWordInput.trim(), hintNumberInput.trim())
+                            communication.giveHint(hintArray)
+                            messages.add("Dein Hinweis: ${hintArray[0]} (${hintArray[1]})")
+                        }
+                    }, Modifier.height(10.dp))
                 }
             }
+        }
     }
 }
 
@@ -224,15 +224,14 @@ fun LockLandscapeOrientation() { // fixed landscape orientation
 
 // --- column one ----------------------------------------------------------------------------------
 @Composable
-fun CardsRemaining () { // displays how many cards each team has remaining
-    Text(roundRed.toString(), style = TextStyle( // TODO: no "cards remaining" from server
+fun CardsRemaining (redScore: Int, blueScore: Int) { // displays how many cards each team has remaining
+    Text(redScore.toString(), style = TextStyle(
         color = LightRed,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
-    )
-    )
+    ))
     Spacer(Modifier.width(50.dp))
-    Text(roundBlue.toString(), style = TextStyle(
+    Text(blueScore.toString(), style = TextStyle(
         color = LightBlue,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
@@ -352,9 +351,7 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
-        itemsIndexed(messages.reversed()) {
-            index, messages ->
-
+        itemsIndexed(messages.reversed()) { index, message ->
             val backgroundColor = if (index % 2 != 0) LightGrey else Color.Transparent
             Box (
                 modifier = Modifier
@@ -362,7 +359,7 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
                     .padding(4.dp)
                     .background(backgroundColor)
             ) {
-                Text(text = messages, color = CustomBlack)
+                Text(text = message, color = CustomBlack)
             }
         }
     }
