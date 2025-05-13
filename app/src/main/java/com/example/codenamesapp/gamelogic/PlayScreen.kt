@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.GameState
@@ -106,14 +108,14 @@ fun GameBoardScreen (
                 ) {
                     if (isSpymaster) {
                         ButtonsGui(
-                            text = "Give A Hint!", onClick = { onHintClick() }, Modifier
+                            text = "Give A Hint!", onClick = { showOverlay = true }, Modifier
                                 .width(250.dp)
                                 .height(48.dp)
                                 .padding(4.dp)
                         )
                     }
                     ButtonsGui(
-                        text = "Expose!", onClick = { /*TODO*/ }, Modifier
+                        text = "Expose!", onClick = { /*TODO: send word to server to check cheating*/ }, Modifier
                             .width(250.dp)
                             .height(48.dp)
                             .padding(4.dp)
@@ -136,7 +138,11 @@ fun GameBoardScreen (
                     .fillMaxHeight()
             ) {
                 GameBoardGrid(
-                    onCardClicked = { card -> /*TODO: send card to server*/ },
+                    onCardClicked = { card ->
+                        val index = cardList.indexOf(card)
+                        if (index != -1)
+                            helper.giveCard(index)
+                    },
                     onCardMarked = { card -> card.isMarked = !card.isMarked },
                     cardList,
                     isSpymaster
@@ -178,13 +184,25 @@ fun GameBoardScreen (
                         Text("Enter Hint:")
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        var hint by remember { mutableStateOf("") }
-                        TextField(value = hint, onValueChange = { hint = it})
+                        var hintWord by remember { mutableStateOf("") }
+                        var hintNumber by remember { mutableStateOf("") }
+                        TextField(
+                            value = hintWord,
+                            onValueChange = { hintWord = it},
+                            label = { Text("Word") })
+                        TextField(
+                            value = hintNumber,
+                            onValueChange = { hintNumber = it.filter { c -> c.isDigit() }},
+                            label = { Text("Number") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
 
                         Spacer(modifier = Modifier.height(8.dp))
                         ButtonsGui("Send", onClick = {
                             showOverlay = false
-                            // TODO: send hint to server
+                            if (hintWord.isNotBlank() && hintNumber.isNotBlank()) {
+                                val hintArray = arrayOf(hintWord.trim(), hintNumber.trim())
+                                helper.giveHint(hintArray)
+                            }
                         }, Modifier.height(10.dp))
                     }
                 }
