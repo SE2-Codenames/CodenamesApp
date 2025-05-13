@@ -56,17 +56,17 @@ val roundBlue = 4
 var messages = listOf("Willkommen!", "Erster Hint: Sonnenblume.", "Team Rot hat \"Sonne\" erraten.", "Zweiter Hint: Autofahren", "Team Blau hat \"Auto\" erraten.", "Dritter Hint: Freizeit", "Team Rot hat \"Karte\" erraten.")
 
 @Composable
-fun GameBoardScreen (
-    playername: String,
-    playerList: List<Player>,
+fun GameBoardScreen(
+    gameState: PayloadResponseMove,
+    playerRole: Boolean,
+    team: TeamRole,
     helper: Communication,
     //messageList: List<String> // TODO: messages from server
 ) { // general layout of gameboard
     LockLandscapeOrientation()
 
     // current player for GUI for either Spymaster or Operator
-    val currentPlayer = playerList.find { it.name == playername }
-    val isSpymaster = currentPlayer?.isSpymaster == true
+    val isSpymaster = playerRole
 
     //val messageList = remember { mutableStateListOf<String>() } // remember message list, just add new ones from server
 
