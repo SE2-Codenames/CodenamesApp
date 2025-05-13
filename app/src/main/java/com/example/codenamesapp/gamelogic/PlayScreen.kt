@@ -58,89 +58,137 @@ fun GameBoardScreen (
     playername: String,
     playerList: List<Player>,
     helper: Communication,
-    onHintClick: () -> Unit
+    //messageList: List<String> // TODO: messages from server
 ) { // general layout of gameboard
     LockLandscapeOrientation()
 
+    // current player for GUI for either Spymaster or Operator
     val currentPlayer = playerList.find { it.name == playername }
     val isSpymaster = currentPlayer?.isSpymaster == true
 
+    //val messageList = remember { mutableStateListOf<String>() } // remember message list, just add new ones from server
+
     // getting TeamRole, Cards and GameState
     val payload = remember { helper.getGame() }
-    val cardList = payload.card
+    val cardList = remember { mutableStateListOf<Card>().apply { addAll(payload.card) } } // for isMarked cards
     val teamRole = payload.teamRole
     val gameState = payload.gameState
 
-    Row (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
-        // ---------------------------------------------------------------------------------------
-        Box ( // first column with "points", hint-button, expose-button and player role
+    // for Overlay for "Give A Hint!"-Button and Input
+    var showOverlay by remember { mutableStateOf(false) }
+
+    Box (modifier = Modifier.fillMaxSize()) {
+        Row(
             modifier = Modifier
-                .weight(0.4f)
-                .fillMaxHeight()
+                .fillMaxSize()
+                .padding(8.dp)
         ) {
-            Row (
+            // ---------------------------------------------------------------------------------------
+            Box( // first column with "points", hint-button, expose-button and player role
                 modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopCenter)
-                    .padding(top = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .weight(0.4f)
+                    .fillMaxHeight()
             ) {
-                CardsRemaining()
-            }
-            Column ( // Buttons für "Expose!" und "Give A Hint!"
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(8.dp)
-            ) {
-                if (isSpymaster) {
-                    ButtonsGui(text = "Give A Hint!", onClick = { onHintClick() },Modifier
-                        .width(250.dp)
-                        .height(48.dp)
-                        .padding(4.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.TopCenter)
+                        .padding(top = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    CardsRemaining()
                 }
-                ButtonsGui(text = "Expose!", onClick = { /*TODO*/ }, Modifier
-                    .width(250.dp)
-                    .height(48.dp)
-                    .padding(4.dp))
+                Column( // Buttons für "Expose!" und "Give A Hint!"
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(8.dp)
+                ) {
+                    if (isSpymaster) {
+                        ButtonsGui(
+                            text = "Give A Hint!", onClick = { onHintClick() }, Modifier
+                                .width(250.dp)
+                                .height(48.dp)
+                                .padding(4.dp)
+                        )
+                    }
+                    ButtonsGui(
+                        text = "Expose!", onClick = { /*TODO*/ }, Modifier
+                            .width(250.dp)
+                            .height(48.dp)
+                            .padding(4.dp)
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.Bottom,
+                ) {
+                    PlayerRoleScreen(isSpymaster, teamRole)
+                }
             }
-            Column (
+
+            // ---------------------------------------------------------------------------------------
+            Box( // second column with card grid
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.Bottom,
+                    .weight(1f)
+                    .fillMaxHeight()
             ) {
-                PlayerRoleScreen(isSpymaster, teamRole)
+                GameBoardGrid(
+                    onCardClicked = { card -> /*TODO: send card to server*/ },
+                    onCardMarked = { card -> card.isMarked = !card.isMarked },
+                    cardList,
+                    isSpymaster
+                )
+            }
+
+            // ---------------------------------------------------------------------------------------
+            Box( // third colum with chat
+                modifier = Modifier
+                    .weight(0.3f)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                ChatBox(messages = messages) // TODO: messageList
             }
         }
+    }
 
-        // ---------------------------------------------------------------------------------------
-        Box ( // second column with card grid
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-        ) {
-            GameBoardGrid(
-                onCardClicked = { /*TODO*/ },
-                onCardMarked = { /*TODO*/ },
-                cardList,
-                isSpymaster
-            )
-        }
+        if (showOverlay) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable (enabled = false) {  },
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    shape = RoundedCornerShape(0.dp),
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    modifier = Modifier
+                        .width(300.dp)
+                        .wrapContentHeight()
+                        .background(Color.White)
+                ) {
+                    Column (
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Enter Hint:")
+                        Spacer(modifier = Modifier.height(8.dp))
 
-    // ---------------------------------------------------------------------------------------
-        Box ( // third colum with chat
-            modifier = Modifier
-                .weight(0.3f)
-                .fillMaxHeight(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            ChatBox(messages = messages)
-        }
+                        var hint by remember { mutableStateOf("") }
+                        TextField(value = hint, onValueChange = { hint = it})
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ButtonsGui("Send", onClick = {
+                            showOverlay = false
+                            // TODO: send hint to server
+                        }, Modifier.height(10.dp))
+                    }
+                }
+            }
     }
 }
 
@@ -159,7 +207,7 @@ fun LockLandscapeOrientation() { // fixed landscape orientation
 // --- column one ----------------------------------------------------------------------------------
 @Composable
 fun CardsRemaining () { // displays how many cards each team has remaining
-    Text(roundRed.toString(), style = TextStyle(
+    Text(roundRed.toString(), style = TextStyle( // TODO: no "cards remaining" from server
         color = LightRed,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
@@ -199,7 +247,7 @@ fun PlayerRoleScreen (
 // --- column two ----------------------------------------------------------------------------------
 @Composable
 fun GameBoardGrid ( // layout of part/grid where cards are on
-    onCardClicked = { card -> helper.sendCard(card.word) },
+    onCardClicked : (Card) -> Unit,
     onCardMarked : (Card) -> Unit,
     cardList: List<Card>,
     isSpymaster: Boolean
@@ -297,58 +345,6 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
                     .background(backgroundColor)
             ) {
                 Text(text = messages, color = CustomBlack)
-            }
-        }
-    }
-}
-
-@Composable
-fun GameBoardHint (
-    playername : String,
-    playerList : List<Player>,
-    helper : Communication,
-) {
-    var showOverlay by remember { mutableStateOf(false) }
-
-    Box (modifier = Modifier.fillMaxSize()) {
-        GameBoardScreen(
-            playername = playername,
-            playerList = playerList,
-            helper = helper,
-            onHintClick = { showOverlay = true }
-        )
-        if (showOverlay) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable (enabled = false) {  },
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    shape = RoundedCornerShape(0.dp),
-                    elevation = CardDefaults.cardElevation(8.dp),
-                    modifier = Modifier
-                        .width(300.dp)
-                        .wrapContentHeight()
-                ) {
-                    Column (
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Enter Hint:")
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        var hint by remember { mutableStateOf("") }
-                        TextField(value = hint, onValueChange = { hint = it})
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ButtonsGui("Send", onClick = {
-                            showOverlay = false
-                            // TODO: send hint to server
-                            }, Modifier.height(10.dp))
-                    }
-                }
             }
         }
     }
