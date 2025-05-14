@@ -178,7 +178,7 @@ fun GameBoardScreen(
                 modifier = Modifier
                     .width(300.dp)
                     .wrapContentHeight()
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.onPrimary)
             ) {
                 Column (
                     modifier = Modifier.padding(16.dp),
@@ -230,13 +230,13 @@ fun LockLandscapeOrientation() { // fixed landscape orientation
 @Composable
 fun CardsRemaining (redScore: Int, blueScore: Int) { // displays how many cards each team has remaining
     Text(redScore.toString(), style = TextStyle(
-        color = LightRed,
+        color = MaterialTheme.colorScheme.error,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
     ))
     Spacer(Modifier.width(50.dp))
     Text(blueScore.toString(), style = TextStyle(
-        color = LightBlue,
+        color = MaterialTheme.colorScheme.tertiary,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
     ))
@@ -257,7 +257,7 @@ fun PlayerRoleScreen (
 //            contentDescription = null
 //        )
 //    }
-    val textColor = if (teamRole == TeamRole.RED) DarkRed else DarkBlue
+    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
     if (isSpymaster)
         Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
     else
@@ -303,19 +303,19 @@ fun GameCard ( // creates displayable card
     isSpymaster: Boolean
 ) {
     // if card is marked by player, card appears with thicker border
-    val border = if (card.isMarked) BorderStroke(3.dp, CustomBlack) else BorderStroke(0.5.dp, CustomBlack)
+    val border = if (card.isMarked) BorderStroke(3.dp, MaterialTheme.colorScheme.primary) else BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
 
     // if card is revealed or player is spymaster, cards appear with role as background, otherwise they are grey
     val backgroundImage = if (card.isRevealed || isSpymaster) {
         when (card.role) {
-            Role.RED -> DarkRed
-            Role.BLUE -> DarkBlue
-            Role.NEUTRAL -> DarkGrey
+            Role.RED -> MaterialTheme.colorScheme.error
+            Role.BLUE -> MaterialTheme.colorScheme.tertiary
+            Role.NEUTRAL -> MaterialTheme.colorScheme.secondary
             Role.ASSASSIN -> CustomBlack
             // später: painterResource(R.drawable.[...]) für image einfügen
         }
     } else {
-        DarkGrey
+        MaterialTheme.colorScheme.secondary
     }
 
     // creating displayable card
@@ -334,7 +334,7 @@ fun GameCard ( // creates displayable card
         ) {
             Text (
                 text = card.word,
-                color = LightGrey,
+                color = Color.White,
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(4.dp)
@@ -351,20 +351,20 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
             .fillMaxWidth()
             .fillMaxHeight(0.66f)
             .padding(8.dp)
-            .border(1.dp, CustomBlack, shape = RoundedCornerShape(2.dp))
-            .background(Color.White),
+            .border(1.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp))
+            .background(MaterialTheme.colorScheme.onPrimary),
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
         itemsIndexed(messages.reversed()) { index, message ->
-            val backgroundColor = if (index % 2 != 0) LightGrey else Color.Transparent
+            val backgroundColor = if (index % 2 != 0) MaterialTheme.colorScheme.secondary else Color.Transparent
             Box (
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
                     .background(backgroundColor)
             ) {
-                Text(text = message, color = CustomBlack)
+                Text(text = message, color = MaterialTheme.colorScheme.primary)
             }
         }
     }

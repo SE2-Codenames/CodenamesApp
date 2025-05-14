@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
+    onPrimary = CustomBlack,
     secondary = LightGrey,
     tertiary = LightBlue,
     error = LightRed
@@ -32,6 +33,7 @@ private val DarkColorScheme = darkColorScheme(
 
 private val LightColorScheme = lightColorScheme(
     primary = CustomBlack,
+    onPrimary = Color.White,
     secondary = DarkGrey,
     tertiary = DarkBlue,
     error = DarkRed
@@ -77,8 +79,8 @@ fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier) { // Desi
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(containerColor = Transparent),
         shape = RectangleShape,
-        border = BorderStroke(1.dp, CustomBlack)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
     ) {
-        Text(text, color = CustomBlack)
+        Text(text, color = MaterialTheme.colorScheme.primary)
     }
 }
