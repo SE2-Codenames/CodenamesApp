@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -70,6 +71,8 @@ fun GameBoardScreen(
     val scoreBlue = gameState.score.getOrNull(1) ?: 0
     val initialHint = gameState.hint
     val initialRemainingGuesses = gameState.remainingGuesses
+
+    val isPlayerTurn = !isSpymaster && teamRole == team && currentGameState == GamePhase.OPERATIVE_TURN
 
     val messages = remember {
         mutableStateListOf("Willkommen!", "Erster Hinweis: $initialHint ($initialRemainingGuesses).")
@@ -144,7 +147,8 @@ fun GameBoardScreen(
                     },
                     onCardMarked = { card -> card.isMarked = !card.isMarked },
                     cardList,
-                    isSpymaster
+                    isSpymaster,
+                    isPlayerTurn
                 )
             }
 
@@ -243,16 +247,16 @@ fun PlayerRoleScreen (
     isSpymaster: Boolean,
     teamRole: TeamRole
 ) { // displays the role-image and player role
-    val image = painterResource(R.drawable.muster_logo)
-    Box(Modifier
-        .height(80.dp)
-        .padding(bottom = 10.dp),
-        contentAlignment = Alignment.Center) {
-        Image(
-            painter = image,
-            contentDescription = null
-        )
-    }
+//    val image = painterResource(R.drawable.muster_logo)
+//    Box(Modifier
+//        .height(80.dp)
+//        .padding(bottom = 10.dp),
+//        contentAlignment = Alignment.Center) {
+//        Image(
+//            painter = painterResource(R.drawable.muster_logo),
+//            contentDescription = null
+//        )
+//    }
     val textColor = if (teamRole == TeamRole.RED) DarkRed else DarkBlue
     if (isSpymaster)
         Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
@@ -267,7 +271,8 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
     onCardClicked : (Card) -> Unit,
     onCardMarked : (Card) -> Unit,
     cardList: List<Card>,
-    isSpymaster: Boolean
+    isSpymaster: Boolean,
+    isPlayerTurn : Boolean
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -281,8 +286,8 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
         items(cardList) { card ->
             GameCard (
                 card = card,
-                onClick = { onCardClicked(card) },
-                onLongClick = { onCardMarked(card) },
+                onClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
+                onLongClick = if (isPlayerTurn) { { onCardMarked(card) }} else { {} },
                 isSpymaster = isSpymaster
             )
         }
