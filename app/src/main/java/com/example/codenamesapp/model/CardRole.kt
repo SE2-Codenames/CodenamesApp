@@ -3,6 +3,6 @@ package com.example.codenamesapp.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class Role {
+enum class CardRole {
     RED, BLUE, NEUTRAL, ASSASSIN
 }

@@ -1,33 +1,43 @@
 package com.example.codenamesapp.MainMenu
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.codenamesapp.Connection
-import com.example.codenamesapp.GameBoardScreen
 import com.example.codenamesapp.MainMenuScreen
+import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.lobby.LobbyScreen
-import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.Player
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import kotlinx.coroutines.CoroutineScope
+import com.example.codenamesapp.network.WebSocketClient
+import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.network.Communication
+import com.example.codenamesapp.screens.ConnectionScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.PrintWriter
 
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    // State für die Spielerliste, der über die Navigation hinweg erhalten bleibt
-    val playerListState = rememberSaveable { mutableStateOf(listOf<Player>()) }
-    val coroutineScope = rememberCoroutineScope() // Scope für Coroutines
+    val coroutineScope = rememberCoroutineScope()
+    val playerNameState = remember { mutableStateOf("Edi") }
+    val playerListState = remember { mutableStateOf(listOf<Player>()) }
+    val gameStateViewModel: GameStateViewModel = viewModel()
+
+    // Setze Callback für SHOW_GAMEBOARD
+    gameStateViewModel.onShowGameBoard = {
+        navController.navigate("gameboard")
+    }
+
+    val socketClient = remember {
+        WebSocketClient(
+            gameStateViewModel = gameStateViewModel,
+            navController = navController
+        )
+    }
 
     NavHost(
         navController = navController,
@@ -41,61 +51,53 @@ fun AppNavigation(
                 onSettingsClicked = { navController.navigate("settings") }
             )
         }
-        composable("rules") {
-            RulesScreen(onBack = { navController.popBackStack() })
-        }
+
         composable("connection") {
-            Connection(
+            ConnectionScreen(
                 navController = navController,
-                onBackToMain = { navController.popBackStack() },
-                onPlayerListChanged = { newList ->
-                    playerListState.value = newList
+                coroutineScope = coroutineScope,
+                socketClient = socketClient,
+                onConnectionEstablished = {
+                    println("✅ Verbindung steht")
                 },
-                coroutineScope = coroutineScope // Übergib den CoroutineScope
+                onMessageReceived = {
+                    println("📨 Server: $it")
+                },
+                onPlayerListUpdated = {
+                    playerListState.value = it
+                }
             )
         }
+
         composable("lobby") {
-            val connectionScreenState = navController.previousBackStackEntry?.savedStateHandle
-            val playerName = connectionScreenState?.get<String>("playerName") ?: ""
-            val socketWriter = connectionScreenState?.get<PrintWriter>("socketWriter")
-
             LobbyScreen(
-                playerName = playerName,
+                playerName = playerNameState.value,
                 playerList = playerListState.value,
-                onTeamJoin = { team ->
-                    coroutineScope.launch(Dispatchers.IO) {
-                        socketWriter?.println("JOIN_TEAM:$team")
-                        socketWriter?.flush() // Sende die Nachricht sofort
-                        println("Sende JOIN_TEAM:$team an den Server") // Log
-                        // Aktualisiere die Spielerliste im State, nachdem die Serverantwort empfangen wurde (siehe Connection.kt)
-                    }
-                    val updatedList = playerListState.value.map {
-                        if (it.name == playerName) it.copy(team = team) else it
-                    }
-                    playerListState.value = updatedList
-
-                },
-                onSpymasterToggle = {
-                    coroutineScope.launch(Dispatchers.IO) {
-                        socketWriter?.println("SPYMASTER_TOGGLE")
-                        socketWriter?.flush()
-                        println("Sende SPYMASTER_TOGGLE an den Server")
-                    }
-                    val updatedList = playerListState.value.map {
-                        if (it.name == playerName) it.copy(isSpymaster = !it.isSpymaster) else it
-                    }
-                    playerListState.value = updatedList
-                },
+                socketClient = socketClient,
                 onBackToConnection = { navController.popBackStack() },
                 onStartGame = {
                     coroutineScope.launch(Dispatchers.IO) {
-                        socketWriter?.println("START_GAME")
-                        socketWriter?.flush()
-                        println("Sende START_GAME an den Server")
+                        socketClient.send("START_GAME")
                     }
-                    println("Spiel startet")
                 }
             )
+        }
+
+        composable("gameboard") {
+            val payload = gameStateViewModel.payload.value
+            val team = gameStateViewModel.team.value
+            val isSpymaster = gameStateViewModel.playerRole.value
+            val communication = socketClient.communication
+
+
+            if (payload != null && team != null && isSpymaster != null) {
+                GameBoardScreen(
+                    gameState = payload,
+                    team = team,
+                    playerRole = isSpymaster,
+                    communication = communication
+                )
+            }
         }
     }
 }

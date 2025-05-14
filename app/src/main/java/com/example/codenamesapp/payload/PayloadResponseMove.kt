@@ -1,18 +1,14 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.model
 
-import com.example.codenamesapp.model.Card
-import com.example.codenamesapp.model.GamePhase
-import com.example.codenamesapp.model.GameState
-import com.example.codenamesapp.model.TeamRole
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class PayloadResponseMove(
-    val gameState: GamePhase,
+    val score: List<Int>,
     val teamRole: TeamRole,
+    val gameState: String,
+    val remainingGuesses: Int,
+    val hint: String? = null,
     val card: List<Card>,
-    val score: Array<Int>,
-    val hint: String,
-    val remainingGuesses: Int
-
-):PayloadResponses
+    val isSpymaster: Boolean
+)

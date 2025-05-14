@@ -1,7 +1,8 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.network
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+import okhttp3.WebSocket
 import java.io.BufferedReader
 import java.io.PrintWriter
 
@@ -12,57 +13,37 @@ data class Message(
 )
 
 class Communication(
-    private val writer: PrintWriter,
-    private val reader: BufferedReader
+    private val socket: WebSocket
 ) {
-    private val json = Json { ignoreUnknownKeys = true }
-    private var lastMessage: Message? = null
-
-    // Client -> Server: Kommandos senden
-    fun sendCommand(type: String, data: Map<String, String> = emptyMap()) {
-        val message = Message(type, data)
-        writer.println(json.encodeToString(message))
-        writer.flush()
+    fun send(message: String) {
+        socket.send(message)
     }
 
-    fun sendUsername(name: String) = sendCommand("USERNAME", mapOf("name" to name))
-    fun joinTeam(team: String) = sendCommand("JOIN_TEAM", mapOf("team" to team))
-    fun toggleSpymaster() = sendCommand("SPYMASTER_TOGGLE")
-    fun gameStart() = sendCommand("START_GAME")
-    fun giveHint(word: String, number: Int) = sendCommand("HINT", mapOf("word" to word, "number" to number.toString()))
-    fun giveCard(index: Int) = sendCommand("SELECT", mapOf("index" to index.toString()))
-    fun sendChat(text: String) = sendCommand("CHAT", mapOf("message" to text))
-
-    // Server -> Client: Empfängt neue Nachricht und speichert sie zwischen
-    fun receiveNextMessage(): Message? {
-        val line = reader.readLine() ?: return null
-        return try {
-            lastMessage = json.decodeFromString<Message>(line)
-            lastMessage
-        } catch (e: Exception) {
-            println("Fehler beim Parsen: ${e.message}")
-            null
-        }
+    fun sendUsername(name: String) {
+        send("USER:$name")
     }
 
-    // Zugriff auf letzten Zustand für Logik
-    fun getLastInput(): String? = lastMessage?.type
-
-    fun giveHint(): Array<String> {
-        if (lastMessage?.type == "HINT") {
-            val word = lastMessage?.data?.get("word") ?: ""
-            val number = lastMessage?.data?.get("number") ?: "0"
-            return arrayOf(word, number)
-        }
-        return arrayOf("", "0")
+    fun joinTeam(name: String, team: String) {
+        send("JOIN_TEAM:$name:$team")
     }
 
-    fun getSelectedCard(): Int {
-        if (lastMessage?.type == "SELECT") {
-            return lastMessage?.data?.get("index")?.toIntOrNull() ?: -1
-        }
-        return -1
+    fun toggleSpymaster(name: String) {
+        send("SPYMASTER_TOGGLE:$name")
     }
 
-    fun isGameStartRequested(): Boolean = lastMessage?.type == "START_GAME"
+    fun gameStart() {
+        send("START_GAME")
+    }
+
+    fun giveHint(word: String, number: Int) {
+        send("HINT:$word:$number")
+    }
+
+    fun giveCard(index: Int) {
+        send("SELECT:$index")
+    }
+
+    fun sendChat(message: String) {
+        send("CHAT:$message")
+    }
 }
