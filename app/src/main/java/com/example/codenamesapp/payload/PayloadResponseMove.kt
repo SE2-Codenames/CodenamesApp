@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class PayloadResponseMove(
     val score: List<Int>,
     val teamRole: TeamRole,
-    val gameState: String,
+    val gameState: GamePhase,
     val remainingGuesses: Int,
     val hint: String? = null,
     val card: List<Card>,
