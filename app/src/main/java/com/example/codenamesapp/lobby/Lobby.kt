@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
-import com.example.codenamesapp.ui.theme.ButtonsGui
+import java.io.PrintWriter
 
 @Composable
 fun LobbyScreen(
@@ -17,9 +17,11 @@ fun LobbyScreen(
     onTeamJoin: (TeamRole) -> Unit,
     onSpymasterToggle: () -> Unit,
     onBackToConnection: () -> Unit,
+    onStartGame: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val currentPlayer = playerList.find { it.name == playerName }
+    val socketWriter = remember { mutableStateOf<PrintWriter?>(null) }
 
     Column(
         modifier = Modifier
@@ -36,13 +38,21 @@ fun LobbyScreen(
                 team = TeamRole.RED,
                 players = playerList.filter { it.team == TeamRole.RED },
                 currentPlayerName = playerName,
-                onSpymasterToggle = onSpymasterToggle.takeIf { currentPlayer?.team == TeamRole.RED }
+                onSpymasterToggle = {
+                    if (currentPlayer != null) {
+                        onSpymasterToggle()
+                    }
+                }
             )
             TeamDisplay(
                 team = TeamRole.BLUE,
                 players = playerList.filter { it.team == TeamRole.BLUE },
                 currentPlayerName = playerName,
-                onSpymasterToggle = onSpymasterToggle.takeIf { currentPlayer?.team == TeamRole.BLUE }
+                onSpymasterToggle = {
+                    if (currentPlayer != null) {
+                        onSpymasterToggle()
+                    }
+                }
             )
         }
 
@@ -51,7 +61,8 @@ fun LobbyScreen(
         // Spieler ohne Team (Mitte)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f), // Gewicht beibehalten
+            verticalArrangement = Arrangement.Center // Füge dies hinzu, um die Spielerliste zentriert zu halten
         ) {
             Text("Spieler ohne Team", style = MaterialTheme.typography.headlineSmall)
             playerList.filter { it.team == null }.forEach { player ->
@@ -62,15 +73,44 @@ fun LobbyScreen(
                     horizontalArrangement = Arrangement.SpaceAround,
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                 ) {
-                    ButtonsGui("Join Red Team", onClick = { onTeamJoin(TeamRole.RED) }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
-                    ButtonsGui("Join Blue Team", onClick = { onTeamJoin(TeamRole.BLUE) }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+                    Button(onClick = {
+                        onTeamJoin(TeamRole.RED)
+                    }) {
+                        Text("Join Red Team")
+                    }
+                    Button(onClick = {
+                        onTeamJoin(TeamRole.BLUE)
+                    }) {
+                        Text("Join Blue Team")
+                    }
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        ButtonsGui("Verbindung trennen", onClick = onBackToConnection, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = onStartGame,
+                modifier = Modifier
+                    .width(250.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text("Spiel starten")
+            }
+
+            Button(
+                onClick = onBackToConnection,
+                modifier = Modifier
+                    .width(250.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text("Verbindung trennen")
+            }
+        }
     }
 }
 
@@ -79,7 +119,7 @@ fun TeamDisplay(
     team: TeamRole,
     players: List<Player>,
     currentPlayerName: String,
-    onSpymasterToggle: (() -> Unit)?
+    onSpymasterToggle: () -> Unit
 ) {
     val isCurrentUserInTeam = players.any { it.name == currentPlayerName }
     val isSpymasterSet = players.any { it.isSpymaster }
@@ -102,7 +142,7 @@ fun TeamDisplay(
                 }
             }
         }
-        if (onSpymasterToggle != null && isCurrentUserInTeam) {
+        if (isCurrentUserInTeam) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = onSpymasterToggle,

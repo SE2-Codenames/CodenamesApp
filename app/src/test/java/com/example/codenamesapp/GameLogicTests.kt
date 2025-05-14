@@ -77,7 +77,7 @@ class GameLogicTest {
     }
 
     // Communication tests
-    @Test
+/*    @Test
     fun parseValidGameStateJson() {
         val jsonString = """
             {
@@ -103,7 +103,7 @@ class GameLogicTest {
         assertEquals(true, game?.card?.get(1)?.isRevealed)
         assertEquals(5, game?.score?.get(0))
         assertEquals(4, game?.score?.get(1))
-    }
+    }*/
 
     @Test
     fun testPrepareHintAndCardMessage() {

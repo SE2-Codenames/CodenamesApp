@@ -8,16 +8,27 @@ import androidx.navigation.compose.composable
 import com.example.codenamesapp.Connection
 import com.example.codenamesapp.GameBoardScreen
 import com.example.codenamesapp.MainMenuScreen
-import com.example.codenamesapp.PayloadResponseMove
-import com.example.codenamesapp.RulesScreen
 import com.example.codenamesapp.lobby.LobbyScreen
-import com.example.codenamesapp.model.*
+import com.example.codenamesapp.model.GameState
+import com.example.codenamesapp.model.Player
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.PrintWriter
 
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    // State für die Spielerliste, der über die Navigation hinweg erhalten bleibt
+    val playerListState = rememberSaveable { mutableStateOf(listOf<Player>()) }
+    val coroutineScope = rememberCoroutineScope() // Scope für Coroutines
+
     NavHost(
         navController = navController,
         startDestination = "menu",
@@ -30,91 +41,61 @@ fun AppNavigation(
                 onSettingsClicked = { navController.navigate("settings") }
             )
         }
-
         composable("rules") {
             RulesScreen(onBack = { navController.popBackStack() })
         }
-
-        composable("settings") {
-            // Beispiel-Daten
-            val exampleGameState = GamePhase.SPYMASTER_TURN
-            val exampleTeamRole = TeamRole.BLUE
-            val exampleCardList = listOf(
-                // Rote Karten
-                Card("Feuer", Role.RED), Card("Blut", Role.RED), Card("Rose", Role.RED),
-                Card("Apfel", Role.RED), Card("Kirsche", Role.RED), Card("Erdbeere", Role.RED),
-                Card("Tomate", Role.RED), Card("Rubin", Role.RED), Card("Wein", Role.RED),
-                // Blaue Karten
-                Card("Wasser", Role.BLUE), Card("Himmel", Role.BLUE), Card("Ozean", Role.BLUE),
-                Card("Saphir", Role.BLUE), Card("Eis", Role.BLUE), Card("See", Role.BLUE),
-                Card("Blume", Role.BLUE), Card("Jeans", Role.BLUE),
-                // Neutrale Karten
-                Card("Tisch", Role.NEUTRAL), Card("Stuhl", Role.NEUTRAL), Card("Lampe", Role.NEUTRAL),
-                Card("Buch", Role.NEUTRAL), Card("Haus", Role.NEUTRAL), Card("Baum", Role.NEUTRAL),
-                Card("Sonne", Role.NEUTRAL),
-                // Assassine
-                Card("Schatten", Role.ASSASSIN)
-            )
-            val exampleScoreArray = arrayOf(9, 8)
-            val exampleString = ""
-            val exampleInt = 5
-
-            val payloadResponseMoveObject = PayloadResponseMove(
-                gameState = exampleGameState,
-                teamRole = exampleTeamRole,
-                card = exampleCardList,
-                score = exampleScoreArray,
-                hint = exampleString,
-                remainingGuesses = exampleInt
-            )
-
-            // Daten an die nächste Composable übergeben über SavedStateHandle
-            navController.currentBackStackEntry?.savedStateHandle?.set("payload", payloadResponseMoveObject)
-            navController.currentBackStackEntry?.savedStateHandle?.set("playerRole", "X")
-            navController.currentBackStackEntry?.savedStateHandle?.set("team", "Y")
-
-            // Weiterleiten zur Gameboard-Screen
-            navController.navigate("gameboard")
-        }
-
         composable("connection") {
             Connection(
                 navController = navController,
-                onBackToMain = { navController.popBackStack() }
+                onBackToMain = { navController.popBackStack() },
+                onPlayerListChanged = { newList ->
+                    playerListState.value = newList
+                },
+                coroutineScope = coroutineScope // Übergib den CoroutineScope
             )
         }
-
         composable("lobby") {
             val connectionScreenState = navController.previousBackStackEntry?.savedStateHandle
             val playerName = connectionScreenState?.get<String>("playerName") ?: ""
-            val playerList = connectionScreenState?.get<List<Player>>("playerList") ?: emptyList()
+            val socketWriter = connectionScreenState?.get<PrintWriter>("socketWriter")
 
             LobbyScreen(
                 playerName = playerName,
-                playerList = playerList,
-                onTeamJoin = { team -> println("Beitreten des Teams: $team") },
-                onSpymasterToggle = { println("Spymaster-Toggle") },
-                onBackToConnection = { navController.popBackStack() }
+                playerList = playerListState.value,
+                onTeamJoin = { team ->
+                    coroutineScope.launch(Dispatchers.IO) {
+                        socketWriter?.println("JOIN_TEAM:$team")
+                        socketWriter?.flush() // Sende die Nachricht sofort
+                        println("Sende JOIN_TEAM:$team an den Server") // Log
+                        // Aktualisiere die Spielerliste im State, nachdem die Serverantwort empfangen wurde (siehe Connection.kt)
+                    }
+                    val updatedList = playerListState.value.map {
+                        if (it.name == playerName) it.copy(team = team) else it
+                    }
+                    playerListState.value = updatedList
+
+                },
+                onSpymasterToggle = {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        socketWriter?.println("SPYMASTER_TOGGLE")
+                        socketWriter?.flush()
+                        println("Sende SPYMASTER_TOGGLE an den Server")
+                    }
+                    val updatedList = playerListState.value.map {
+                        if (it.name == playerName) it.copy(isSpymaster = !it.isSpymaster) else it
+                    }
+                    playerListState.value = updatedList
+                },
+                onBackToConnection = { navController.popBackStack() },
+                onStartGame = {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        socketWriter?.println("START_GAME")
+                        socketWriter?.flush()
+                        println("Sende START_GAME an den Server")
+                    }
+                    println("Spiel startet")
+                }
             )
-        }
-
-        composable("gameboard") {
-            val settingsState = navController.previousBackStackEntry?.savedStateHandle
-            val payload = settingsState?.get<PayloadResponseMove>("payload")
-            val playerRole = true
-            val team = TeamRole.BLUE
-
-            if (payload != null) {
-                GameBoardScreen(
-                    gameState = payload,
-                    playerRole = playerRole,
-                    team = team,
-                    helper = TODO()
-                )
-            } else {
-                // Optional: Fehleranzeige oder zurück
-                println("Fehler: Payload nicht gefunden")
-            }
         }
     }
 }

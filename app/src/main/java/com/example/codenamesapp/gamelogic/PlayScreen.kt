@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -50,31 +51,32 @@ import com.example.codenamesapp.ui.theme.LightGrey
 import com.example.codenamesapp.ui.theme.LightRed
 
 
-// Platzhalter für jetzt als Wörter
-val roundRed = 5
-val roundBlue = 4
-var messages = listOf("Willkommen!", "Erster Hint: Sonnenblume.", "Team Rot hat \"Sonne\" erraten.", "Zweiter Hint: Autofahren", "Team Blau hat \"Auto\" erraten.", "Dritter Hint: Freizeit", "Team Rot hat \"Karte\" erraten.")
-
 @Composable
 fun GameBoardScreen(
-    gameState: PayloadResponseMove,
+    gameState: PayloadResponseMove, // Verwende den Payload direkt
     playerRole: Boolean,
     team: TeamRole,
-    helper: Communication,
-    //messageList: List<String> // TODO: messages from server
+    communication: Communication // Übergabe der Communication-Instanz
 ) { // general layout of gameboard
     LockLandscapeOrientation()
 
     // current player for GUI for either Spymaster or Operator
     val isSpymaster = playerRole
 
-    //val messageList = remember { mutableStateListOf<String>() } // remember message list, just add new ones from server
-
     // getting TeamRole, Cards and GameState
-    val payload = remember { helper.getGame() }
-    val cardList = remember { mutableStateListOf<Card>().apply { addAll(payload.card) } } // for isMarked cards
-    val teamRole = payload.teamRole
-    val gameState = payload.gameState
+    val cardList = remember { mutableStateListOf<Card>().apply { addAll(gameState.card) } } // for isMarked cards
+    val teamRole = gameState.teamRole
+    val currentGameState = gameState.gameState
+    val scoreRed = gameState.score.getOrNull(0) ?: 0
+    val scoreBlue = gameState.score.getOrNull(1) ?: 0
+    val initialHint = gameState.hint
+    val initialRemainingGuesses = gameState.remainingGuesses
+
+    val isPlayerTurn = !isSpymaster && teamRole == team && currentGameState == GamePhase.OPERATIVE_TURN
+
+    val messages = remember {
+        mutableStateListOf("Willkommen!", "Erster Hinweis: $initialHint ($initialRemainingGuesses).")
+    }
 
     // for Overlay for "Give A Hint!"-Button and Input
     var showOverlay by remember { mutableStateOf(false) }
@@ -99,7 +101,7 @@ fun GameBoardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    CardsRemaining()
+                    CardsRemaining(redScore = scoreRed, blueScore = scoreBlue)
                 }
                 Column( // Buttons für "Expose!" und "Give A Hint!"
                     modifier = Modifier
@@ -141,11 +143,12 @@ fun GameBoardScreen(
                     onCardClicked = { card ->
                         val index = cardList.indexOf(card)
                         if (index != -1)
-                            helper.giveCard(index)
+                            communication.giveCard(index) // Verwende die übergebene Instanz
                     },
                     onCardMarked = { card -> card.isMarked = !card.isMarked },
                     cardList,
-                    isSpymaster
+                    isSpymaster,
+                    isPlayerTurn
                 )
             }
 
@@ -156,57 +159,58 @@ fun GameBoardScreen(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                ChatBox(messages = messages) // TODO: messageList
+                ChatBox(messages = messages)
             }
         }
     }
 
-        if (showOverlay) {
-            Box(
+    if (showOverlay) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+                .clickable (enabled = false) {  },
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                shape = RoundedCornerShape(0.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable (enabled = false) {  },
-                contentAlignment = Alignment.Center
+                    .width(300.dp)
+                    .wrapContentHeight()
+                    .background(MaterialTheme.colorScheme.onPrimary)
             ) {
-                Card(
-                    shape = RoundedCornerShape(0.dp),
-                    elevation = CardDefaults.cardElevation(8.dp),
-                    modifier = Modifier
-                        .width(300.dp)
-                        .wrapContentHeight()
-                        .background(Color.White)
+                Column (
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column (
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Enter Hint:")
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Text("Enter Hint:")
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        var hintWord by remember { mutableStateOf("") }
-                        var hintNumber by remember { mutableStateOf("") }
-                        TextField(
-                            value = hintWord,
-                            onValueChange = { hintWord = it},
-                            label = { Text("Word") })
-                        TextField(
-                            value = hintNumber,
-                            onValueChange = { hintNumber = it.filter { c -> c.isDigit() }},
-                            label = { Text("Number") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                    var hintWordInput by remember { mutableStateOf("") }
+                    var hintNumberInput by remember { mutableStateOf("") }
+                    TextField(
+                        value = hintWordInput,
+                        onValueChange = { hintWordInput = it},
+                        label = { Text("Wort") })
+                    TextField(
+                        value = hintNumberInput,
+                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() }},
+                        label = { Text("Anzahl") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ButtonsGui("Send", onClick = {
-                            showOverlay = false
-                            if (hintWord.isNotBlank() && hintNumber.isNotBlank()) {
-                                val hintArray = arrayOf(hintWord.trim(), hintNumber.trim())
-                                helper.giveHint(hintArray)
-                            }
-                        }, Modifier.height(10.dp))
-                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ButtonsGui("Senden", onClick = {
+                        showOverlay = false
+                        if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
+                            val hintArray = arrayOf(hintWordInput.trim(), hintNumberInput.trim())
+                            communication.giveHint(hintArray)
+                            messages.add("Dein Hinweis: ${hintArray[0]} (${hintArray[1]})")
+                        }
+                    }, Modifier.height(10.dp))
                 }
             }
+        }
     }
 }
 
@@ -224,16 +228,15 @@ fun LockLandscapeOrientation() { // fixed landscape orientation
 
 // --- column one ----------------------------------------------------------------------------------
 @Composable
-fun CardsRemaining () { // displays how many cards each team has remaining
-    Text(roundRed.toString(), style = TextStyle( // TODO: no "cards remaining" from server
-        color = LightRed,
+fun CardsRemaining (redScore: Int, blueScore: Int) { // displays how many cards each team has remaining
+    Text(redScore.toString(), style = TextStyle(
+        color = MaterialTheme.colorScheme.error,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
-    )
-    )
+    ))
     Spacer(Modifier.width(50.dp))
-    Text(roundBlue.toString(), style = TextStyle(
-        color = LightBlue,
+    Text(blueScore.toString(), style = TextStyle(
+        color = MaterialTheme.colorScheme.tertiary,
         fontSize = 80.sp,
         fontWeight = FontWeight.Bold
     ))
@@ -250,11 +253,11 @@ fun PlayerRoleScreen (
         .padding(bottom = 10.dp),
         contentAlignment = Alignment.Center) {
         Image(
-            painter = image,
+            painter = painterResource(R.drawable.muster_logo),
             contentDescription = null
         )
     }
-    val textColor = if (teamRole == TeamRole.RED) DarkRed else DarkBlue
+    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
     if (isSpymaster)
         Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
     else
@@ -268,7 +271,8 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
     onCardClicked : (Card) -> Unit,
     onCardMarked : (Card) -> Unit,
     cardList: List<Card>,
-    isSpymaster: Boolean
+    isSpymaster: Boolean,
+    isPlayerTurn : Boolean
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -282,8 +286,8 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
         items(cardList) { card ->
             GameCard (
                 card = card,
-                onClick = { onCardClicked(card) },
-                onLongClick = { onCardMarked(card) },
+                onClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
+                onLongClick = if (isPlayerTurn) { { onCardMarked(card) }} else { {} },
                 isSpymaster = isSpymaster
             )
         }
@@ -299,19 +303,19 @@ fun GameCard ( // creates displayable card
     isSpymaster: Boolean
 ) {
     // if card is marked by player, card appears with thicker border
-    val border = if (card.isMarked) BorderStroke(3.dp, CustomBlack) else BorderStroke(0.5.dp, CustomBlack)
+    val border = if (card.isMarked) BorderStroke(3.dp, MaterialTheme.colorScheme.primary) else BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
 
     // if card is revealed or player is spymaster, cards appear with role as background, otherwise they are grey
     val backgroundImage = if (card.isRevealed || isSpymaster) {
         when (card.role) {
-            Role.RED -> DarkRed
-            Role.BLUE -> DarkBlue
-            Role.NEUTRAL -> DarkGrey
+            Role.RED -> MaterialTheme.colorScheme.error
+            Role.BLUE -> MaterialTheme.colorScheme.tertiary
+            Role.NEUTRAL -> MaterialTheme.colorScheme.secondary
             Role.ASSASSIN -> CustomBlack
             // später: painterResource(R.drawable.[...]) für image einfügen
         }
     } else {
-        DarkGrey
+        MaterialTheme.colorScheme.secondary
     }
 
     // creating displayable card
@@ -330,7 +334,7 @@ fun GameCard ( // creates displayable card
         ) {
             Text (
                 text = card.word,
-                color = LightGrey,
+                color = Color.White,
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(4.dp)
@@ -347,22 +351,20 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
             .fillMaxWidth()
             .fillMaxHeight(0.66f)
             .padding(8.dp)
-            .border(1.dp, CustomBlack, shape = RoundedCornerShape(2.dp))
-            .background(Color.White),
+            .border(1.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp))
+            .background(MaterialTheme.colorScheme.onPrimary),
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
-        itemsIndexed(messages.reversed()) {
-            index, messages ->
-
-            val backgroundColor = if (index % 2 != 0) LightGrey else Color.Transparent
+        itemsIndexed(messages.reversed()) { index, message ->
+            val backgroundColor = if (index % 2 != 0) MaterialTheme.colorScheme.secondary else Color.Transparent
             Box (
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
                     .background(backgroundColor)
             ) {
-                Text(text = messages, color = CustomBlack)
+                Text(text = message, color = MaterialTheme.colorScheme.primary)
             }
         }
     }

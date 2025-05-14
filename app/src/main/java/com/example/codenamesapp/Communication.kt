@@ -51,8 +51,8 @@ class Communication {
 
     //get Gamestate, TeamState, Cardlist and Score
     fun getGame(): PayloadResponseMove{
-        val exampleGameState = GamePhase.SPYMASTER_TURN
-        val exampleTeamRole = TeamRole.BLUE
+        val exampleGameState = GamePhase.OPERATIVE_TURN
+        val exampleTeamRole = TeamRole.RED
         val exampleCardList = listOf(
             // Rote Karten (9)
             Card("Feuer", Role.RED),
@@ -88,12 +88,17 @@ class Communication {
             Card("Schatten", Role.ASSASSIN)
         )
         val exampleScoreArray = arrayOf(9, 8)
+        val exampleString = "Hint"
+        val exampleInt = 5
+
 
         val payloadResponseMoveObject = PayloadResponseMove(
             gameState = exampleGameState,
             teamRole = exampleTeamRole,
             card = exampleCardList,
-            score = exampleScoreArray
+            score = exampleScoreArray,
+            hint = exampleString,
+            remainingGuesses = exampleInt
         )
         return payloadResponseMoveObject
     }
