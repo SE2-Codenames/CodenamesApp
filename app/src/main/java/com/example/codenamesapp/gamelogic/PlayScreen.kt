@@ -247,16 +247,16 @@ fun PlayerRoleScreen (
     isSpymaster: Boolean,
     teamRole: TeamRole
 ) { // displays the role-image and player role
-//    val image = painterResource(R.drawable.muster_logo)
-//    Box(Modifier
-//        .height(80.dp)
-//        .padding(bottom = 10.dp),
-//        contentAlignment = Alignment.Center) {
-//        Image(
-//            painter = painterResource(R.drawable.muster_logo),
-//            contentDescription = null
-//        )
-//    }
+    val image = painterResource(R.drawable.muster_logo)
+    Box(Modifier
+        .height(80.dp)
+        .padding(bottom = 10.dp),
+        contentAlignment = Alignment.Center) {
+        Image(
+            painter = painterResource(R.drawable.muster_logo),
+            contentDescription = null
+        )
+    }
     val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
     if (isSpymaster)
         Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
