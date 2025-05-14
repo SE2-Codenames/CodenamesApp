@@ -47,7 +47,7 @@ class GameManagerTest {
         assertFalse(called)
 
         manager.getRandomWords()
-        
+
         assertTrue(called)
     }
 }

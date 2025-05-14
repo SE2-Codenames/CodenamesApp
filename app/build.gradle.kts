@@ -157,4 +157,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
     testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation ("androidx.arch.core:core-testing:2.2.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+
+
+
 }
