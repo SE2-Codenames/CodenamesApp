@@ -1,7 +1,9 @@
 package com.example.codenamesapp
 
 import com.example.codenamesapp.gamelogic.GameStateViewModel
+import com.example.codenamesapp.model.CardRole
 import com.example.codenamesapp.model.TeamRole
+import com.example.codenamesapp.model.Card
 import junit.framework.TestCase.assertNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
