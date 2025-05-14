@@ -7,4 +7,8 @@ class GameManager(
 ) {
     private val words: List<String> by lazy { wordProvider() }
 
+    fun getRandomWords(): List<String> {
+        return words.shuffled()
+    }
+
 }
