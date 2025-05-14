@@ -1,162 +1,118 @@
 package com.example.codenamesapp
-import com.example.codenamesapp.Communication
+
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import android.R
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.example.codenamesapp.model.Card
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.codenamesapp.model.GamePhase
-import com.example.codenamesapp.model.GameState
-import com.example.codenamesapp.model.Player
-import com.example.codenamesapp.model.Role
-import com.example.codenamesapp.model.TeamRole
-import com.example.codenamesapp.ui.theme.ButtonsGui
-import com.example.codenamesapp.ui.theme.CustomBlack
-import com.example.codenamesapp.ui.theme.DarkBlue
-import com.example.codenamesapp.ui.theme.DarkGrey
-import com.example.codenamesapp.ui.theme.DarkRed
-import com.example.codenamesapp.ui.theme.LightBlue
-import com.example.codenamesapp.ui.theme.LightGrey
-import com.example.codenamesapp.ui.theme.LightRed
-
+import com.example.codenamesapp.model.*
+import com.example.codenamesapp.network.Communication
+import com.example.codenamesapp.ui.theme.*
 
 @Composable
 fun GameBoardScreen(
-    gameState: PayloadResponseMove, // Verwende den Payload direkt
+    gameState: PayloadResponseMove,
     playerRole: Boolean,
     team: TeamRole,
-    communication: Communication // Übergabe der Communication-Instanz
-) { // general layout of gameboard
+    communication: Communication
+) {
     LockLandscapeOrientation()
 
-    // current player for GUI for either Spymaster or Operator
     val isSpymaster = playerRole
+    println("🧠 Spielerrolle vom Server (isSpymaster): $isSpymaster")
 
-    // getting TeamRole, Cards and GameState
-    val cardList = remember { mutableStateListOf<Card>().apply { addAll(gameState.card) } } // for isMarked cards
-    val teamRole = gameState.teamRole
-    val currentGameState = gameState.gameState
+    val cardList = remember(gameState) {
+        println("📦 Empfangene Karten:")
+        val preparedCards = gameState.card.map { card ->
+            println("🔹 ${card.word}, role=${card.cardRole}, revealed=${card.revealed}")
+            card.apply { isMarked = mutableStateOf(false) }
+        }
+        mutableStateListOf<Card>().apply { addAll(preparedCards) }
+    }
+
     val scoreRed = gameState.score.getOrNull(0) ?: 0
     val scoreBlue = gameState.score.getOrNull(1) ?: 0
-    val initialHint = gameState.hint
+    val initialHint = gameState.hint ?: "–"
     val initialRemainingGuesses = gameState.remainingGuesses
 
-    val isPlayerTurn = !isSpymaster && teamRole == team && currentGameState == GamePhase.OPERATIVE_TURN
+    val isPlayerTurn = !isSpymaster
 
     val messages = remember {
         mutableStateListOf("Willkommen!", "Erster Hinweis: $initialHint ($initialRemainingGuesses).")
     }
 
-    // for Overlay for "Give A Hint!"-Button and Input
     var showOverlay by remember { mutableStateOf(false) }
 
-    Box (modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
-        ) {
-            // ---------------------------------------------------------------------------------------
-            Box( // first column with "points", hint-button, expose-button and player role
-                modifier = Modifier
-                    .weight(0.4f)
-                    .fillMaxHeight()
-            ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+
+            // Column 1 – Info & Buttons
+            // Column 1
+            Box(modifier = Modifier.weight(0.4f).fillMaxHeight()) {
                 Row(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopCenter)
-                        .padding(top = 20.dp),
+                    modifier = Modifier.padding(8.dp).align(Alignment.TopCenter).padding(top = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     CardsRemaining(redScore = scoreRed, blueScore = scoreBlue)
                 }
-                Column( // Buttons für "Expose!" und "Give A Hint!"
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(8.dp)
+                Column(
+                    modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
                     if (isSpymaster) {
                         ButtonsGui(
-                            text = "Give A Hint!", onClick = { showOverlay = true }, Modifier
-                                .width(250.dp)
-                                .height(48.dp)
-                                .padding(4.dp)
+                            text = "Give A Hint!", onClick = { showOverlay = true },
+                            modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
                     }
                     ButtonsGui(
-                        text = "Expose!", onClick = { /*TODO: send word to server to check cheating*/ }, Modifier
-                            .width(250.dp)
-                            .height(48.dp)
-                            .padding(4.dp)
+                        text = "Expose!", onClick = { /* TODO */ },
+                        modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                     )
                 }
                 Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(8.dp),
-                    verticalArrangement = Arrangement.Bottom,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
+                    verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(isSpymaster, teamRole)
+                    PlayerRoleScreen(isSpymaster, team)
                 }
             }
 
-            // ---------------------------------------------------------------------------------------
-            Box( // second column with card grid
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            ) {
+            // Column 2
+            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 GameBoardGrid(
                     onCardClicked = { card ->
                         val index = cardList.indexOf(card)
-                        if (index != -1)
-                            communication.giveCard(index) // Verwende die übergebene Instanz
+                        if (index != -1) communication.giveCard(index)
                     },
-                    onCardMarked = { card -> card.isMarked = !card.isMarked },
+                    onCardMarked = { card -> card.isMarked.value = !card.isMarked.value },
                     cardList,
                     isSpymaster,
                     isPlayerTurn
                 )
             }
 
-            // ---------------------------------------------------------------------------------------
-            Box( // third colum with chat
-                modifier = Modifier
-                    .weight(0.3f)
-                    .fillMaxHeight(),
+            // Column 3
+            Box(
+                modifier = Modifier.weight(0.3f).fillMaxHeight(),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 ChatBox(messages = messages)
@@ -166,128 +122,108 @@ fun GameBoardScreen(
 
     if (showOverlay) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .clickable (enabled = false) {  },
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             Card(
                 shape = RoundedCornerShape(0.dp),
                 elevation = CardDefaults.cardElevation(8.dp),
-                modifier = Modifier
-                    .width(300.dp)
-                    .wrapContentHeight()
-                    .background(MaterialTheme.colorScheme.onPrimary)
+                modifier = Modifier .width(300.dp).wrapContentHeight().background(MaterialTheme.colorScheme.onPrimary)
             ) {
-                Column (
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Enter Hint:")
                     Spacer(modifier = Modifier.height(8.dp))
 
                     var hintWordInput by remember { mutableStateOf("") }
                     var hintNumberInput by remember { mutableStateOf("") }
+
                     TextField(
                         value = hintWordInput,
-                        onValueChange = { hintWordInput = it},
-                        label = { Text("Wort") })
+                        onValueChange = { hintWordInput = it },
+                        label = { Text("Wort") }
+                    )
                     TextField(
                         value = hintNumberInput,
-                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() }},
+                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() } },
                         label = { Text("Anzahl") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
                     ButtonsGui("Senden", onClick = {
                         showOverlay = false
                         if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
-                            val hintArray = arrayOf(hintWordInput.trim(), hintNumberInput.trim())
-                            communication.giveHint(hintArray)
-                            messages.add("Dein Hinweis: ${hintArray[0]} (${hintArray[1]})")
+                            val word = hintWordInput.trim()
+                            val number = hintNumberInput.trim().toIntOrNull() ?: 0
+                            communication.giveHint(word, number)
+                            messages.add("Dein Hinweis: $word ($number)")
                         }
-                    }, Modifier.height(10.dp))
+                    }, modifier = Modifier.height(10.dp))
                 }
             }
         }
     }
 }
 
-
 @Composable
-fun LockLandscapeOrientation() { // fixed landscape orientation
+fun LockLandscapeOrientation() {
     val context = LocalContext.current
     val activity = context as? Activity
-
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 }
 
-
-// --- column one ----------------------------------------------------------------------------------
 @Composable
-fun CardsRemaining (redScore: Int, blueScore: Int) { // displays how many cards each team has remaining
-    Text(redScore.toString(), style = TextStyle(
-        color = MaterialTheme.colorScheme.error,
-        fontSize = 80.sp,
-        fontWeight = FontWeight.Bold
-    ))
+fun CardsRemaining(redScore: Int, blueScore: Int) {
+    Text(redScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
     Spacer(Modifier.width(50.dp))
-    Text(blueScore.toString(), style = TextStyle(
-        color = MaterialTheme.colorScheme.tertiary,
-        fontSize = 80.sp,
-        fontWeight = FontWeight.Bold
-    ))
+    Text(blueScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
 }
 
 @Composable
-fun PlayerRoleScreen (
-    isSpymaster: Boolean,
-    teamRole: TeamRole
-) { // displays the role-image and player role
+fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole) {
     val image = painterResource(R.drawable.muster_logo)
-    Box(Modifier
-        .height(80.dp)
-        .padding(bottom = 10.dp),
-        contentAlignment = Alignment.Center) {
+    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+    val roleText = if (isSpymaster) "Spymaster" else "Operative"
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(8.dp)
+    ) {
         Image(
-            painter = painterResource(R.drawable.muster_logo),
-            contentDescription = null
+            painter = image,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp)
+        )
+        Text(
+            text = roleText,
+            style = MaterialTheme.typography.headlineLarge.copy(color = textColor)
         )
     }
-    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    if (isSpymaster)
-        Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
-    else
-        Text(text = "Operative", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
 }
 
-
-// --- column two ----------------------------------------------------------------------------------
 @Composable
-fun GameBoardGrid ( // layout of part/grid where cards are on
-    onCardClicked : (Card) -> Unit,
-    onCardMarked : (Card) -> Unit,
+fun GameBoardGrid(
+    onCardClicked: (Card) -> Unit,
+    onCardMarked: (Card) -> Unit,
     cardList: List<Card>,
     isSpymaster: Boolean,
-    isPlayerTurn : Boolean
+    isPlayerTurn: Boolean
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
+        modifier = Modifier.fillMaxSize().padding(8.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalArrangement = Arrangement.SpaceEvenly,
         contentPadding = PaddingValues(4.dp)
     ) {
         items(cardList) { card ->
-            GameCard (
+            GameCard(
                 card = card,
                 onClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
-                onLongClick = if (isPlayerTurn) { { onCardMarked(card) }} else { {} },
+                onLongClick = if (isPlayerTurn) { { onCardMarked(card) } } else { {} },
                 isSpymaster = isSpymaster
             )
         }
@@ -296,30 +232,25 @@ fun GameBoardGrid ( // layout of part/grid where cards are on
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GameCard ( // creates displayable card
-    card : Card,
-    onClick : () -> Unit,
-    onLongClick : () -> Unit,
-    isSpymaster: Boolean
-) {
-    // if card is marked by player, card appears with thicker border
-    val border = if (card.isMarked) BorderStroke(3.dp, MaterialTheme.colorScheme.primary) else BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
+fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymaster: Boolean) {
+    val border = if (card.isMarked.value) {
+        BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+    } else {
+        BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
+    }
 
-    // if card is revealed or player is spymaster, cards appear with role as background, otherwise they are grey
-    val backgroundImage = if (card.isRevealed || isSpymaster) {
-        when (card.role) {
-            Role.RED -> MaterialTheme.colorScheme.error
-            Role.BLUE -> MaterialTheme.colorScheme.tertiary
-            Role.NEUTRAL -> MaterialTheme.colorScheme.secondary
-            Role.ASSASSIN -> CustomBlack
-            // später: painterResource(R.drawable.[...]) für image einfügen
+    val backgroundImage = if (card.revealed || isSpymaster) {
+        when (card.cardRole) {
+            CardRole.RED -> MaterialTheme.colorScheme.error
+            CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
+            CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
+            CardRole.ASSASSIN -> CustomBlack
         }
     } else {
         MaterialTheme.colorScheme.secondary
     }
 
-    // creating displayable card
-    Card (
+    Card(
         modifier = Modifier
             .height(70.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
@@ -327,26 +258,19 @@ fun GameCard ( // creates displayable card
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Box (
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundImage)
-        ) {
-            Text (
+        Box(modifier = Modifier.fillMaxSize().background(backgroundImage)) {
+            Text(
                 text = card.word,
                 color = Color.White,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(4.dp)
+                modifier = Modifier.align(Alignment.Center).padding(4.dp)
             )
         }
     }
 }
 
-// --- column three --------------------------------------------------------------------------------
 @Composable
-fun ChatBox (messages : List<String>) { // displays server chat messages
-    LazyColumn (
+fun ChatBox(messages: List<String>) {
+    LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(0.66f)
@@ -358,8 +282,8 @@ fun ChatBox (messages : List<String>) { // displays server chat messages
     ) {
         itemsIndexed(messages.reversed()) { index, message ->
             val backgroundColor = if (index % 2 != 0) MaterialTheme.colorScheme.secondary else Color.Transparent
-            Box (
-                modifier = Modifier
+            Box(
+                Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
                     .background(backgroundColor)

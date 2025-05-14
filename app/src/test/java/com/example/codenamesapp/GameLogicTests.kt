@@ -1,15 +1,12 @@
 package com.example.codenamesapp
 
-import com.example.codenamesapp.gamelogic.GameManager
-import com.example.codenamesapp.model.Role
+import com.example.codenamesapp.model.CardRole
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import com.example.codenamesapp.model.Card
 import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.TeamRole
+import com.example.codenamesapp.network.Communication
 
 class GameLogicTest {
 
@@ -30,10 +27,10 @@ class GameLogicTest {
     @Test
     fun checkCorrectRoles() {
         val roles = gameManager.gameState.board.map { it.role }
-        assertEquals(9, roles.count { it == Role.RED })
-        assertEquals(8, roles.count { it == Role.BLUE })
-        assertEquals(7, roles.count { it == Role.NEUTRAL })
-        assertEquals(1, roles.count { it == Role.ASSASSIN })
+        assertEquals(9, roles.count { it == CardRole.RED })
+        assertEquals(8, roles.count { it == CardRole.BLUE })
+        assertEquals(7, roles.count { it == CardRole.NEUTRAL })
+        assertEquals(1, roles.count { it == CardRole.ASSASSIN })
     }
 
     @Test
@@ -51,12 +48,12 @@ class GameLogicTest {
 
     @Test
     fun checkStartingTeam() {
-        assertEquals(Role.RED, gameManager.gameState.currentTeam, "RED team always start first")
+        assertEquals(CardRole.RED, gameManager.gameState.currentTeam, "RED team always start first")
     }
 
     @Test
     fun setGameOverRule() {
-        val assassinCard = gameManager.gameState.board.firstOrNull { it.role == Role.ASSASSIN }
+        val assassinCard = gameManager.gameState.board.firstOrNull { it.role == CardRole.ASSASSIN }
         assassinCard?.isRevealed = true
         gameManager.gameState.isGameOver = assassinCard?.isRevealed == true
         assertTrue(gameManager.gameState.isGameOver, "Game ends when assassin card is revealed")
@@ -64,7 +61,7 @@ class GameLogicTest {
 
     @Test
     fun checkNumberOfAssassinCards() {
-        val count = gameManager.gameState.board.count { it.role == Role.ASSASSIN }
+        val count = gameManager.gameState.board.count { it.role == CardRole.ASSASSIN }
         assertEquals(1, count, "It must be only one assassin card")
     }
 

@@ -132,6 +132,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
     implementation(libs.androidx.navigation.runtime.android)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
     //implementation(libs.androidx.junit.ktx)
     //implementation(libs.test.core.ktx)
     testImplementation(libs.junit)

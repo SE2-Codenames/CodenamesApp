@@ -1,11 +1,13 @@
 package com.example.codenamesapp.model
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class GameState(
-    val board: List<Card>,
-    var currentTeam: Role = Role.RED, // team red starts first!
+    @Contextual val board: List<Card>,
+    var currentTeam: CardRole = CardRole.RED,
     var isGameOver: Boolean = false,
-    var winner: Role? = null
+    var winner: CardRole? = null
 )
+
