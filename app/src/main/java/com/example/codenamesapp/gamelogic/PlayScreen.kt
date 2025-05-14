@@ -3,7 +3,16 @@ package com.example.codenamesapp
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+<<<<<<< HEAD
 import androidx.compose.foundation.*
+=======
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import android.R
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -63,7 +72,12 @@ fun GameBoardScreen(
     val initialHint = gameState.hint ?: "–"
     val initialRemainingGuesses = gameState.remainingGuesses
 
+<<<<<<< HEAD
     // 📨 Chatnachrichten (UI)
+=======
+    val isPlayerTurn = !isSpymaster && teamRole == team && currentGameState == GamePhase.OPERATIVE_TURN
+
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
     val messages = remember {
         mutableStateListOf("Willkommen!", "Erster Hinweis: $initialHint ($initialRemainingGuesses).")
     }
@@ -110,9 +124,16 @@ fun GameBoardScreen(
                         val index = cardList.indexOf(card)
                         if (index != -1) communication.giveCard(index)
                     },
+<<<<<<< HEAD
                     onCardMarked = { card -> card.isMarked.value = !card.isMarked.value },
                     cardList = cardList,
                     isSpymaster = isSpymaster
+=======
+                    onCardMarked = { card -> card.isMarked = !card.isMarked },
+                    cardList,
+                    isSpymaster,
+                    isPlayerTurn
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
                 )
             }
 
@@ -134,7 +155,14 @@ fun GameBoardScreen(
             Card(
                 shape = RoundedCornerShape(0.dp),
                 elevation = CardDefaults.cardElevation(8.dp),
+<<<<<<< HEAD
                 modifier = Modifier.width(300.dp).wrapContentHeight().background(Color.White)
+=======
+                modifier = Modifier
+                    .width(300.dp)
+                    .wrapContentHeight()
+                    .background(MaterialTheme.colorScheme.onPrimary)
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
             ) {
                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Enter Hint:")
@@ -181,21 +209,53 @@ fun LockLandscapeOrientation() {
 }
 
 @Composable
+<<<<<<< HEAD
 fun CardsRemaining(redScore: Int, blueScore: Int) {
     Text("$redScore", style = TextStyle(color = LightRed, fontSize = 80.sp, fontWeight = FontWeight.Bold))
     Spacer(Modifier.width(50.dp))
     Text("$blueScore", style = TextStyle(color = LightBlue, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+=======
+fun CardsRemaining (redScore: Int, blueScore: Int) { // displays how many cards each team has remaining
+    Text(redScore.toString(), style = TextStyle(
+        color = MaterialTheme.colorScheme.error,
+        fontSize = 80.sp,
+        fontWeight = FontWeight.Bold
+    ))
+    Spacer(Modifier.width(50.dp))
+    Text(blueScore.toString(), style = TextStyle(
+        color = MaterialTheme.colorScheme.tertiary,
+        fontSize = 80.sp,
+        fontWeight = FontWeight.Bold
+    ))
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
 }
 
 @Composable
 fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole) {
     val image = painterResource(R.drawable.muster_logo)
+<<<<<<< HEAD
     Box(Modifier.height(80.dp).padding(bottom = 10.dp), contentAlignment = Alignment.Center) {
         Image(painter = image, contentDescription = null)
     }
     val textColor = if (teamRole == TeamRole.RED) DarkRed else DarkBlue
     val roleText = if (isSpymaster) "Spymaster" else "Operative"
     Text(roleText, style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
+=======
+    Box(Modifier
+        .height(80.dp)
+        .padding(bottom = 10.dp),
+        contentAlignment = Alignment.Center) {
+        Image(
+            painter = painterResource(R.drawable.muster_logo),
+            contentDescription = null
+        )
+    }
+    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+    if (isSpymaster)
+        Text(text = "Spymaster", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
+    else
+        Text(text = "Operative", style = MaterialTheme.typography.headlineLarge.copy(color = textColor))
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
 }
 
 @Composable
@@ -203,7 +263,8 @@ fun GameBoardGrid(
     onCardClicked: (Card) -> Unit,
     onCardMarked: (Card) -> Unit,
     cardList: List<Card>,
-    isSpymaster: Boolean
+    isSpymaster: Boolean,
+    isPlayerTurn : Boolean
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -213,13 +274,23 @@ fun GameBoardGrid(
         contentPadding = PaddingValues(4.dp)
     ) {
         items(cardList) { card ->
+<<<<<<< HEAD
             GameCard(card, { onCardClicked(card) }, { onCardMarked(card) }, isSpymaster)
+=======
+            GameCard (
+                card = card,
+                onClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
+                onLongClick = if (isPlayerTurn) { { onCardMarked(card) }} else { {} },
+                isSpymaster = isSpymaster
+            )
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+<<<<<<< HEAD
 fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymaster: Boolean) {
     val border = if (card.isMarked.value) BorderStroke(3.dp, CustomBlack) else BorderStroke(0.5.dp, CustomBlack)
     val backgroundImage = when {
@@ -230,6 +301,28 @@ fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymast
             CardRole.ASSASSIN -> CustomBlack
         }
         else -> DarkGrey
+=======
+fun GameCard ( // creates displayable card
+    card : Card,
+    onClick : () -> Unit,
+    onLongClick : () -> Unit,
+    isSpymaster: Boolean
+) {
+    // if card is marked by player, card appears with thicker border
+    val border = if (card.isMarked) BorderStroke(3.dp, MaterialTheme.colorScheme.primary) else BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
+
+    // if card is revealed or player is spymaster, cards appear with role as background, otherwise they are grey
+    val backgroundImage = if (card.isRevealed || isSpymaster) {
+        when (card.role) {
+            Role.RED -> MaterialTheme.colorScheme.error
+            Role.BLUE -> MaterialTheme.colorScheme.tertiary
+            Role.NEUTRAL -> MaterialTheme.colorScheme.secondary
+            Role.ASSASSIN -> CustomBlack
+            // später: painterResource(R.drawable.[...]) für image einfügen
+        }
+    } else {
+        MaterialTheme.colorScheme.secondary
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
     }
 
     Card(
@@ -237,24 +330,61 @@ fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymast
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
+<<<<<<< HEAD
         Box(Modifier.fillMaxSize().background(backgroundImage)) {
             Text(card.word, color = LightGrey, modifier = Modifier.align(Alignment.Center).padding(4.dp))
+=======
+        Box (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundImage)
+        ) {
+            Text (
+                text = card.word,
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(4.dp)
+            )
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
         }
     }
 }
 
 @Composable
+<<<<<<< HEAD
 fun ChatBox(messages: List<String>) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth().fillMaxHeight(0.66f).padding(8.dp)
             .border(1.dp, CustomBlack, RoundedCornerShape(2.dp)).background(Color.White),
+=======
+fun ChatBox (messages : List<String>) { // displays server chat messages
+    LazyColumn (
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.66f)
+            .padding(8.dp)
+            .border(1.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp))
+            .background(MaterialTheme.colorScheme.onPrimary),
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
         itemsIndexed(messages.reversed()) { index, message ->
+<<<<<<< HEAD
             val bg = if (index % 2 != 0) LightGrey else Color.Transparent
             Box(Modifier.fillMaxWidth().padding(4.dp).background(bg)) {
                 Text(message, color = CustomBlack)
+=======
+            val backgroundColor = if (index % 2 != 0) MaterialTheme.colorScheme.secondary else Color.Transparent
+            Box (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .background(backgroundColor)
+            ) {
+                Text(text = message, color = MaterialTheme.colorScheme.primary)
+>>>>>>> 3ea1613f0e5fc685bfcea80682a8d28d867c689c
             }
         }
     }

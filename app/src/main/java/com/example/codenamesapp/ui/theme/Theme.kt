@@ -17,21 +17,26 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color.White,
+    onPrimary = CustomBlack,
+    secondary = LightGrey,
+    tertiary = LightBlue,
+    error = LightRed
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = CustomBlack,
+    onPrimary = Color.White,
+    secondary = DarkGrey,
+    tertiary = DarkBlue,
+    error = DarkRed
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -74,8 +79,8 @@ fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier) { // Desi
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(containerColor = Transparent),
         shape = RectangleShape,
-        border = BorderStroke(1.dp, CustomBlack)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
     ) {
-        Text(text, color = CustomBlack)
+        Text(text, color = MaterialTheme.colorScheme.primary)
     }
 }
