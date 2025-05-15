@@ -35,4 +35,33 @@ class CommunicationTest {
         verify { mock.send("CHAT:Hello") }
     }
 
+    @Test
+    fun testSendUsername() {
+        communication.sendUsername("Mihi")
+        verify{mock.send("USER:Mihi")}
+    }
+
+    @Test
+    fun testJoinTeam() {
+        communication.joinTeam("Mihi", "RED")
+        verify { mock.send("JOIN_TEAM:Mihi:RED") }
+    }
+
+    @Test
+    fun testSpymasterToggle() {
+        communication.toggleSpymaster("Mihi")
+        verify{mock.send("SPYMASTER_TOGGLE:Mihi")}
+    }
+
+    @Test
+    fun testGameStart() {
+        communication.gameStart()
+        verify { mock.send("START_GAME") }
+    }
+
+    @Test
+    fun testSendRaw() {
+        communication.send("RAW_MESSAGE")
+        verify { mock.send("RAW_MESSAGE") }
+    }
 }
