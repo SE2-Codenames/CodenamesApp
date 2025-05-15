@@ -29,9 +29,10 @@ sonar {
                     "**/MainMenu/AppNavigation.kt," +
                     "**/lobby/ConnectionScreen.kt," +
                     "**/lobby/Lobby.kt," +
-                    "**/network/WebSocketHandler," +
-                    "**/network/WebSocketClient," +
-                    "**/network/WebSocketListener.kt"
+                    "**/network/WebSocketHandler.kt," +
+                    "**/network/WebSocketClient.kt," +
+                    "**/network/WebSocketListener.kt" +
+                    "**/ui.theme/**"
         )
 
     }
