@@ -46,7 +46,7 @@ class CommunicationTest {
         communication.joinTeam("Mihi", "RED")
         verify { mock.send("JOIN_TEAM:Mihi:RED") }
     }
-    
+
     @Test
     fun testSpymasterToggle() {
         communication.toggleSpymaster("Mihi")
