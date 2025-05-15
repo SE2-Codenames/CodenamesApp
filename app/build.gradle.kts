@@ -21,6 +21,19 @@ sonar {
             "sonar.coverage.jacoco.xmlReportPaths",
             "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
         )
+        property("sonar.coverage.exclusions",
+            "**/gamelogic/PlayScreen.kt," +
+                    "**/MainMenu/MainMenuScreen.kt," +
+                    "**/MainMenu/GameRules.kt," +
+                    "**/MainMenu/MainActivity.kt," +
+                    "**/MainMenu/AppNavigation.kt," +
+                    "**/lobby/ConnectionScreen.kt," +
+                    "**/lobby/Lobby.kt," +
+                    "**/network/WebSocketHandler," +
+                    "**/network/WebSocketClient," +
+                    "**/network/WebSocketListener.kt"
+        )
+
     }
 }
 
