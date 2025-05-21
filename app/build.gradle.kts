@@ -31,7 +31,7 @@ sonar {
                     "**/lobby/Lobby.kt," +
                     "**/network/WebSocketHandler.kt," +
                     "**/network/WebSocketClient.kt," +
-                    "**/network/WebSocketListener.kt" +
+                    "**/network/WebSocketListener.kt," +
                     "**/ui.theme/**"
         )
 
@@ -144,10 +144,10 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
     implementation(libs.androidx.navigation.runtime.android)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation(libs.androidx.ui.test.junit4.android)
     //implementation(libs.androidx.junit.ktx)
     //implementation(libs.test.core.ktx)
     testImplementation(libs.junit)
@@ -167,7 +167,7 @@ dependencies {
     testImplementation("androidx.test:core:1.5.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
     testImplementation("io.mockk:mockk:1.13.8")
@@ -175,6 +175,6 @@ dependencies {
     testImplementation ("androidx.arch.core:core-testing:2.2.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
-
-
 }
+
+
