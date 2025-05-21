@@ -52,6 +52,12 @@ fun AppNavigation(
             )
         }
 
+        composable("rules") {
+            RulesScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         composable("connection") {
             ConnectionScreen(
                 navController = navController,
