@@ -158,6 +158,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("androidx.test:core-ktx:1.5.0")
     testImplementation("androidx.test:monitor:1.6.1")
     testImplementation("androidx.test.ext:junit-ktx:1.1.5")
@@ -176,5 +178,11 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
 }
+configurations.all {
+    resolutionStrategy {
+        force("androidx.test.espresso:espresso-core:3.5.0")
+    }
+}
+
 
 

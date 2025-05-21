@@ -3,7 +3,7 @@ package com.example.codenamesapp
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class MainMenuLogicTest {
+class GameRulesTests {
 
     @Test
     fun playButtonCall() {

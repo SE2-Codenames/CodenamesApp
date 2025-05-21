@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.codenamesapp.R
@@ -87,29 +88,44 @@ fun RulesScreen(onBack: () -> Unit) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (isEnglish) {
-                        Text("Setup:\n- Split into 2 teams (Red & Blue) with at least 4 players.\n- Each team chooses a Spymaster; the others are Operatives.\n- Lay 25 random words in a 5x5 grid.")
+                        Text(
+                            "Setup:\n- Split into two teams: Red and Blue (at least 4 players).\n- Each team selects a Spymaster; the rest are Operatives.\n- Place 25 random word cards in a 5x5 grid."
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Goal:\n- Be the first team to identify all your agents.\n- Avoid finding the assassin card!")
+
+                        Text("Goal:\n- Be the first team to identify all your agents.\n- Avoid selecting the assassin card!")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Gameplay:\n- Spymasters give 1-word clues and a number.\n- Operatives try to guess related words.\n- Correct guesses = more chances. Wrong guesses = end of turn.\n- If the assassin is guessed, your team instantly loses.")
+
+                        Text("Gameplay:\n- Spymasters give a one-word clue followed by a number.\n- Operatives guess words on the board based on the clue.\n- Correct guesses allow more guesses (up to the number given +1).\n- A wrong guess ends the turn immediately.\n- Guessing the assassin card ends the game—you lose instantly.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Valid Clues:\n- One word only!\n- Must not be a visible word on the board!\n- Homonyms and proper names are okay if allowed by both teams.")
+
+                        Text("Valid Clues:\n- Must be exactly one word.\n- Cannot be any visible word on the board.\n- Homonyms and proper nouns are allowed if both teams agree beforehand.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Tips:\n- Spymasters must stay expressionless.\n- Field Operatives must avoid looking for nonverbal cues.\n- Use the timer optionally to speed up turns.")
+
+                        Text("Tips:\n- Spymasters must remain expressionless.\n- Operatives must not seek non-verbal cues.\n- You may use a timer to speed up gameplay.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Ending:\n- The game ends when all agents of one team are found or the assassin is revealed.")
+
+                        Text("End of the Game:\n- The game ends when a team finds all its agents or the assassin is guessed.")
                     } else {
-                        Text("Aufbau:\n- Teilt euch in 2 Teams (Rot & Blau) mit mindestens 4 Spielern auf.\n- Jedes Team wählt einen Geheimdienstchef; die anderen sind Ermittler.\n- Legt 25 zufällige Wörter in einem 5x5-Raster aus.")
+                        Text(
+                            "Aufbau:\n- Teilt euch in zwei Teams (Rot und Blau) mit mindestens 4 Spielern.\n- Jedes Team wählt einen Geheimdienstchef, die übrigen sind Ermittler.\n- Legt 25 zufällige Wortkarten in einem 5x5-Raster aus.",
+                            modifier = Modifier.testTag("AufbauText")
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Ziel:\n- Das erste Team sein, das alle Agenten identifiziert.\n- Vermeidet es, die Attentäterkarte zu finden!")
+
+                        Text("Ziel:\n- Das Team gewinnt, das zuerst alle seine Agenten findet.\n- Vermeidet es, die Attentäterkarte zu wählen!")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Spielverlauf:\n- Geheimdienstchefs geben 1-Wort-Hinweise und eine Zahl.\n- Ermittler versuchen, verwandte Wörter zu erraten.\n- Richtige Tipps = weitere Chancen. Falsche Tipps = Runde endet.\n- Wird der Attentäter erraten, verliert das Team sofort.")
+
+                        Text("Spielverlauf:\n- Der Geheimdienstchef gibt einen Hinweis mit genau einem Wort und einer Zahl.\n- Die Ermittler versuchen, passende Wörter zu erraten.\n- Richtige Wörter erlauben weitere Versuche (bis zur Zahl +1).\n- Ein falsches Wort beendet die Runde sofort.\n- Wird der Attentäter erraten, endet das Spiel sofort – das Team verliert.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Gültige Hinweise:\n- Nur ein Wort!\n- Darf kein sichtbares Wort auf dem Spielfeld sein!\n- Homonyme und Eigennamen sind erlaubt, wenn beide Teams zustimmen.")
+
+                        Text("Gültige Hinweise:\n- Genau ein Wort.\n- Kein sichtbares Wort auf dem Spielfeld darf als Hinweis verwendet werden.\n- Homonyme und Eigennamen sind erlaubt, wenn beide Teams vorher zustimmen.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Tipps:\n- Geheimdienstchefs müssen ausdruckslos bleiben.\n- Ermittler dürfen keine nonverbalen Hinweise beachten.\n- Optional kann ein Timer verwendet werden, um Runden zu beschleunigen.")
+
+                        Text("Tipps:\n- Der Geheimdienstchef darf keine Reaktionen zeigen.\n- Ermittler dürfen keine nonverbalen Hinweise beachten.\n- Ein Timer kann verwendet werden, um das Spiel zu beschleunigen.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Spielende:\n- Das Spiel endet, wenn alle Agenten eines Teams gefunden wurden oder der Attentäter aufgedeckt wurde.")
+
+                        Text("Spielende:\n- Das Spiel endet, wenn ein Team alle Agenten findet oder der Attentäter erraten wird.")
                     }
                 }
             }
