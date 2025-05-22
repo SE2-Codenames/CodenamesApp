@@ -23,9 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
+import com.example.codenamesapp.model.TeamRole
 
 @Composable
 fun GameBoardScreen(
@@ -37,6 +40,7 @@ fun GameBoardScreen(
     LockLandscapeOrientation()
 
     val isSpymaster = playerRole
+    val viewModel: GameStateViewModel = viewModel()
     println("🧠 Spielerrolle vom Server (isSpymaster): $isSpymaster")
 
     val cardList = remember(gameState) {
@@ -92,7 +96,10 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(isSpymaster, team)
+                    PlayerRoleScreen(
+                        isSpymaster = viewModel.myIsSpymaster.value,
+                        teamRole = viewModel.myTeam.value ?: TeamRole.RED
+                    )
                 }
             }
 
@@ -198,7 +205,7 @@ fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole) {
             modifier = Modifier.size(80.dp)
         )
         Text(
-            text = roleText,
+            text = "$roleText ($teamRole)",
             style = MaterialTheme.typography.headlineLarge.copy(color = textColor)
         )
     }
