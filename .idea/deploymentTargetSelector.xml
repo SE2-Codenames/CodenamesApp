@@ -12,6 +12,9 @@
 >>>>>>> 168bf21f97df8ff2c01cf4db92d01a9f68aecf75
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="MainActivity">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>
