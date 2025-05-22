@@ -3,7 +3,6 @@ package com.example.codenamesapp.lobby
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,15 +12,17 @@ import com.example.codenamesapp.network.WebSocketClient
 
 @Composable
 fun LobbyScreen(
-    playerName: String,
+    playerName: String?,
     playerList: List<Player>,
     socketClient: WebSocketClient,
     onBackToConnection: () -> Unit,
     onStartGame: () -> Unit
 ) {
-    val localPlayer = remember(playerList) {
-        playerList.find { it.name == playerName }
+    val localPlayer = playerList.find {
+        it.name.trim().equals(playerName?.trim(), ignoreCase = true)
     }
+
+    Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
 
     Column(
         modifier = Modifier
@@ -46,13 +47,13 @@ fun LobbyScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
                     socketClient.send("JOIN_TEAM:${player.name}:RED")
-                    println("\uD83D\uDCE4 ${player.name} will zu RED")
+                    println("📤 ${player.name} will zu RED")
                 }) {
                     Text("Join Red")
                 }
                 Button(onClick = {
                     socketClient.send("JOIN_TEAM:${player.name}:BLUE")
-                    println("\uD83D\uDCE4 ${player.name} will zu BLUE")
+                    println("📤 ${player.name} will zu BLUE")
                 }) {
                     Text("Join Blue")
                 }
@@ -62,7 +63,7 @@ fun LobbyScreen(
 
             Button(onClick = {
                 socketClient.send("SPYMASTER_TOGGLE:${player.name}")
-                println("\uD83D\uDCE4 ${player.name} toggelt Spymaster")
+                println("📤 ${player.name} toggelt Spymaster")
             }) {
                 Text(if (player.isSpymaster) "Unset Spymaster" else "Set Spymaster")
             }
@@ -75,7 +76,7 @@ fun LobbyScreen(
         }
 
         Button(onClick = onBackToConnection) {
-            Text("Zur\u00FCck")
+            Text("Zurück")
         }
     }
 }
