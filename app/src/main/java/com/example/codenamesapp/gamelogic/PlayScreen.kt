@@ -23,22 +23,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
 
 @Composable
 fun GameBoardScreen(
-    gameState: PayloadResponseMove,
-    playerRole: Boolean,
-    team: TeamRole,
+    viewModel: GameStateViewModel,
     communication: Communication
 ) {
     LockLandscapeOrientation()
+    val isSpymaster by viewModel.myIsSpymaster // player's role
+    val isTeam by viewModel.myTeam // player's team
+    val teamTurn by viewModel.team // whicht team's turn
 
-    val isSpymaster = playerRole
     println("🧠 Spielerrolle vom Server (isSpymaster): $isSpymaster")
 
+    // TODO: get variables
     val cardList = remember(gameState) {
         println("📦 Empfangene Karten:")
         val preparedCards = gameState.card.map { card ->
@@ -48,6 +50,7 @@ fun GameBoardScreen(
         mutableStateListOf<Card>().apply { addAll(preparedCards) }
     }
 
+    // TODO: get variables
     val scoreRed = gameState.score.getOrNull(0) ?: 0
     val scoreBlue = gameState.score.getOrNull(1) ?: 0
     val initialHint = gameState.hint ?: "–"
@@ -92,7 +95,7 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(isSpymaster, team)
+                    PlayerRoleScreen(isSpymaster, isTeam)
                 }
             }
 
@@ -101,7 +104,7 @@ fun GameBoardScreen(
                 GameBoardGrid(
                     onCardClicked = { card ->
                         val index = cardList.indexOf(card)
-                        if (index != -1) communication.giveCard(index)
+                        if (index != -1) viewModel.handleCardClick(index, communication)
                     },
                     onCardMarked = { card -> card.isMarked.value = !card.isMarked.value },
                     cardList,
@@ -155,7 +158,7 @@ fun GameBoardScreen(
                         if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
                             val word = hintWordInput.trim()
                             val number = hintNumberInput.trim().toIntOrNull() ?: 0
-                            communication.giveHint(word, number)
+                            viewModel.sendHint(word, number, communication)
                             messages.add("Dein Hinweis: $word ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
@@ -222,8 +225,8 @@ fun GameBoardGrid(
         items(cardList) { card ->
             GameCard(
                 card = card,
-                onClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
-                onLongClick = if (isPlayerTurn) { { onCardMarked(card) } } else { {} },
+                onClick = if (isPlayerTurn) { { onCardMarked(card) } } else { {} },
+                onLongClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
                 isSpymaster = isSpymaster
             )
         }

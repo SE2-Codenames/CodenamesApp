@@ -21,7 +21,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
         //gameState.value = gameManager.initGame()
     }
 
-    fun handleCardClock (index: Int, communication: Communication) {
+    fun handleCardClick (index: Int, communication: Communication) {
         communication.giveCard(index)
     }
 
