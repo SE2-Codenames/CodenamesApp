@@ -15,6 +15,9 @@ import androidx.navigation.NavHostController
 import com.example.codenamesapp.R
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.ui.theme.ButtonsGui
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 
 @Composable
 fun GameOverScreen(
@@ -118,6 +121,48 @@ fun GameOverScreen(
             text = "Main Menu",
             onClick = { navController.navigate("menu") { popUpTo(0) } },
             modifier = Modifier.width(250.dp).height(48.dp)
+        )
+    }
+}
+@Preview(name = "Red Team Victory", showBackground = true)
+@Composable
+fun PreviewRedVictory() {
+    CodenamesAppTheme {
+        val fakeNavController = rememberNavController()
+        GameOverScreen(
+            navController = fakeNavController,
+            winningTeam = TeamRole.RED,
+            scoreRed = 8,
+            scoreBlue = 5
+        )
+    }
+}
+
+@Preview(name = "Blue Team Victory", showBackground = true)
+@Composable
+fun PreviewBlueVictory() {
+    CodenamesAppTheme {
+        val fakeNavController = rememberNavController()
+        GameOverScreen(
+            navController = fakeNavController,
+            winningTeam = TeamRole.BLUE,
+            scoreRed = 3,
+            scoreBlue = 9
+        )
+    }
+}
+
+@Preview(name = "Assassin Triggered", showBackground = true)
+@Composable
+fun PreviewAssassinTriggered() {
+    CodenamesAppTheme {
+        val fakeNavController = rememberNavController()
+        GameOverScreen(
+            navController = fakeNavController,
+            winningTeam = TeamRole.RED, // Red wins by default when assassin is triggered by blue
+            isAssassinTriggered = true,
+            scoreRed = 6,
+            scoreBlue = 2
         )
     }
 }

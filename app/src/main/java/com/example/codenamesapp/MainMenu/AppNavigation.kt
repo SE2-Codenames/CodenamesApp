@@ -12,8 +12,6 @@ import com.example.codenamesapp.lobby.LobbyScreen
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
 import com.example.codenamesapp.GameBoardScreen
-import com.example.codenamesapp.model.TeamRole
-import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.screens.ConnectionScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
