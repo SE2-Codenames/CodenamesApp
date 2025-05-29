@@ -36,30 +36,18 @@ fun GameBoardScreen(
     LockLandscapeOrientation()
     val isSpymaster by viewModel.myIsSpymaster // player's role
     val isTeam by viewModel.myTeam // player's team
-    val teamTurn by viewModel.team // whicht team's turn
+    val teamTurn = viewModel.team // which team's turn
 
     println("🧠 Spielerrolle vom Server (isSpymaster): $isSpymaster")
 
     // TODO: get variables
-    val cardList = remember(gameState) {
-        println("📦 Empfangene Karten:")
-        val preparedCards = gameState.card.map { card ->
-            println("🔹 ${card.word}, role=${card.cardRole}, revealed=${card.revealed}")
-            card.apply { isMarked = mutableStateOf(false) }
-        }
-        mutableStateListOf<Card>().apply { addAll(preparedCards) }
-    }
+    //val initialHint = gameState.hint ?: "–"
+    //val initialRemainingGuesses = gameState.remainingGuesses
 
-    // TODO: get variables
-    val scoreRed = gameState.score.getOrNull(0) ?: 0
-    val scoreBlue = gameState.score.getOrNull(1) ?: 0
-    val initialHint = gameState.hint ?: "–"
-    val initialRemainingGuesses = gameState.remainingGuesses
-
-    val isPlayerTurn = !isSpymaster
+    val isPlayerTurn = !isSpymaster && (isTeam == teamTurn.value)
 
     val messages = remember {
-        mutableStateListOf("Willkommen!", "Erster Hinweis: $initialHint ($initialRemainingGuesses).")
+        mutableStateListOf("Willkommen!" /*, "Erster Hinweis: $initialHint ($initialRemainingGuesses)."*/)
     }
 
     var showOverlay by remember { mutableStateOf(false) }
@@ -67,15 +55,14 @@ fun GameBoardScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
-            // Column 1 – Info & Buttons
-            // Column 1
+            // Column 1: Info & Buttons
             Box(modifier = Modifier.weight(0.4f).fillMaxHeight()) {
                 Row(
                     modifier = Modifier.padding(8.dp).align(Alignment.TopCenter).padding(top = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    CardsRemaining(redScore = scoreRed, blueScore = scoreBlue)
+                    CardsRemaining(redScore = viewModel.scoreRed, blueScore = viewModel.scoreBlue)
                 }
                 Column(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
@@ -99,21 +86,21 @@ fun GameBoardScreen(
                 }
             }
 
-            // Column 2
+            // Column 2: Card Grid
             Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 GameBoardGrid(
                     onCardClicked = { card ->
-                        val index = cardList.indexOf(card)
+                        val index = viewModel.cardList.indexOf(card)
                         if (index != -1) viewModel.handleCardClick(index, communication)
                     },
                     onCardMarked = { card -> card.isMarked.value = !card.isMarked.value },
-                    cardList,
+                    viewModel.cardList,
                     isSpymaster,
                     isPlayerTurn
                 )
             }
 
-            // Column 3
+            // Column 3: ChatBox
             Box(
                 modifier = Modifier.weight(0.3f).fillMaxHeight(),
                 contentAlignment = Alignment.BottomCenter
@@ -177,6 +164,7 @@ fun LockLandscapeOrientation() {
     }
 }
 
+// Column 1: Remaining Cards, Player Role, Logo ----------------------------------------------------
 @Composable
 fun CardsRemaining(redScore: Int, blueScore: Int) {
     Text(redScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
@@ -185,7 +173,7 @@ fun CardsRemaining(redScore: Int, blueScore: Int) {
 }
 
 @Composable
-fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole) {
+fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
     val image = painterResource(R.drawable.muster_logo)
     val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
     val roleText = if (isSpymaster) "Spymaster" else "Operative"
@@ -207,6 +195,7 @@ fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole) {
     }
 }
 
+// Colum 2: Card Grid ------------------------------------------------------------------------------
 @Composable
 fun GameBoardGrid(
     onCardClicked: (Card) -> Unit,
@@ -271,6 +260,8 @@ fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymast
     }
 }
 
+
+// Column 3: ChatBox -------------------------------------------------------------------------------
 @Composable
 fun ChatBox(messages: List<String>) {
     LazyColumn(
