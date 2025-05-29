@@ -34,13 +34,7 @@ fun GameBoardScreen(
     communication: Communication
 ) {
     LockLandscapeOrientation()
-    val isSpymaster by viewModel.myIsSpymaster // player's role
-    val isTeam by viewModel.myTeam // player's team
-    val teamTurn by viewModel.team // which team's turn
-
-    println("🧠 Spielerrolle vom Server (isSpymaster): $isSpymaster")
-
-    val isPlayerTurn = !isSpymaster && (isTeam == teamTurn.value)
+    println("Spielerrolle vom Server (IsSpymaster): $viewModel.myIsSpymaster")
 
     val messages = remember {
         mutableStateListOf("Willkommen!" , "Erster Hinweis: ${viewModel.hintText}.")
@@ -63,7 +57,7 @@ fun GameBoardScreen(
                 Column(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
-                    if (isSpymaster) {
+                    if (viewModel.myIsSpymaster.value) {
                         ButtonsGui(
                             text = "Give A Hint!", onClick = { showOverlay = true },
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
@@ -78,7 +72,7 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(isSpymaster, isTeam)
+                    PlayerRoleScreen(viewModel.myIsSpymaster.value, viewModel.myTeam.value)
                 }
             }
 
@@ -91,8 +85,8 @@ fun GameBoardScreen(
                     },
                     onCardMarked = { card -> card.isMarked.value = !card.isMarked.value },
                     viewModel.cardList,
-                    isSpymaster,
-                    isPlayerTurn
+                    viewModel.myIsSpymaster.value,
+                    viewModel.isPlayerTurn
                 )
             }
 
@@ -126,23 +120,23 @@ fun GameBoardScreen(
                     TextField(
                         value = hintWordInput,
                         onValueChange = { hintWordInput = it },
-                        label = { Text("Wort") }
+                        label = { Text("Word") }
                     )
                     TextField(
                         value = hintNumberInput,
                         onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() } },
-                        label = { Text("Anzahl") },
+                        label = { Text("Count") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    ButtonsGui("Senden", onClick = {
+                    ButtonsGui("Send", onClick = {
                         showOverlay = false
                         if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
                             val word = hintWordInput.trim()
                             val number = hintNumberInput.trim().toIntOrNull() ?: 0
                             viewModel.sendHint(word, number, communication)
-                            messages.add("Dein Hinweis: $word ($number)")
+                            messages.add("Your Hint: $word ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
                 }
