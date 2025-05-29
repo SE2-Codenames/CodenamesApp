@@ -36,18 +36,14 @@ fun GameBoardScreen(
     LockLandscapeOrientation()
     val isSpymaster by viewModel.myIsSpymaster // player's role
     val isTeam by viewModel.myTeam // player's team
-    val teamTurn = viewModel.team // which team's turn
+    val teamTurn by viewModel.team // which team's turn
 
     println("🧠 Spielerrolle vom Server (isSpymaster): $isSpymaster")
-
-    // TODO: get variables
-    //val initialHint = gameState.hint ?: "–"
-    //val initialRemainingGuesses = gameState.remainingGuesses
 
     val isPlayerTurn = !isSpymaster && (isTeam == teamTurn.value)
 
     val messages = remember {
-        mutableStateListOf("Willkommen!" /*, "Erster Hinweis: $initialHint ($initialRemainingGuesses)."*/)
+        mutableStateListOf("Willkommen!" , "Erster Hinweis: ${viewModel.hintText}.")
     }
 
     var showOverlay by remember { mutableStateOf(false) }

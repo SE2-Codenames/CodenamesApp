@@ -16,11 +16,14 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
 
-    var scoreRed = gameManager.getScore(TeamRole.RED)
-    var scoreBlue = gameManager.getScore(TeamRole.BLUE)
+    // Scores for Red and Blue Team
+    val scoreRed : Int
+        get() = gameManager.getScore(TeamRole.RED)
+    val scoreBlue : Int
+        get() = gameManager.getScore(TeamRole.BLUE)
 
+    // creating Card-List
     val cardList = mutableListOf<Card>()
-
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
         println("Empfangene Karten:")
         val preparedCards = gameState.card.map { card ->
@@ -31,12 +34,15 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
         cardList.addAll(preparedCards)
     }
 
-
-    //var onShowGameBoard: (() -> Unit)? = null
+    val hintText: String
+        get() = payload.value?.let {
+            "${it.hint ?: "–"} (${it.remainingGuesses})"
+        } ?: "–"
 
     fun loadGame(state: PayloadResponseMove) {
         gameManager.loadGameState(state)
         payload.value = state
+        loadCardsFromGameState(state)
     }
 
     fun handleCardClick (index: Int, communication: Communication) {

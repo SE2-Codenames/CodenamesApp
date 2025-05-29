@@ -4,9 +4,7 @@ import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.TeamRole
 
-class GameManager(
-    private var gameState: PayloadResponseMove? = null
-) {
+class GameManager(private var gameState: PayloadResponseMove? = null) {
     fun loadGameState(state: PayloadResponseMove) {
         gameState = state
     }
