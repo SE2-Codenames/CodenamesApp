@@ -1,12 +1,18 @@
 package com.example.codenamesapp.MainMenu
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,9 +33,11 @@ fun GameOverScreen(
     scoreRed: Int = 0,
     scoreBlue: Int = 0
 ) {
+    LockLandscapeOrientation()
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -46,7 +54,7 @@ fun GameOverScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "The assassin was triggered!",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineSmall
             )
             val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
             Text(
@@ -124,6 +132,7 @@ fun GameOverScreen(
         )
     }
 }
+
 @Preview(name = "Red Team Victory", showBackground = true)
 @Composable
 fun PreviewRedVictory() {
@@ -163,6 +172,38 @@ fun PreviewAssassinTriggered() {
             isAssassinTriggered = true,
             scoreRed = 6,
             scoreBlue = 2
+        )
+    }
+}
+
+@Composable
+fun LockLandscapeOrientation() {
+    val context = LocalContext.current
+    val activity = context as? Activity
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    }
+}
+
+@Preview(
+    name = "Game Over Landscape Preview",
+    showBackground = true,
+    widthDp = 800,
+    heightDp = 480
+)
+@Composable
+fun PreviewGameOverLandscape() {
+    CodenamesAppTheme {
+        val fakeNavController = rememberNavController()
+
+        // Even though this won't affect preview, it's good to include
+        LockLandscapeOrientation()
+
+        GameOverScreen(
+            navController = fakeNavController,
+            winningTeam = TeamRole.RED,
+            scoreRed = 9,
+            scoreBlue = 6
         )
     }
 }
