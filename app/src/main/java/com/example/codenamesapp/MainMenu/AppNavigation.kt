@@ -25,7 +25,7 @@ fun AppNavigation(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val playerNameState = remember { mutableStateOf("") }
+    val playerNameState = remember { mutableStateOf<String?>(null) }
     val playerListState = remember { mutableStateOf(listOf<Player>()) }
     val gameStateViewModel: GameStateViewModel = viewModel(
         factory = GameStateViewModelFactory(GameManager())
@@ -67,21 +67,26 @@ fun AppNavigation(
                 navController = navController,
                 coroutineScope = coroutineScope,
                 socketClient = socketClient,
-                onConnectionEstablished = {
+                onConnectionEstablished = { name ->
                     println("✅ Verbindung steht")
+                    playerNameState.value = name
+                    navController.navigate("lobby")
                 },
                 onMessageReceived = {
                     println("📨 Server: $it")
                 },
                 onPlayerListUpdated = {
                     playerListState.value = it
+                    if (playerNameState.value != null && it.any { p -> p.name == playerNameState.value }) {
+                        navController.navigate("lobby")
+                    }
                 }
             )
         }
 
         composable("lobby") {
             LobbyScreen(
-                playerName = playerNameState.value,
+                playerName = playerNameState.value ?: "",
                 playerList = playerListState.value,
                 socketClient = socketClient,
                 onBackToConnection = { navController.popBackStack() },
