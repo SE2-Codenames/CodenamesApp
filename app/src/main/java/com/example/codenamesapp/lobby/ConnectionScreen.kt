@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 fun ConnectionScreen(
     navController: NavHostController,
     coroutineScope: CoroutineScope,
-    onConnectionEstablished: () -> Unit,
+    onConnectionEstablished: (String) -> Unit,
     onMessageReceived: (String) -> Unit,
     onPlayerListUpdated: (List<Player>) -> Unit,
     socketClient: WebSocketClient,
@@ -75,7 +75,7 @@ fun ConnectionScreen(
                     socketClient.setPlayerName(playerName)
                     socketClient.connect(
                         onSuccess = {
-                            onConnectionEstablished()
+                            onConnectionEstablished(playerName)
                             navController.navigate("lobby")
                         },
                         onError = {
