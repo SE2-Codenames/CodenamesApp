@@ -12,6 +12,8 @@ import com.example.codenamesapp.lobby.LobbyScreen
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
 import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.gamelogic.GameManager
+import com.example.codenamesapp.gamelogic.GameStateViewModelFactory
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.screens.ConnectionScreen
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +25,11 @@ fun AppNavigation(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val playerNameState = remember { mutableStateOf("Edi") }
+    val playerNameState = remember { mutableStateOf("") }
     val playerListState = remember { mutableStateOf(listOf<Player>()) }
-    val gameStateViewModel: GameStateViewModel = viewModel()
+    val gameStateViewModel: GameStateViewModel = viewModel(
+        factory = GameStateViewModelFactory(GameManager())
+    )
 
     // Setze Callback für SHOW_GAMEBOARD
     gameStateViewModel.onShowGameBoard = {
@@ -98,9 +102,7 @@ fun AppNavigation(
 
             if (payload != null && team != null && isSpymaster != null) {
                 GameBoardScreen(
-                    gameState = payload,
-                    team = team,
-                    playerRole = isSpymaster,
+                    viewModel = gameStateViewModel,
                     communication = communication
                 )
             }

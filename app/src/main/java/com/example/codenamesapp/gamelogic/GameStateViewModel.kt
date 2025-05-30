@@ -11,11 +11,12 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val payload = mutableStateOf<PayloadResponseMove?>(null)
     val team = mutableStateOf<TeamRole?>(null) // team whose turn it is
     val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
+    var onShowGameBoard: (() -> Unit)? = null
 
     // OWN selections
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
-    val isPlayerTurn = !myIsSpymaster && (myTeam == team)
+    val isPlayerTurn = !myIsSpymaster.value && (myTeam == team)
 
     // Scores for Red and Blue Team
     val scoreRed : Int
