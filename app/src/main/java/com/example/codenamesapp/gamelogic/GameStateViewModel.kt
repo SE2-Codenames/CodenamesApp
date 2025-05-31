@@ -19,7 +19,10 @@ class GameStateViewModel : ViewModel() {
     fun resetState() {
         payload.value = null
         team.value = null
-        //playerRole.value = null
+        playerRole.value = false
+        myTeam.value = null
+        myIsSpymaster.value = false
+        hasReset.value = false
     }
     val hasReset = mutableStateOf(false)
 }

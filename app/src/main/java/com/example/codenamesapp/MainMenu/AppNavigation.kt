@@ -32,22 +32,28 @@ fun AppNavigation(
         navController.navigate("gameboard")
     }
 
-    LaunchedEffect(Unit) {
-        gameStateViewModel.onResetGame = {
-            if (!gameStateViewModel.hasReset.value) {
-                gameStateViewModel.hasReset.value = true
-                navController.navigate("lobby") {
-                    popUpTo("menu") { inclusive = false }
-                }
-            }
-        }
-    }
-
     val socketClient = remember {
         WebSocketClient(
             gameStateViewModel = gameStateViewModel,
             navController = navController
         )
+    }
+
+    LaunchedEffect(Unit) {
+        gameStateViewModel.onResetGame = {
+            if (!gameStateViewModel.hasReset.value) {
+                gameStateViewModel.hasReset.value = true
+                socketClient.reconnect(
+                    onSuccess = { navController.navigate("lobby") },
+                    onError = { println("Fehler beim Reconnect: $it") },
+                    onMessageReceived = { println("Server: $it") },
+                    onPlayerListUpdated = { playerListState.value = it }
+                )
+                navController.navigate("lobby") {
+                    popUpTo("menu") { inclusive = false }
+                }
+            }
+        }
     }
 
     NavHost(
