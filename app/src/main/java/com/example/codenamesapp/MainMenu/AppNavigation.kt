@@ -34,7 +34,12 @@ fun AppNavigation(
 
     LaunchedEffect(Unit) {
         gameStateViewModel.onResetGame = {
-            navController.navigate("lobby")
+            if (!gameStateViewModel.hasReset.value) {
+                gameStateViewModel.hasReset.value = true
+                navController.navigate("lobby") {
+                    popUpTo("menu") { inclusive = false }
+                }
+            }
         }
     }
 

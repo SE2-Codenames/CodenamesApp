@@ -21,4 +21,5 @@ class GameStateViewModel : ViewModel() {
         team.value = null
         //playerRole.value = null
     }
+    val hasReset = mutableStateOf(false)
 }
