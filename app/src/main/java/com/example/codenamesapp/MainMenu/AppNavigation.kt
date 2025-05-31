@@ -32,6 +32,12 @@ fun AppNavigation(
         navController.navigate("gameboard")
     }
 
+    LaunchedEffect(Unit) {
+        gameStateViewModel.onResetGame = {
+            navController.navigate("lobby")
+        }
+    }
+
     val socketClient = remember {
         WebSocketClient(
             gameStateViewModel = gameStateViewModel,
