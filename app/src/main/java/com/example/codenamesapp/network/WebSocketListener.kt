@@ -68,6 +68,11 @@ class CodenamesWebSocketListener(
                 }
             }
 
+            text.startsWith("RESET") -> {
+                gameStateViewModel.resetState()
+                gameStateViewModel.onResetGame?.invoke()
+            }
+
             else -> {
                 mainHandler.post { onMessage(text) }
             }

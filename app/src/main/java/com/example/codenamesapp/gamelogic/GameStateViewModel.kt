@@ -10,9 +10,15 @@ class GameStateViewModel : ViewModel() {
     val team = mutableStateOf<TeamRole?>(null) // team whose turn it is
     val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
 
+    var onResetGame: (() -> Unit)? = null
     // OWN selections
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
 
     var onShowGameBoard: (() -> Unit)? = null
+    fun resetState() {
+        payload.value = null
+        team.value = null
+        //playerRole.value = null
+    }
 }
