@@ -89,6 +89,7 @@ fun AppNavigation(
                 playerName = playerNameState.value ?: "",
                 playerList = playerListState.value,
                 socketClient = socketClient,
+                gameStateViewModel = gameStateViewModel,
                 onBackToConnection = { navController.popBackStack() },
                 onStartGame = {
                     coroutineScope.launch(Dispatchers.IO) {

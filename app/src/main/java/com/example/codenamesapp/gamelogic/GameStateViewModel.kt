@@ -6,9 +6,11 @@ import com.example.codenamesapp.model.Card
 import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.Communication
+import com.example.codenamesapp.screens.ConnectionScreen
 
 class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val payload = mutableStateOf<PayloadResponseMove?>(null)
+    val player = mutableStateOf(null)
     val team = mutableStateOf<TeamRole?>(null) // team whose turn it is
     val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
     var onShowGameBoard: (() -> Unit)? = null

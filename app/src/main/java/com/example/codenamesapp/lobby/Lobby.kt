@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
@@ -15,6 +16,7 @@ fun LobbyScreen(
     playerName: String?,
     playerList: List<Player>,
     socketClient: WebSocketClient,
+    gameStateViewModel: GameStateViewModel,
     onBackToConnection: () -> Unit,
     onStartGame: () -> Unit
 ) {
@@ -23,6 +25,7 @@ fun LobbyScreen(
     }
 
     Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
+    //gameStateViewModel.player.value = localPlayer as Nothing?
 
     Column(
         modifier = Modifier
@@ -47,12 +50,14 @@ fun LobbyScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
                     socketClient.send("JOIN_TEAM:${player.name}:RED")
+                    gameStateViewModel.myTeam.value = TeamRole.RED
                     println("📤 ${player.name} will zu RED")
                 }) {
                     Text("Join Red")
                 }
                 Button(onClick = {
                     socketClient.send("JOIN_TEAM:${player.name}:BLUE")
+                    gameStateViewModel.myTeam.value = TeamRole.BLUE
                     println("📤 ${player.name} will zu BLUE")
                 }) {
                     Text("Join Blue")
@@ -63,6 +68,7 @@ fun LobbyScreen(
 
             Button(onClick = {
                 socketClient.send("SPYMASTER_TOGGLE:${player.name}")
+                gameStateViewModel.myIsSpymaster.value = !player.isSpymaster
                 println("📤 ${player.name} toggelt Spymaster")
             }) {
                 Text(if (player.isSpymaster) "Unset Spymaster" else "Set Spymaster")
