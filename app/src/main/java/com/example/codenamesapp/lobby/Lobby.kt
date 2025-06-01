@@ -25,7 +25,7 @@ fun LobbyScreen(
     }
 
     Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
-    //gameStateViewModel.player.value = localPlayer as Nothing?
+    //gameStateViewModel.player.value = localPlayer.name
 
     Column(
         modifier = Modifier
@@ -51,6 +51,7 @@ fun LobbyScreen(
                 Button(onClick = {
                     socketClient.send("JOIN_TEAM:${player.name}:RED")
                     gameStateViewModel.myTeam.value = TeamRole.RED
+                    gameStateViewModel.myIsSpymaster.value = false
                     println("📤 ${player.name} will zu RED")
                 }) {
                     Text("Join Red")
@@ -58,6 +59,7 @@ fun LobbyScreen(
                 Button(onClick = {
                     socketClient.send("JOIN_TEAM:${player.name}:BLUE")
                     gameStateViewModel.myTeam.value = TeamRole.BLUE
+                    gameStateViewModel.myIsSpymaster.value = false
                     println("📤 ${player.name} will zu BLUE")
                 }) {
                     Text("Join Blue")
