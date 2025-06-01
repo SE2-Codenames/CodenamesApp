@@ -57,6 +57,9 @@ class CodenamesWebSocketListener(
                     gameStateViewModel.payload.value = payload
                     gameStateViewModel.team.value = payload.teamRole
                     gameStateViewModel.playerRole.value = payload.isSpymaster
+
+                    gameStateViewModel.loadGame(payload)
+                    Log.d("DEBUG", "✅ Karten empfangen: ${payload.card.size}")
                 } catch (e: Exception) {
                     Log.e("CodenamesWebSocket", "Fehler beim Parsen von GAME_STATE: $json", e)
                 }

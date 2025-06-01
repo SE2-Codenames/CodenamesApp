@@ -4,11 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PayloadResponseMove(
-    val score: List<Int>,
-    val teamRole: TeamRole,
-    val gameState: GamePhase,
-    val remainingGuesses: Int,
+    val score: List<Int>, // "score":[0,0]
+    val teamRole: TeamRole, // "teamRole": "BLUE"
+    val gameState: GamePhase, // "gameState": "SPYMASTER_TURN"
+    val remainingGuesses: Int, // "remainingGuesses":0
     val hint: String? = null,
-    val card: List<Card>,
+    val card: List<Card>, // "card":[]
     val isSpymaster: Boolean
 )
