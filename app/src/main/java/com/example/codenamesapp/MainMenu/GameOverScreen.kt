@@ -2,6 +2,7 @@ package com.example.codenamesapp.MainMenu
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +36,9 @@ fun GameOverScreen(
     scoreBlue: Int = 0
 ) {
     LockLandscapeOrientation()
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -42,94 +47,115 @@ fun GameOverScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Game result text
-        if (isAssassinTriggered) {
+        GameResultContent(winningTeam, isAssassinTriggered)
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        ScoreDisplay(scoreRed, scoreBlue)
+
+        Spacer(modifier = Modifier.height(if (isLandscape) 20.dp else 48.dp))
+
+        Image(
+            painter = painterResource(R.drawable.muster_logo),
+            contentDescription = "Game Logo",
+            modifier = Modifier.size(if (isLandscape) 100.dp else 120.dp)
+        )
+
+        Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 48.dp))
+
+        ButtonsGui(
+            text = "Main Menu",
+            onClick = { navController.navigate("menu") { popUpTo(0) } },
+            modifier = Modifier
+                .width(280.dp)
+                .height(60.dp),
+        )
+    }
+}
+
+@Composable
+private fun GameResultContent(
+    winningTeam: TeamRole?,
+    isAssassinTriggered: Boolean
+) {
+    if (isAssassinTriggered) {
+        Text(
+            text = "GAME OVER",
+            style = MaterialTheme.typography.headlineLarge.copy(
+                color = Color.Red,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "The assassin was triggered!",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
+        Text(
+            text = "${losingTeam.name} Team loses!",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                color = if (losingTeam == TeamRole.RED) Color.Red else Color.Blue
+            )
+        )
+    } else {
+        winningTeam?.let { team ->
             Text(
-                text = "GAME OVER",
+                text = "VICTORY!",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    color = Color.Red,
+                    color = if (team == TeamRole.RED) Color.Red else Color.Blue,
                     fontWeight = FontWeight.Bold
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "The assassin was triggered!",
-                style = MaterialTheme.typography.headlineSmall
+                text = "${team.name} Team Wins!",
+                style = MaterialTheme.typography.headlineMedium
             )
-            val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
+        } ?: run {
             Text(
-                text = "${losingTeam.name} Team loses!",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    color = if (losingTeam == TeamRole.RED) Color.Red else Color.Blue
-                )
+                text = "GAME OVER",
+                style = MaterialTheme.typography.headlineLarge
             )
-        } else {
-            winningTeam?.let { team ->
-                Text(
-                    text = "VICTORY!",
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        color = if (team == TeamRole.RED) Color.Red else Color.Blue,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "${team.name} Team Wins!",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            } ?: run {
-                Text(
-                    text = "GAME OVER",
-                    style = MaterialTheme.typography.headlineLarge
-                )
-            }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Score display
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Red Team",
-                    style = MaterialTheme.typography.headlineSmall.copy(color = Color.Red)
-                )
-                Text(
-                    text = scoreRed.toString(),
-                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
-                )
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Blue Team",
-                    style = MaterialTheme.typography.headlineSmall.copy(color = Color.Blue)
-                )
-                Text(
-                    text = scoreBlue.toString(),
-                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
-                )
-            }
+@Composable
+private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Red Team",
+                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Red)
+            )
+            Text(
+                text = scoreRed.toString(),
+                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
+            )
         }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Blue Team",
+                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Blue)
+            )
+            Text(
+                text = scoreBlue.toString(),
+                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
+            )
+        }
+    }
+}
 
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Image(
-            painter = painterResource(R.drawable.muster_logo),
-            contentDescription = "Game Logo",
-            modifier = Modifier.size(120.dp)
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // Back to main menu button
-        ButtonsGui(
-            text = "Main Menu",
-            onClick = { navController.navigate("menu") { popUpTo(0) } },
-            modifier = Modifier.width(250.dp).height(48.dp)
-        )
+@Composable
+fun LockLandscapeOrientation() {
+    val context = LocalContext.current
+    val activity = context as? Activity
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 }
 
@@ -173,15 +199,6 @@ fun PreviewAssassinTriggered() {
             scoreRed = 6,
             scoreBlue = 2
         )
-    }
-}
-
-@Composable
-fun LockLandscapeOrientation() {
-    val context = LocalContext.current
-    val activity = context as? Activity
-    LaunchedEffect(Unit) {
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 }
 
