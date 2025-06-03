@@ -31,6 +31,13 @@ fun AppNavigation(
         navController.navigate("gameboard")
     }
 
+    //onGameOver callback
+    gameStateViewModel.onGameOver = { result ->
+        navController.navigate("gameover") {
+            launchSingleTop = true
+        }
+    }
+
     val socketClient = remember {
         WebSocketClient(
             gameStateViewModel = gameStateViewModel,
@@ -108,6 +115,24 @@ fun AppNavigation(
                     communication = communication
                 )
             }
+        }
+
+        composable("gameover") { //null check
+            val gameEndResult = gameStateViewModel.gameEndResult.value
+                ?: run {
+                    LaunchedEffect(Unit) {
+                        navController.popBackStack()
+                    }
+                    return@composable
+                }
+
+            GameOverScreen(
+                navController = navController,
+                winningTeam = gameEndResult.winningTeam,
+                isAssassinTriggered = gameEndResult.isAssassinTriggered,
+                scoreRed = gameEndResult.scoreRed,
+                scoreBlue = gameEndResult.scoreBlue
+            )
         }
     }
 }

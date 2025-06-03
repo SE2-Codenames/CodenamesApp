@@ -36,7 +36,7 @@ fun GameBoardScreen(
     gameState: PayloadResponseMove,
     playerRole: Boolean,
     team: TeamRole,
-    communication: Communication
+    communication: Communication,
 ) {
     LockLandscapeOrientation()
 

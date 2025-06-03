@@ -65,7 +65,7 @@ fun GameOverScreen(
 
         ButtonsGui(
             text = "Main Menu",
-            onClick = { navController.navigate("menu") { popUpTo(0) } },
+            onClick = { navController.navigate("menu") { popUpTo(0)}},
             modifier = Modifier
                 .width(280.dp)
                 .height(60.dp),
@@ -224,4 +224,3 @@ fun PreviewGameOverLandscape() {
         )
     }
 }
-
