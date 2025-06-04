@@ -148,6 +148,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation(libs.androidx.ui.test.junit4.android)
+    implementation(libs.androidx.navigation.compose.jvmstubs)
     //implementation(libs.androidx.junit.ktx)
     //implementation(libs.test.core.ktx)
     testImplementation(libs.junit)

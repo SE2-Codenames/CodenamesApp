@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
@@ -81,6 +82,6 @@ fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier) { // Desi
         shape = RectangleShape,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
     ) {
-        Text(text, color = MaterialTheme.colorScheme.primary)
+        Text(text, fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
     }
 }
