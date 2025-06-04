@@ -25,6 +25,8 @@ class WebSocketHandler(
         if (text.startsWith("PLAYERS:")) {
             val players = parsePlayers(text.removePrefix("PLAYERS:"))
             onPlayerListUpdate(players)
+        } else if (text == "RESET") {
+            onMessageReceived("RESET")
         } else {
             onMessageReceived(text)
         }

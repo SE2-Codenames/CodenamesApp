@@ -43,6 +43,23 @@ fun AppNavigation(
         )
     }
 
+    LaunchedEffect(Unit) {
+        gameStateViewModel.onResetGame = {
+            if (!gameStateViewModel.hasReset.value) {
+                gameStateViewModel.hasReset.value = true
+                socketClient.reconnect(
+                    onSuccess = { navController.navigate("lobby") },
+                    onError = { println("Fehler beim Reconnect: $it") },
+                    onMessageReceived = { println("Server: $it") },
+                    onPlayerListUpdated = { playerListState.value = it }
+                )
+                navController.navigate("lobby") {
+                    popUpTo("menu") { inclusive = false }
+                }
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = "menu",

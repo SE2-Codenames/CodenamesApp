@@ -15,6 +15,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
     var onShowGameBoard: (() -> Unit)? = null
 
+    var onResetGame: (() -> Unit)? = null
     // OWN selections
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
@@ -26,6 +27,15 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val scoreBlue : Int
         get() = gameManager.getScore(TeamRole.BLUE)
 
+    fun resetState() {
+        payload.value = null
+        team.value = null
+        playerRole.value = false
+        myTeam.value = null
+        myIsSpymaster.value = false
+        hasReset.value = false
+    }
+    val hasReset = mutableStateOf(false)
     // creating Card-List
     val cardList = mutableListOf<Card>()
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
