@@ -1,9 +1,13 @@
 package com.example.codenamesapp
 
+import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.CardRole
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.model.Card
+import com.example.codenamesapp.network.Communication
+import io.mockk.every
+import io.mockk.mockk
 import junit.framework.TestCase.assertNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -13,37 +17,48 @@ import org.junit.jupiter.api.Test
 
 class GameStateViewTest {
 
-    private lateinit var modelGameState: GameStateViewModel
+    private lateinit var viewModel: GameStateViewModel
+    private lateinit var gameManager: GameManager
+    private lateinit var communication: Communication
+
+    private val sampleCards = listOf(
+        Card("Apple", CardRole.RED, false),
+        Card("Sky", CardRole.BLUE, false)
+    )
 
     @BeforeEach
     fun setUp() {
-        modelGameState = GameStateViewModel()
+        gameManager = mockk(relaxed = true)
+        communication = mockk(relaxed = true)
+        every { gameManager.getScore(TeamRole.RED) } returns 3
+        every { gameManager.getScore(TeamRole.BLUE) } returns 4
+        viewModel = GameStateViewModel(gameManager)
     }
 
     @Test
     fun testInitialStates() {
-        assertNull(modelGameState.payload.value)
-        assertNull(modelGameState.team.value)
-        assertFalse(modelGameState.playerRole.value)
-        assertNull(modelGameState.myTeam.value)
-        assertFalse(modelGameState.myIsSpymaster.value)
+        assertNull(viewModel.payload.value)
+        assertNull(viewModel.team.value)
+        assertFalse(viewModel.playerRole.value)
+        assertNull(viewModel.myTeam.value)
+        assertFalse(viewModel.myIsSpymaster.value)
     }
 
     @Test
     fun testSetMyTeamAndSpymaster() {
-        modelGameState.myTeam.value = TeamRole.RED
-        modelGameState.myIsSpymaster.value = true
+        viewModel.myTeam.value = TeamRole.RED
+        viewModel.myIsSpymaster.value = true
 
-        assertEquals(TeamRole.RED, modelGameState.myTeam.value)
-        assertTrue(modelGameState.myIsSpymaster.value)
+        assertEquals(TeamRole.RED, viewModel.myTeam.value)
+        assertTrue(viewModel.myIsSpymaster.value)
     }
 
     @Test
     fun testOnShowGameBoardCallbackIsInvoked() {
         var wasCalled = false
-        modelGameState.onShowGameBoard = { wasCalled = true }
+        viewModel.onShowGameBoard = { wasCalled = true }
 
-        modelGameState.onShowGameBoard?.invoke()
+        viewModel.onShowGameBoard?.invoke()
 
         assertTrue(wasCalled)
     }
