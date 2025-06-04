@@ -24,7 +24,7 @@ fun ConnectionScreen(
     socketClient: WebSocketClient,
     modifier: Modifier = Modifier
 ) {
-    var host by remember { mutableStateOf("10.0.2.2") }
+    var host by remember { mutableStateOf("127.0.0.1") }
     var port by remember { mutableStateOf("8081") }
     var playerName by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
