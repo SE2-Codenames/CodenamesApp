@@ -17,7 +17,8 @@ class CodenamesWebSocketListener(
     private val onPlayersUpdated: (List<Player>) -> Unit,
     private val onConnectionEstablished: () -> Unit,
     private val onShowGameBoard: () -> Unit,
-    private val gameStateViewModel: GameStateViewModel
+    private val gameStateViewModel: GameStateViewModel,
+    private val onError: (String) -> Unit
 ) : WebSocketListener() {
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -75,7 +76,11 @@ class CodenamesWebSocketListener(
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        Log.e("CodenamesWebSocket", "❌ Fehler: ${t.localizedMessage}", t)
+        //Log.e("CodenamesWebSocket", "❌ Fehler: ${t.localizedMessage}", t)
+
+       val errorMsg = " Verbindung fehlgeschlagen: ${t.localizedMessage ?: "Unbekannter Fehler"}"
+        Log.e("CodenamesWebSocket", errorMsg, t)
+        onError(errorMsg)
     }
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {

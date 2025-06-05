@@ -2,6 +2,8 @@ package com.example.codenamesapp.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -102,6 +104,12 @@ fun ConnectionScreen(
             }
         }) {
             Text("Verbinden")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        TextButton(onClick = { navController.popBackStack() }) {
+            Text("Zurück") // or "Go back"
         }
 
         if (error != null) {
