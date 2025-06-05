@@ -1,15 +1,11 @@
 package com.example.codenamesapp
-import com.example.codenamesapp.model.CardRole
 import com.example.codenamesapp.model.TeamRole
-import com.example.codenamesapp.model.Card
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.PayloadResponseMove
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 
 
