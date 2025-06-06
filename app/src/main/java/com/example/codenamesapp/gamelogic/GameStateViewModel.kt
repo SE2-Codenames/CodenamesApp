@@ -2,6 +2,7 @@ package com.example.codenamesapp.gamelogic
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.codenamesapp.MainMenu.GameEndResult
 import com.example.codenamesapp.model.Card
 import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.TeamRole
@@ -66,4 +67,10 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     fun sendHint (hintWord: String, hintNumber: Int, communication: Communication) {
         communication.giveHint(hintWord, hintNumber)
     }
+
+    val gameEndResult = mutableStateOf<GameEndResult?>(null)
+
+    //onGameOver callback
+    var onGameOver: (GameEndResult) -> Unit = { _ -> }
+
 }

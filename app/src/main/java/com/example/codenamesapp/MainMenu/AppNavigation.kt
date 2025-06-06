@@ -130,5 +130,24 @@ fun AppNavigation(
                 )
             }
         }
+
+        composable("gameover") { //null check
+            val gameEndResult = gameStateViewModel.gameEndResult.value
+                ?: run {
+                    LaunchedEffect(Unit) {
+                        navController.popBackStack()
+                    }
+                    return@composable
+                }
+
+            GameOverScreen(
+                navController = navController,
+                winningTeam = gameEndResult.winningTeam,
+                isAssassinTriggered = gameEndResult.isAssassinTriggered,
+                scoreRed = gameEndResult.scoreRed,
+                scoreBlue = gameEndResult.scoreBlue
+            )
+        }
+
     }
 }
