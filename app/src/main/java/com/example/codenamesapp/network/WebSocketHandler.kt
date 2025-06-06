@@ -15,32 +15,37 @@ class WebSocketHandler(
 ) : WebSocketListener() {
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
-        Log.d("WebSocketHandler", "✅ Verbindung aufgebaut")
+        Log.d("WebSocketHandler", "Verbindung aufgebaut")
         onConnectionEstablished?.invoke()
     }
 
     override fun onMessage(webSocket: WebSocket, text: String) {
-        Log.d("WebSocketHandler", "📩 Nachricht empfangen: $text")
+        Log.d("WebSocketHandler", "Nachricht empfangen: $text")
 
-        if (text.startsWith("PLAYERS:")) {
+        if (text == "USERNAME_TAKEN") {
+            onMessageReceived("USERNAME_TAKEN")
+        } else if (text.startsWith("PLAYERS:")) {
             val players = parsePlayers(text.removePrefix("PLAYERS:"))
             onPlayerListUpdate(players)
+        } else if (text == "RESET") {
+            onMessageReceived("RESET")
         } else {
             onMessageReceived(text)
         }
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-        Log.d("WebSocketHandler", "🔣 ByteMessage empfangen: ${bytes.utf8()}")
+        Log.d("WebSocketHandler", "ByteMessage empfangen: ${bytes.utf8()}")
+
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-        Log.d("WebSocketHandler", "⚠️ Verbindung wird geschlossen: $reason")
+        Log.d("WebSocketHandler", "Verbindung wird geschlossen: $reason")
         webSocket.close(1000, null)
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        Log.e("WebSocketHandler", "❌ Fehler bei WebSocket-Verbindung", t)
+        Log.e("WebSocketHandler", "Fehler bei WebSocket-Verbindung", t)
     }
 
     private fun parsePlayers(data: String): List<Player> {

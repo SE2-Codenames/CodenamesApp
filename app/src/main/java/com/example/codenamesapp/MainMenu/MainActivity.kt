@@ -14,17 +14,8 @@ import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var gameManager: GameManager
-
-    private fun loadWords(): List<String> {
-        val inputStream = resources.openRawResource(R.raw.words)
-        return inputStream.bufferedReader().readLines().filter { it.isNotBlank() }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        gameManager = GameManager { loadWords() }
 
         setContent {
             val navController = rememberNavController()
