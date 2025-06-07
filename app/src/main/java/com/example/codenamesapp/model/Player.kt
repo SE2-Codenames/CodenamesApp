@@ -5,3 +5,4 @@ data class Player(
     var team: TeamRole? = null,
     var isSpymaster: Boolean = false
 )
+

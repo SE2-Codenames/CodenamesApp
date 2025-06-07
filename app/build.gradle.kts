@@ -176,6 +176,7 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.12.2")
     testImplementation ("androidx.arch.core:core-testing:2.2.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    testImplementation(kotlin("test"))
 
 }
 configurations.all {
