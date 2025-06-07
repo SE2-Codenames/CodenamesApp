@@ -2,7 +2,11 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
+<<<<<<< HEAD
       <SelectionState runConfigName="Unnamed">
+=======
+      <SelectionState runConfigName="CodenamesApp.app">
+>>>>>>> 4bcdacb1ba0ff5114651a312adc77a1b7f16ca9e
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2025-06-01T20:17:15.902869500Z">
           <Target type="DEFAULT_BOOT">

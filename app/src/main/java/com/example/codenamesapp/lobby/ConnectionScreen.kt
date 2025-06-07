@@ -24,10 +24,11 @@ fun ConnectionScreen(
     socketClient: WebSocketClient,
     modifier: Modifier = Modifier
 ) {
-    var host by remember { mutableStateOf("10.0.2.2") }
+    var host by remember { mutableStateOf("127.0.0.1") }
     var port by remember { mutableStateOf("8081") }
     var playerName by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    var showUsernameTakenDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -81,7 +82,17 @@ fun ConnectionScreen(
                         onError = {
                             error = "Verbindungsfehler: $it"
                         },
-                        onMessageReceived = onMessageReceived,
+                        onMessageReceived = { message ->
+                            when (message) {
+                                "USERNAME_TAKEN" -> {
+                                    showUsernameTakenDialog = true
+                                }
+                                "USERNAME_OK" -> {
+                                    navController.navigate("lobby")
+                                }
+                                else -> onMessageReceived(message)
+                            }
+                        },
                         onPlayerListUpdated = onPlayerListUpdated
                     )
                 } catch (e: Exception) {
@@ -96,6 +107,19 @@ fun ConnectionScreen(
         if (error != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = error!!, color = MaterialTheme.colorScheme.error)
+        }
+
+        if (showUsernameTakenDialog) {
+            AlertDialog(
+                onDismissRequest = { showUsernameTakenDialog = false },
+                confirmButton = {
+                    TextButton(onClick = { showUsernameTakenDialog = false }) {
+                        Text("OK")
+                    }
+                },
+                title = { Text("Benutzername vergeben") },
+                text = { Text("Der eingegebene Benutzername ist bereits vergeben. Bitte wähle einen anderen.") }
+            )
         }
     }
 }

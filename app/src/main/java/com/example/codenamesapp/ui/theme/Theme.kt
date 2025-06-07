@@ -22,21 +22,22 @@ import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
     onPrimary = CustomBlack,
-    secondary = LightGrey,
-    tertiary = LightBlue,
-    error = LightRed
+    secondary = DarkGrey,
+    tertiary = DarkBlue,
+    error = DarkRed
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = CustomBlack,
     onPrimary = Color.White,
-    secondary = DarkGrey,
-    tertiary = DarkBlue,
-    error = DarkRed
+    secondary = LightGrey,
+    tertiary = LightBlue,
+    error = LightRed
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -81,6 +82,6 @@ fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier) { // Desi
         shape = RectangleShape,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
     ) {
-        Text(text, color = MaterialTheme.colorScheme.primary)
+        Text(text, fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
     }
 }
