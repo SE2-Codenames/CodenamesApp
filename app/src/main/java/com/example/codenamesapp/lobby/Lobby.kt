@@ -75,7 +75,7 @@ fun LobbyScreen(
                     onClick = {
                         sendMessage("JOIN_TEAM:${player.name}:RED")
                         gameStateViewModel.myTeam.value = TeamRole.RED
-                        //gameStateViewModel.myIsSpymaster.value = false
+                        gameStateViewModel.myIsSpymaster.value = false
                     },
                     modifier = Modifier.testTag("Button_Red"),
                 )
@@ -86,7 +86,7 @@ fun LobbyScreen(
                     onClick = {
                         sendMessage("JOIN_TEAM:${player.name}:BLUE")
                         gameStateViewModel.myTeam.value = TeamRole.BLUE
-                        //gameStateViewModel.myIsSpymaster.value = false
+                        gameStateViewModel.myIsSpymaster.value = false
                     },
                     modifier = Modifier.testTag("Button_Blue")
                 )
@@ -189,9 +189,10 @@ fun TeamColumn(
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {
                 val icon_name = when {
-                    player.isSpymaster && team == TeamRole.RED -> R.drawable.icon_red_spymaster
-                    player.isSpymaster && team == TeamRole.BLUE -> R.drawable.icon_blue_spymaster
-                    !player.isSpymaster && team == TeamRole.RED -> R.drawable.icon_red_operative
+                    player.team == TeamRole.RED && player.isSpymaster -> R.drawable.icon_red_spymaster
+                    player.team == TeamRole.RED && !player.isSpymaster -> R.drawable.icon_red_operative
+                    player.team == TeamRole.BLUE && player.isSpymaster -> R.drawable.icon_blue_spymaster
+                    player.team == TeamRole.BLUE && !player.isSpymaster -> R.drawable.icon_blue_operative
                     else -> R.drawable.icon_blue_operative
                 }
                 Image(
