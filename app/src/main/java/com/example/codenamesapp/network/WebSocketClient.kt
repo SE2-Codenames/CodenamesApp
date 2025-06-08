@@ -3,6 +3,7 @@ package com.example.codenamesapp.network
 import android.util.Log
 import androidx.navigation.NavHostController
 import com.example.codenamesapp.gamelogic.GameStateViewModel
+import com.example.codenamesapp.model.Player
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -67,5 +68,15 @@ class WebSocketClient(
     fun close() {
         webSocket?.close(1000, "Manuell beendet")
         webSocket = null
+    }
+
+    fun reconnect(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+        onMessageReceived: (String) -> Unit,
+        onPlayerListUpdated: (List<Player>) -> Unit
+    ) {
+        close()
+        connect(onSuccess, onError, onMessageReceived, onPlayerListUpdated)
     }
 }

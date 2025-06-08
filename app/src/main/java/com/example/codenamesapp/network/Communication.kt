@@ -1,10 +1,7 @@
 package com.example.codenamesapp.network
 
 import kotlinx.serialization.*
-import kotlinx.serialization.json.*
 import okhttp3.WebSocket
-import java.io.BufferedReader
-import java.io.PrintWriter
 
 @Serializable
 data class Message(

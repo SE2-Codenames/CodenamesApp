@@ -12,6 +12,8 @@ import com.example.codenamesapp.lobby.LobbyScreen
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
 import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.gamelogic.GameManager
+import com.example.codenamesapp.gamelogic.GameStateViewModelFactory
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.screens.ConnectionScreen
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +25,11 @@ fun AppNavigation(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val playerNameState = remember { mutableStateOf("Edi") }
+    val playerNameState = remember { mutableStateOf<String?>(null) }
     val playerListState = remember { mutableStateOf(listOf<Player>()) }
-    val gameStateViewModel: GameStateViewModel = viewModel()
+    val gameStateViewModel: GameStateViewModel = viewModel(
+        factory = GameStateViewModelFactory(GameManager())
+    )
 
     // Setze Callback für SHOW_GAMEBOARD
     gameStateViewModel.onShowGameBoard = {
@@ -37,6 +41,23 @@ fun AppNavigation(
             gameStateViewModel = gameStateViewModel,
             navController = navController
         )
+    }
+
+    LaunchedEffect(Unit) {
+        gameStateViewModel.onResetGame = {
+            if (!gameStateViewModel.hasReset.value) {
+                gameStateViewModel.hasReset.value = true
+                socketClient.reconnect(
+                    onSuccess = { navController.navigate("lobby") },
+                    onError = { println("Fehler beim Reconnect: $it") },
+                    onMessageReceived = { println("Server: $it") },
+                    onPlayerListUpdated = { playerListState.value = it }
+                )
+                navController.navigate("lobby") {
+                    popUpTo("menu") { inclusive = false }
+                }
+            }
+        }
     }
 
     NavHost(
@@ -63,23 +84,29 @@ fun AppNavigation(
                 navController = navController,
                 coroutineScope = coroutineScope,
                 socketClient = socketClient,
-                onConnectionEstablished = {
+                onConnectionEstablished = { name ->
                     println("✅ Verbindung steht")
+                    playerNameState.value = name
+                    navController.navigate("lobby")
                 },
                 onMessageReceived = {
                     println("📨 Server: $it")
                 },
                 onPlayerListUpdated = {
                     playerListState.value = it
+                    if (playerNameState.value != null && it.any { p -> p.name == playerNameState.value }) {
+                        navController.navigate("lobby")
+                    }
                 }
             )
         }
 
         composable("lobby") {
             LobbyScreen(
-                playerName = playerNameState.value,
+                playerName = playerNameState.value ?: "",
                 playerList = playerListState.value,
                 socketClient = socketClient,
+                gameStateViewModel = gameStateViewModel,
                 onBackToConnection = { navController.popBackStack() },
                 onStartGame = {
                     coroutineScope.launch(Dispatchers.IO) {
@@ -98,12 +125,29 @@ fun AppNavigation(
 
             if (payload != null && team != null && isSpymaster != null) {
                 GameBoardScreen(
-                    gameState = payload,
-                    team = team,
-                    playerRole = isSpymaster,
+                    viewModel = gameStateViewModel,
                     communication = communication
                 )
             }
         }
+
+        composable("gameover") { //null check
+            val gameEndResult = gameStateViewModel.gameEndResult.value
+                ?: run {
+                    LaunchedEffect(Unit) {
+                        navController.popBackStack()
+                    }
+                    return@composable
+                }
+
+            GameOverScreen(
+                navController = navController,
+                winningTeam = gameEndResult.winningTeam,
+                isAssassinTriggered = gameEndResult.isAssassinTriggered,
+                scoreRed = gameEndResult.scoreRed,
+                scoreBlue = gameEndResult.scoreBlue
+            )
+        }
+
     }
 }
