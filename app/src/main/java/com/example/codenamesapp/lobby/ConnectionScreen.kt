@@ -24,7 +24,7 @@ fun ConnectionScreen(
     socketClient: WebSocketClient,
     modifier: Modifier = Modifier
 ) {
-    var host by remember { mutableStateOf("127.0.0.1") }
+    var host by remember { mutableStateOf("10.0.2.2") } // needs to be 10.0.2.2 if testing on emulator
     var port by remember { mutableStateOf("8081") }
     var playerName by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
@@ -102,6 +102,12 @@ fun ConnectionScreen(
             }
         }) {
             Text("Verbinden")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        TextButton(onClick = { navController.popBackStack() }) {
+            Text("Zurück") // or "Go back"
         }
 
         if (error != null) {

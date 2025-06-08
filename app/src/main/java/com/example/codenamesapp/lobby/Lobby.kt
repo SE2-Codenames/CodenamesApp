@@ -10,6 +10,14 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import com.example.codenamesapp.R
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun LobbyScreen(
@@ -18,14 +26,25 @@ fun LobbyScreen(
     socketClient: WebSocketClient,
     gameStateViewModel: GameStateViewModel,
     onBackToConnection: () -> Unit,
-    onStartGame: () -> Unit
+    onStartGame: () -> Unit,
+    sendMessage: (String) -> Unit = { socketClient.send(it) }
 ) {
     val localPlayer = playerList.find {
         it.name.trim().equals(playerName?.trim(), ignoreCase = true)
     }
 
-    Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
+    //Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
     //gameStateViewModel.player.value = localPlayer.name
+
+    Image(
+        painter = painterResource(R.drawable.muster_logo),
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(48.dp),
+        contentScale = ContentScale.Fit,
+        alpha = 0.05f
+    )
 
     Column(
         modifier = Modifier
@@ -40,69 +59,159 @@ fun LobbyScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TeamColumn("Red Team", TeamRole.RED, playerList)
-            TeamColumn("Blue Team", TeamRole.BLUE, playerList)
+            TeamColumn("Red Team", TeamRole.RED, playerList, playerName)
+            TeamColumn("Blue Team", TeamRole.BLUE, playerList, playerName)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         localPlayer?.let { player ->
+            Text("Wähle dein Team:")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = {
-                    socketClient.send("JOIN_TEAM:${player.name}:RED")
-                    gameStateViewModel.myTeam.value = TeamRole.RED
-                    gameStateViewModel.myIsSpymaster.value = false
-                    println("📤 ${player.name} will zu RED")
-                }) {
-                    Text("Join Red")
-                }
-                Button(onClick = {
-                    socketClient.send("JOIN_TEAM:${player.name}:BLUE")
-                    gameStateViewModel.myTeam.value = TeamRole.BLUE
-                    gameStateViewModel.myIsSpymaster.value = false
-                    println("📤 ${player.name} will zu BLUE")
-                }) {
-                    Text("Join Blue")
-                }
+                ColoredToggleButton(
+                    label = "Red",
+                    isSelected = gameStateViewModel.myTeam.value == TeamRole.RED,
+                    selectedColor = Color.Red,
+                    onClick = {
+                        sendMessage("JOIN_TEAM:${player.name}:RED")
+                        gameStateViewModel.myTeam.value = TeamRole.RED
+                        //gameStateViewModel.myIsSpymaster.value = false
+                    },
+                    modifier = Modifier.testTag("Button_Red"),
+                )
+                ColoredToggleButton(
+                    label = "Blue",
+                    isSelected = gameStateViewModel.myTeam.value == TeamRole.BLUE,
+                    selectedColor = Color.Blue,
+                    onClick = {
+                        sendMessage("JOIN_TEAM:${player.name}:BLUE")
+                        gameStateViewModel.myTeam.value = TeamRole.BLUE
+                        //gameStateViewModel.myIsSpymaster.value = false
+                    },
+                    modifier = Modifier.testTag("Button_Blue")
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            if (gameStateViewModel.myTeam.value != null) {
 
-            Button(onClick = {
-                socketClient.send("SPYMASTER_TOGGLE:${player.name}")
-                gameStateViewModel.myIsSpymaster.value = !player.isSpymaster
-                println("📤 ${player.name} toggelt Spymaster")
-            }) {
-                Text(if (player.isSpymaster) "Unset Spymaster" else "Set Spymaster")
+                Spacer(modifier = Modifier.height(8.dp))
+
+
+                Text("Wähle deine Rolle:")
+
+                val team = gameStateViewModel.myTeam.value!!
+                val isSpymasterTaken = playerList.any {
+                    it.team == team && it.isSpymaster && it.name != player.name
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ColoredToggleButton(
+                        label = "Spymaster",
+                        isSelected = gameStateViewModel.myIsSpymaster.value == true,
+                        selectedColor = if (team == TeamRole.RED) Color.Red else Color.Blue,
+                        onClick = {
+                            if (!gameStateViewModel.myIsSpymaster.value && isSpymasterTaken) {
+                                return@ColoredToggleButton
+                            }
+                            sendMessage("SPYMASTER_TOGGLE:${player.name}")
+                            gameStateViewModel.myIsSpymaster.value = true
+                        },
+                        modifier = Modifier.testTag("Button_Spymaster"),
+                        enabled = !isSpymasterTaken || gameStateViewModel.myIsSpymaster.value == true
+                    )
+                    ColoredToggleButton(
+                        label = "Operative",
+                        isSelected = gameStateViewModel.myIsSpymaster.value == false,
+                        selectedColor = if (team == TeamRole.RED) Color.Red else Color.Blue,
+                        onClick = {
+                            if (gameStateViewModel.myIsSpymaster.value == true) {
+                                sendMessage("SPYMASTER_TOGGLE:${player.name}")
+                            }
+                            gameStateViewModel.myIsSpymaster.value = false
+                        },
+                        modifier = Modifier.testTag("Button_Operative")
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = onStartGame) {
+        Button(onClick = onStartGame,  modifier = Modifier.testTag("StartGame")) {
             Text("Spiel starten")
         }
 
-        Button(onClick = onBackToConnection) {
+        Button(onClick = onBackToConnection,  modifier = Modifier.testTag("BackButton")) {
             Text("Zurück")
         }
     }
 }
 
 @Composable
+fun ColoredToggleButton(
+    label: String,
+    isSelected: Boolean,
+    selectedColor: Color,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) selectedColor else Color.LightGray,
+            contentColor = if (isSelected) Color.White else Color.Black
+        )
+    ) {
+        Text(label)
+        if (isSelected) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(Icons.Default.Check, contentDescription = "Selected")
+        }
+    }
+}
+
+
+@Composable
 fun TeamColumn(
     title: String,
     team: TeamRole,
-    players: List<Player>
+    players: List<Player>,
+    playerName: String?
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(title, style = MaterialTheme.typography.headlineSmall)
         players.filter { it.team == team }.forEach { player ->
-            Row {
-                Text(player.name)
-                if (player.isSpymaster) {
-                    Text(" (Spymaster)", style = MaterialTheme.typography.bodySmall)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                val icon_name = when {
+                    player.isSpymaster && team == TeamRole.RED -> R.drawable.icon_red_spymaster
+                    player.isSpymaster && team == TeamRole.BLUE -> R.drawable.icon_blue_spymaster
+                    !player.isSpymaster && team == TeamRole.RED -> R.drawable.icon_red_operative
+                    else -> R.drawable.icon_blue_operative
                 }
+                Image(
+                    painter = painterResource(id = icon_name),
+                    contentDescription = null,
+                    modifier = Modifier.size(44.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                //Text(player.name)
+
+                Text(
+                    buildString {
+                        append(player.name)
+                        if (player.name.trim().equals(playerName?.trim(), ignoreCase = true)) {
+                            append(" (You)")
+                        }
+                    }
+                )
             }
         }
     }
