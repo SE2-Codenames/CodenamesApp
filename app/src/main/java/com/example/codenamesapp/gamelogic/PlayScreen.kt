@@ -48,24 +48,27 @@ fun GameBoardScreen(
 
     Box(
         modifier = Modifier
-                    .fillMaxSize()
-                    .drawBehind {
-                        val teamColor = when (viewModel.team.value) {
-                            TeamRole.RED -> DarkRed
-                            TeamRole.BLUE -> DarkBlue
-                            else -> DarkGrey
-                        }
+            .fillMaxSize()
+            .drawBehind {
+                val teamColor = when (viewModel.team.value) {
+                    TeamRole.RED -> DarkRed
+                    TeamRole.BLUE -> DarkBlue
+                    else -> DarkGrey
+                }
 
-                        drawRect(
-                            brush = Brush.radialGradient(
-                                colors = listOf(Color.Transparent, teamColor.copy(alpha = 0.6f)),
-                                center = Offset(2.5f * size.width, 2.5f * size.height),
-                                radius = size.minDimension / 0.25f
-                            ),
-                            size = size,
-                            topLeft = Offset.Zero
-                        )
-                    }
+                drawRect(
+                    brush = Brush.radialGradient(
+                        0.0f to Color.White,
+                        0.95f to Color.White,
+                        1.0f to teamColor.copy(alpha = 0.2f),
+                        center = center,
+                        radius = size.minDimension * 1.22f
+                    ),
+                    size = size
+                )
+            }
+            //.padding(WindowInsets.systemBars.asPaddingValues())
+            .consumeWindowInsets(WindowInsets.systemBars)
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
