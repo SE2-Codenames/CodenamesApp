@@ -86,8 +86,13 @@ fun GameBoardScreen(
                     },
                     onCardMarked = { card ->
                         val index = viewModel.cardList.indexOf(card)
-                        if (index != -1) {
-                            card.isMarked.value = !card.isMarked.value
+                        val isAlreadyMarked = card.isMarked.value
+
+                        val isOperativeTurn = viewModel.isPlayerTurn
+                        val isSpymaster = viewModel.myIsSpymaster.value
+
+                        if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
+                            card.isMarked.value = true
                             viewModel.markCard(index, communication)
                         }
                     },
