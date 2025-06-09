@@ -76,6 +76,10 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
         }
     }
 
+    fun markCard(index: Int, communication: Communication) {
+        communication.markCard(index)
+    }
+
     val gameEndResult = mutableStateOf<GameEndResult?>(null)
 
     //onGameOver callback
