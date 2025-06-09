@@ -204,8 +204,17 @@ fun GameBoardGrid(
         items(cardList) { card ->
             GameCard(
                 card = card,
-                onClick = if (isPlayerTurn) { { onCardMarked(card) } } else { {} },
-                onLongClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
+                onClick = if (isPlayerTurn) {
+                    { onCardMarked(card) }
+                } else { {} },
+
+                onLongClick = if (isPlayerTurn) {
+                    {
+                        card.isMarked.value = true
+                        onCardClicked(card)
+                    }
+                } else { {} },
+
                 isSpymaster = isSpymaster
             )
         }
