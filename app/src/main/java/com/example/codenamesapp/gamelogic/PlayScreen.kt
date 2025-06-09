@@ -58,9 +58,9 @@ fun GameBoardScreen(
 
                         drawRect(
                             brush = Brush.radialGradient(
-                                colors = listOf(teamColor.copy(alpha = 0.6f), Color.Transparent),
-                                center = center,
-                                radius = size.minDimension
+                                colors = listOf(Color.Transparent, teamColor.copy(alpha = 0.6f)),
+                                center = Offset(2.5f * size.width, 2.5f * size.height),
+                                radius = size.minDimension / 0.25f
                             ),
                             size = size,
                             topLeft = Offset.Zero
