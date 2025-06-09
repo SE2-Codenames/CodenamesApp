@@ -68,6 +68,14 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
         communication.giveHint(hintWord, hintNumber)
     }
 
+    fun sendMarkedCards(communication: Communication) {
+        cardList.forEachIndexed { index, card ->
+            if (card.isMarked.value) {
+                communication.giveCard(index)
+            }
+        }
+    }
+
     val gameEndResult = mutableStateOf<GameEndResult?>(null)
 
     //onGameOver callback
