@@ -16,8 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -27,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
@@ -51,7 +48,7 @@ fun GameBoardScreen(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                val teamColor = when (viewModel.team.value) {
+                val teamColor = when (viewModel.teamTurn.value) {
                     TeamRole.RED -> DarkRed
                     TeamRole.BLUE -> DarkBlue
                     else -> DarkGrey
@@ -69,7 +66,7 @@ fun GameBoardScreen(
                 )
             }
             //.padding(WindowInsets.systemBars.asPaddingValues())
-            .consumeWindowInsets(WindowInsets.systemBars)
+            //.consumeWindowInsets(WindowInsets.systemBars)
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
@@ -80,14 +77,18 @@ fun GameBoardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    CardsRemaining(redScore = viewModel.scoreRed, blueScore = viewModel.scoreBlue)
+                    CardsRemaining(viewModel = viewModel)
                 }
                 Column(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
                     if (viewModel.myIsSpymaster.value) {
                         ButtonsGui(
-                            text = "Give A Hint!", onClick = { showOverlay = true },
+                            text = "Give A Hint!", onClick = {
+                                if (viewModel.teamTurn.value == viewModel.teamTurn.value) {
+                                    showOverlay = true
+                                }
+                            },
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
                     }
@@ -100,7 +101,7 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(viewModel.myIsSpymaster.value, viewModel.myTeam.value)
+                    PlayerRoleScreen(viewModel = viewModel)
                 }
             }
 
@@ -123,9 +124,7 @@ fun GameBoardScreen(
                             viewModel.markCard(index, communication)
                         }
                     },
-                    cardList = viewModel.cardList,
-                    isSpymaster = viewModel.myIsSpymaster.value,
-                    isPlayerTurn = viewModel.isPlayerTurn
+                    viewModel = viewModel
                 )
             }
 
@@ -195,17 +194,17 @@ fun LockLandscapeOrientation() {
 
 // Column 1: Remaining Cards, Player Role, Logo ----------------------------------------------------
 @Composable
-fun CardsRemaining(redScore: Int, blueScore: Int) {
-    Text(redScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+fun CardsRemaining(viewModel: GameStateViewModel) {
+    Text(viewModel.scoreRed.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
     Spacer(Modifier.width(50.dp))
-    Text(blueScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+    Text(viewModel.scoreBlue.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
 }
 
 @Composable
-fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
+fun PlayerRoleScreen(viewModel: GameStateViewModel) {
     val image = painterResource(R.drawable.muster_logo)
-    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    val roleText = if (isSpymaster) "Spymaster" else "Operative"
+    val textColor = if (viewModel.myTeam.value == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+    val roleText = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative"
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -229,9 +228,7 @@ fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
 fun GameBoardGrid(
     onCardClicked: (Card) -> Unit,
     onCardMarked: (Card) -> Unit,
-    cardList: List<Card>,
-    isSpymaster: Boolean,
-    isPlayerTurn: Boolean
+    viewModel: GameStateViewModel
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -240,10 +237,10 @@ fun GameBoardGrid(
         horizontalArrangement = Arrangement.SpaceEvenly,
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(cardList) { card ->
+        items(viewModel.cardList) { card ->
             GameCard(
+                viewModel= viewModel,
                 card = card,
-                isSpymaster = isSpymaster,
 
                 onClick = {
                     onCardMarked
@@ -259,14 +256,16 @@ fun GameBoardGrid(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymaster: Boolean) {
+fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
         BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+    } else if (card.revealed && viewModel.myIsSpymaster.value) {
+        BorderStroke(5.dp, MaterialTheme.colorScheme.error)
     } else {
         BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
     }
 
-    val backgroundImage = if (card.revealed || isSpymaster) {
+    val backgroundImage = if (card.revealed || viewModel.myIsSpymaster.value) {
         when (card.cardRole) {
             CardRole.RED -> MaterialTheme.colorScheme.error
             CardRole.BLUE -> MaterialTheme.colorScheme.tertiary

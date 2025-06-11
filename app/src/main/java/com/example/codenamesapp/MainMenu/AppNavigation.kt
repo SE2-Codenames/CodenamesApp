@@ -14,7 +14,6 @@ import com.example.codenamesapp.network.WebSocketClient
 import com.example.codenamesapp.GameBoardScreen
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.gamelogic.GameStateViewModelFactory
-import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.screens.ConnectionScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -118,7 +117,7 @@ fun AppNavigation(
 
         composable("gameboard") {
             val payload = gameStateViewModel.payload.value
-            val team = gameStateViewModel.team.value
+            val team = gameStateViewModel.teamTurn.value
             val isSpymaster = gameStateViewModel.playerRole.value
             val communication = socketClient.communication
 

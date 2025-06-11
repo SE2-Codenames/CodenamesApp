@@ -11,7 +11,7 @@ import com.example.codenamesapp.network.Communication
 class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val payload = mutableStateOf<PayloadResponseMove?>(null)
     val player = mutableStateOf(null)
-    val team = mutableStateOf<TeamRole?>(null) // team whose turn it is
+    val teamTurn = mutableStateOf<TeamRole?>(null) // team whose turn it is
     val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
     var onShowGameBoard: (() -> Unit)? = null
 
@@ -19,7 +19,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     // OWN selections
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
-    val isPlayerTurn = !myIsSpymaster.value && (myTeam == team)
+    val isPlayerTurn = !myIsSpymaster.value && (myTeam == teamTurn)
 
     // Scores for Red and Blue Team
     val scoreRed : Int
@@ -29,7 +29,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
 
     fun resetState() {
         payload.value = null
-        team.value = null
+        teamTurn.value = null
         playerRole.value = false
         myTeam.value = null
         myIsSpymaster.value = false
@@ -38,6 +38,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val hasReset = mutableStateOf(false)
     // creating Card-List
     val cardList = mutableListOf<Card>()
+
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
         println("Empfangene Karten:")
         val preparedCards = gameState.card.mapIndexed() { index, card ->
