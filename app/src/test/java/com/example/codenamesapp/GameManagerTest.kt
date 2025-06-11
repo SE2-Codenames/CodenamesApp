@@ -68,4 +68,13 @@ class GameManagerTest {
         assertEquals(7, gameManager.getScore(TeamRole.RED))
         assertEquals(0, gameManager.getScore(TeamRole.BLUE))
     }
+
+    //miising test for full coverage
+    @Test
+    fun testGetScoreWhenScoreIsEmptyList() {
+        val state = createPayload(score = emptyList()) // Explicit empty list
+        gameManager.loadGameState(state)
+        assertEquals(0, gameManager.getScore(TeamRole.RED)) // getOrNull(0) → null → 0
+        assertEquals(0, gameManager.getScore(TeamRole.BLUE)) // getOrNull(1) → null → 0
+    }
 }

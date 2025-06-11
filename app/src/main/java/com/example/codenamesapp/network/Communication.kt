@@ -40,6 +40,10 @@ class Communication(
         send("SELECT:$index")
     }
 
+    fun markCard(index: Int) {
+        send("MARK:$index")
+    }
+
     fun sendChat(message: String) {
         send("CHAT:$message")
     }

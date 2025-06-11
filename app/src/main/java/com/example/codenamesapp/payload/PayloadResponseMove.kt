@@ -10,5 +10,6 @@ data class PayloadResponseMove(
     val remainingGuesses: Int, // "remainingGuesses":0
     val hint: String? = null,
     val card: List<Card>, // "card":[]
-    val isSpymaster: Boolean
+    val isSpymaster: Boolean,
+    val markedCards: List<Boolean>?
 )

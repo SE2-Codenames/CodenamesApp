@@ -17,7 +17,8 @@ class WebSocketClient(
     val communication: Communication
         get() = Communication(webSocket!!)
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .readTimeout(5, TimeUnit.SECONDS)
+        .connectTimeout(1, TimeUnit.SECONDS)
+        .readTimeout(1, TimeUnit.SECONDS)
         .build()
 
     private var url: String = ""
@@ -53,7 +54,8 @@ class WebSocketClient(
             onShowGameBoard = {
                 navController.navigate("gameboard")
             },
-            gameStateViewModel = gameStateViewModel
+            gameStateViewModel = gameStateViewModel,
+            onError = onError
         )
 
         webSocket = client.newWebSocket(request, listener)
