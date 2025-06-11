@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -161,21 +163,27 @@ fun GameBoardScreen(
                         label = { Text("Word") }
                     )
                     // dropdown for hintNumberInput
-                    var options = if (viewModel.teamTurn.value == TeamRole.RED) {
+                    val options = if (viewModel.teamTurn.value == TeamRole.RED) {
                         (1..viewModel.scoreRed).map { it.toString() }
                     } else {
                         (1..viewModel.scoreBlue).map { it.toString() }
                     }
                     var expanded by remember { mutableStateOf(false) }
-                    Box() {
+                    Box(
+                        modifier = Modifier
+                            .clickable { expanded = true }
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
                         OutlinedTextField(
                             value = hintNumberInput,
                             onValueChange = { },
                             label = { Text("Count") },
-                            modifier = Modifier
-                                .clickable { expanded = true }
-                                .fillMaxWidth(),
-                            readOnly = true
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
+                            }
                         )
                         DropdownMenu(
                             expanded = expanded,
