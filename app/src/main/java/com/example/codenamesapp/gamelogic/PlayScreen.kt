@@ -1,4 +1,4 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.gamelogic
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -29,6 +29,9 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
+import com.example.codenamesapp.R
+import com.example.codenamesapp.ui.theme.CodenamesAppTheme
+
 
 @Composable
 fun GameBoardScreen(
