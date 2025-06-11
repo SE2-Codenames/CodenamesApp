@@ -160,12 +160,38 @@ fun GameBoardScreen(
                         onValueChange = { hintWordInput = it },
                         label = { Text("Word") }
                     )
-                    TextField(
-                        value = hintNumberInput,
-                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() } },
-                        label = { Text("Count") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
+                    // dropdown for hintNumberInput
+                    var options = if (viewModel.teamTurn.value == TeamRole.RED) {
+                        (1..viewModel.scoreRed).map { it.toString() }
+                    } else {
+                        (1..viewModel.scoreBlue).map { it.toString() }
+                    }
+                    var expanded by remember { mutableStateOf(false) }
+                    Box() {
+                        OutlinedTextField(
+                            value = hintNumberInput,
+                            onValueChange = { },
+                            label = { Text("Count") },
+                            modifier = Modifier
+                                .clickable { expanded = true }
+                                .fillMaxWidth(),
+                            readOnly = true
+                        )
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            options.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        hintNumberInput = option
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
                     ButtonsGui("Send", onClick = {
