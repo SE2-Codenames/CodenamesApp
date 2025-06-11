@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
@@ -110,10 +111,21 @@ fun GameBoardScreen(
                         val index = viewModel.cardList.indexOf(card)
                         if (index != -1) viewModel.handleCardClick(index, communication)
                     },
-                    onCardMarked = { card -> card.isMarked.value = !card.isMarked.value },
-                    viewModel.cardList,
-                    viewModel.myIsSpymaster.value,
-                    viewModel.isPlayerTurn
+                    onCardMarked = { card ->
+                        val index = viewModel.cardList.indexOf(card)
+                        val isAlreadyMarked = card.isMarked.value
+
+                        val isOperativeTurn = viewModel.isPlayerTurn
+                        val isSpymaster = viewModel.myIsSpymaster.value
+
+                        if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
+                            card.isMarked.value = true
+                            viewModel.markCard(index, communication)
+                        }
+                    },
+                    cardList = viewModel.cardList,
+                    isSpymaster = viewModel.myIsSpymaster.value,
+                    isPlayerTurn = viewModel.isPlayerTurn
                 )
             }
 
@@ -231,9 +243,15 @@ fun GameBoardGrid(
         items(cardList) { card ->
             GameCard(
                 card = card,
-                onClick = if (isPlayerTurn) { { onCardMarked(card) } } else { {} },
-                onLongClick = if (isPlayerTurn) { { onCardClicked(card) } } else { {} },
-                isSpymaster = isSpymaster
+                isSpymaster = isSpymaster,
+
+                onClick = {
+                    onCardMarked
+                },
+                onLongClick = {
+                    onCardClicked
+                }
+
             )
         }
     }

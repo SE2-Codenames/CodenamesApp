@@ -40,9 +40,10 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val cardList = mutableListOf<Card>()
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
         println("Empfangene Karten:")
-        val preparedCards = gameState.card.map { card ->
+        val preparedCards = gameState.card.mapIndexed() { index, card ->
             println(" ${card.word}, role=${card.cardRole}, revealed=${card.revealed}")
-            card.apply { isMarked = mutableStateOf(value = false) }
+            val isMarkedValue = gameState.markedCards?.getOrNull(index) ?: false
+            card.apply { isMarked = mutableStateOf(isMarkedValue) }
         }
         cardList.clear()
         cardList.addAll(preparedCards)
@@ -65,6 +66,18 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
 
     fun sendHint (hintWord: String, hintNumber: Int, communication: Communication) {
         communication.giveHint(hintWord, hintNumber)
+    }
+
+    fun sendMarkedCards(communication: Communication) {
+        cardList.forEachIndexed { index, card ->
+            if (card.isMarked.value) {
+                communication.giveCard(index)
+            }
+        }
+    }
+
+    fun markCard(index: Int, communication: Communication) {
+        communication.markCard(index)
     }
 
     val gameEndResult = mutableStateOf<GameEndResult?>(null)

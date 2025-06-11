@@ -32,7 +32,7 @@ sonar {
                     "**/network/WebSocketHandler.kt," +
                     "**/network/WebSocketClient.kt," +
                     "**/network/WebSocketListener.kt," +
-                    "**/ui.theme/**"
+                    "**/ui/theme/**"
         )
 
     }
