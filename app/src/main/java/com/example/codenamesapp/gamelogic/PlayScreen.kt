@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
@@ -24,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codenamesapp.gamelogic.GameStateViewModel
@@ -87,7 +85,7 @@ fun GameBoardScreen(
                     if (viewModel.myIsSpymaster.value) {
                         ButtonsGui(
                             text = "Give A Hint!", onClick = {
-                                if (viewModel.teamTurn.value == viewModel.teamTurn.value) {
+                                if (viewModel.teamTurn.value == viewModel.myTeam.value) {
                                     showOverlay = true
                                 }
                             },
@@ -310,10 +308,13 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
         MaterialTheme.colorScheme.secondary
     }
 
+    val actualOnClick = if (!card.revealed) onClick else ({ })
+    val actualOnLongClick = if (!card.revealed) onLongClick else ({ })
+
     Card(
         modifier = Modifier
             .height(70.dp)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .combinedClickable(onClick = actualOnClick, onLongClick = actualOnLongClick)
             .padding(2.dp),
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)
