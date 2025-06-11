@@ -30,6 +30,7 @@ import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
 import com.example.codenamesapp.R
+import com.example.codenamesapp.model.GamePhase.*
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 
 
@@ -88,7 +89,7 @@ fun GameBoardScreen(
                     if (viewModel.myIsSpymaster.value) {
                         ButtonsGui(
                             text = "Give A Hint!", onClick = {
-                                if (viewModel.teamTurn.value == viewModel.myTeam.value) {
+                                if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)) {
                                     showOverlay = true
                                 }
                             },

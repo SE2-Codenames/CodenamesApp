@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.codenamesapp.MainMenu.GameEndResult
 import com.example.codenamesapp.model.Card
+import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.Communication
@@ -14,6 +15,9 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val teamTurn = mutableStateOf<TeamRole?>(null) // team whose turn it is
     val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
     var onShowGameBoard: (() -> Unit)? = null
+    val gameState: GamePhase?
+        get() = gameManager.getGameState()?.gameState
+
 
     var onResetGame: (() -> Unit)? = null
     // OWN selections
@@ -41,7 +45,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
 
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
         println("Empfangene Karten:")
-        val preparedCards = gameState.card.mapIndexed() { index, card ->
+        val preparedCards = gameState.card.mapIndexed { index, card ->
             println(" ${card.word}, role=${card.cardRole}, revealed=${card.revealed}")
             val isMarkedValue = gameState.markedCards?.getOrNull(index) ?: false
             card.apply { isMarked = mutableStateOf(isMarkedValue) }

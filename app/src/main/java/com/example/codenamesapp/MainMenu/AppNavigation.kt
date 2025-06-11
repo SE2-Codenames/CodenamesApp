@@ -11,7 +11,7 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.lobby.LobbyScreen
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
-import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.gamelogic.GameBoardScreen
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.gamelogic.GameStateViewModelFactory
 import com.example.codenamesapp.screens.ConnectionScreen
