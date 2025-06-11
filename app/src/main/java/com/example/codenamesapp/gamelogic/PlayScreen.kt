@@ -15,6 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -42,7 +46,30 @@ fun GameBoardScreen(
 
     var showOverlay by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .drawBehind {
+                val teamColor = when (viewModel.team.value) {
+                    TeamRole.RED -> DarkRed
+                    TeamRole.BLUE -> DarkBlue
+                    else -> DarkGrey
+                }
+
+                drawRect(
+                    brush = Brush.radialGradient(
+                        0.0f to Color.White,
+                        0.95f to Color.White,
+                        1.0f to teamColor.copy(alpha = 0.2f),
+                        center = center,
+                        radius = size.minDimension * 1.22f
+                    ),
+                    size = size
+                )
+            }
+            //.padding(WindowInsets.systemBars.asPaddingValues())
+            .consumeWindowInsets(WindowInsets.systemBars)
+    ) {
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
             // Column 1: Info & Buttons
