@@ -41,7 +41,14 @@ class LobbyScreenTest {
 
         composeTestRule.onNodeWithTag("Button_Red").performClick()
         composeTestRule.onNodeWithTag("Button_Operative").performClick()
-        composeTestRule.onNodeWithTag("StartGame").assertIsEnabled()
+        //composeTestRule.onNodeWithTag("StartGame").assertIsEnabled()
+
+        composeTestRule.onNodeWithTag("ReadyButton")
+            .assertIsEnabled()
+            .performClick()
+
+        composeTestRule.onNodeWithTag("ReadyButton")
+            .assertIsNotEnabled()
     }
 
     @Test

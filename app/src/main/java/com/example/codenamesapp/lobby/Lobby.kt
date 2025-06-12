@@ -13,6 +13,8 @@ import com.example.codenamesapp.network.WebSocketClient
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -32,6 +34,11 @@ fun LobbyScreen(
     val localPlayer = playerList.find {
         it.name.trim().equals(playerName?.trim(), ignoreCase = true)
     }
+    val isReady = remember { mutableStateOf(false) }
+    val minPlayersRequired = 2
+    val enoughPlayers = playerList.size >= minPlayersRequired
+    val allReady = enoughPlayers && playerList.all { it.isReady }
+
 
     //Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
     //gameStateViewModel.player.value = localPlayer.name
@@ -133,13 +140,37 @@ fun LobbyScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    sendMessage("READY:${player.name}")
+                    isReady.value = true
+                },
+                enabled = !isReady.value,
+                modifier = Modifier.testTag("ReadyButton")
+            ) {
+                Text(if (isReady.value) "Bereit" else "Bereit ?")
+            }
+
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = onStartGame,  modifier = Modifier.testTag("StartGame")) {
+
+        Button(
+            onClick = onStartGame,
+            enabled = allReady,
+            modifier = Modifier.testTag("StartGame")
+        ) {
             Text("Spiel starten")
         }
+
+        if (!allReady) {
+            Text("Warte auf alle Spieler...", style = MaterialTheme.typography.bodyMedium)
+        }
+
 
         Button(onClick = onBackToConnection,  modifier = Modifier.testTag("BackButton")) {
             Text("Zurück")
