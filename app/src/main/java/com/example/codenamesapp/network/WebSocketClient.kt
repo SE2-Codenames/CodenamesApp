@@ -48,8 +48,8 @@ class WebSocketClient(
             onMessage = onMessageReceived,
             onPlayersUpdated = onPlayerListUpdated,
             onConnectionEstablished = {
-                onSuccess()
                 send("USER:$playerName")
+                onSuccess()
             },
             onShowGameBoard = {
                 navController.navigate("gameboard")

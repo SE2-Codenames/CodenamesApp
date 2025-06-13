@@ -13,8 +13,6 @@ import com.example.codenamesapp.network.WebSocketClient
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -31,14 +29,19 @@ fun LobbyScreen(
     onStartGame: () -> Unit,
     sendMessage: (String) -> Unit = { socketClient.send(it) }
 ) {
+    //val localPlayer = playerList.find { it.name == playerName }
+
     val localPlayer = playerList.find {
         it.name.trim().equals(playerName?.trim(), ignoreCase = true)
     }
-    val isReady = remember { mutableStateOf(false) }
-    val minPlayersRequired = 2
+
+    println("🔍 localPlayer found: ${localPlayer != null}")
+    // val isReady = localPlayer?.isReady ?: false
+    val minPlayersRequired = 1
     val enoughPlayers = playerList.size >= minPlayersRequired
     val allReady = enoughPlayers && playerList.all { it.isReady }
 
+    val isAlreadyReady = localPlayer?.isReady == true
 
     //Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
     //gameStateViewModel.player.value = localPlayer.name
@@ -145,14 +148,16 @@ fun LobbyScreen(
 
             Button(
                 onClick = {
-                    sendMessage("READY:${player.name}")
-                    isReady.value = true
+                    if (!isAlreadyReady) {
+                        sendMessage("READY:$playerName")
+                    }
                 },
-                enabled = !isReady.value,
+                enabled = !isAlreadyReady,
                 modifier = Modifier.testTag("ReadyButton")
             ) {
-                Text(if (isReady.value) "Bereit" else "Bereit ?")
+                Text(if (isAlreadyReady) "Bereit" else "Bereit ?")
             }
+
 
         }
 
