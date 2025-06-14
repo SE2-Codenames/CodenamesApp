@@ -1,6 +1,7 @@
 package com.example.codenamesapp.network
 
 import kotlinx.serialization.*
+import kotlinx.serialization.json.JsonObject
 import okhttp3.WebSocket
 
 @Serializable
@@ -46,5 +47,12 @@ class Communication(
 
     fun sendChat(message: String) {
         send("CHAT:$message")
+    }
+
+    fun sendClearMarks() {
+        val json = com.google.gson.JsonObject().apply {
+            addProperty("clearMarks", true)
+        }
+        send(json.toString())
     }
 }
