@@ -2,6 +2,10 @@ package com.example.codenamesapp
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,6 +36,7 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
+import kotlin.math.sqrt
 
 @Composable
 fun GameBoardScreen(
@@ -39,6 +44,7 @@ fun GameBoardScreen(
     communication: Communication
 ) {
     LockLandscapeOrientation()
+    DetectShake(viewModel, communication)
     println("Spielerrolle vom Server (IsSpymaster): $viewModel.myIsSpymaster")
 
     val messages = remember {
@@ -190,6 +196,46 @@ fun LockLandscapeOrientation() {
     val activity = context as? Activity
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    }
+}
+
+@Composable
+fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
+    val context = LocalContext.current
+    val sensorManager = remember {
+        context.getSystemService(Activity.SENSOR_SERVICE) as SensorManager
+    }
+    val accelerometer = remember {
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    }
+
+    var lastShakeTime by remember { mutableStateOf(0L) }
+    val shakeThreshold = 12f
+
+    DisposableEffect(Unit) {
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                event?.let {
+                    val (x, y, z) = it.values
+                    val acceleration = sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH
+                    val currentTime = System.currentTimeMillis()
+
+                    if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
+                        lastShakeTime = currentTime
+
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                            println("Shake erkannt – sende clearMarks")
+                            communication.sendClearMarks()
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        onDispose {
+            sensorManager.unregisterListener(listener)
+        }
     }
 }
 
