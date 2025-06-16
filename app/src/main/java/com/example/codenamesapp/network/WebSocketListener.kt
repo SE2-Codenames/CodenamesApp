@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.example.codenamesapp.gamelogic.GameStateViewModel
+import com.example.codenamesapp.model.ChatMessage
 import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
@@ -66,6 +67,24 @@ class CodenamesWebSocketListener(
                 }
             }
 
+            text.startsWith("MARKED:") -> {
+                val json = text.removePrefix("MARKED:")
+                try {
+                    val markedMap = gson.fromJson(json, Map::class.java)
+                    val rawList = markedMap["markedCards"] as? List<*>
+
+                    if (rawList != null) {
+                        val markedBooleans = rawList.map { it as Boolean }
+                        mainHandler.post {
+                            gameStateViewModel.updateMarkedCards(markedBooleans)
+                        }
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("WebSocket", "❌ Fehler beim Parsen der MARKED-Nachricht: $json", e)
+                }
+            }
+
             text.startsWith("SHOW_GAMEBOARD") -> {
                 mainHandler.post {
                     onShowGameBoard()
@@ -77,14 +96,39 @@ class CodenamesWebSocketListener(
                 gameStateViewModel.onResetGame?.invoke()
             }
 
+            text.startsWith("CHAT:") -> {
+                val json = text.removePrefix("CHAT:")
+                try {
+                    val payload = gson.fromJson(json, ChatMessage::class.java)
+                    mainHandler.post {
+                        handleChatMessage(payload)
+                    }
+                } catch (e: Exception) {
+                    Log.e("WebSocket", "Fehler beim Parsen der CHAT-Nachricht: $json", e)
+                }
+            }
+
+
             else -> {
                 mainHandler.post { onMessage(text) }
             }
         }
     }
 
+    private fun handleChatMessage(msg: ChatMessage) {
+        val formatted = when (msg.type) {
+            "hint" -> "Hint: ${msg.hint} (${msg.number})"
+            "card" -> "Chosen Card: ${msg.card?.word ?: "?"}"
+            "expose" -> "Expose: ${msg.message}"
+            "win" -> "${msg.message} (${msg.team}, Points: ${msg.score})"
+            else -> "Unknown message: ${msg.type}"
+        }
+        onMessage(formatted)
+    }
+
+
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        //Log.e("CodenamesWebSocket", "❌ Fehler: ${t.localizedMessage}", t)
+        Log.e("CodenamesWebSocket", "❌ Fehler: ${t.localizedMessage}", t)
         val errorMsg = " Verbindung fehlgeschlagen: ${t.localizedMessage ?: "Unbekannter Fehler"}"
         Log.e("CodenamesWebSocket", errorMsg, t)
         onError(errorMsg)
