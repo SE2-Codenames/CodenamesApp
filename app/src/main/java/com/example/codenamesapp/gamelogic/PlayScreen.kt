@@ -80,6 +80,13 @@ fun GameBoardScreen(
             //.padding(WindowInsets.systemBars.asPaddingValues())
             .consumeWindowInsets(WindowInsets.systemBars)
     ) {
+
+        DetectThreeFinger {
+            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                showExpose = true
+            }
+        }
+
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
             // Column 1: Info & Buttons
@@ -101,7 +108,7 @@ fun GameBoardScreen(
                         )
                     }
                     ButtonsGui(
-                        text = "Expose!", onClick = { /* TODO */ },
+                        text = "Expose!", onClick = { showExpose = true },
                         modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                     )
                 }
@@ -190,6 +197,18 @@ fun GameBoardScreen(
                 }
             }
         }
+    }
+
+    if (showExpose) {
+        ExposeDialog(
+            onConfirm = {
+                showExpose = false
+                communication.expose()
+            },
+            onDismiss = {
+                showExpose = false
+            }
+        )
     }
 }
 
@@ -381,7 +400,7 @@ fun ExposeDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text("Nein")
             }
         }
     )
