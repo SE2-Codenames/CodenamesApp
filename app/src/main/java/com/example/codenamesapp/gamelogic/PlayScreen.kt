@@ -37,6 +37,8 @@ import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
 import kotlin.math.sqrt
+import androidx.compose.ui.input.pointer.pointerInput
+
 
 @Composable
 fun GameBoardScreen(
@@ -52,6 +54,7 @@ fun GameBoardScreen(
     }
 
     var showOverlay by remember { mutableStateOf(false) }
+    var showExpose by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -364,3 +367,42 @@ fun ChatBox(messages: List<String>) {
         }
     }
 }
+
+@Composable
+fun ExposeDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Team entlarven") },
+        text = { Text("Hat das gegnerische Team geschummelt?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Ja")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Abbrechen")
+            }
+        }
+    )
+}
+
+@Composable
+fun DetectThreeFinger(onTripleTap: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val downCount = event.changes.count { it.pressed }
+                        if (downCount == 3) {
+                            onTripleTap()
+                        }
+                    }
+                }
+            }
+    )
+}
+
