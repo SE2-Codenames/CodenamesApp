@@ -55,4 +55,12 @@ class Communication(
         }
         send(json.toString())
     }
+
+    fun expose() {
+        val json = com.google.gson.JsonObject().apply {
+            addProperty("expose", true)
+        }
+        send(json.toString())
+    }
+
 }
