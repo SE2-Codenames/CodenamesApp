@@ -242,14 +242,8 @@ fun GameBoardGrid(
             GameCard(
                 card = card,
                 isSpymaster = isSpymaster,
-
-                onClick = {
-                    onCardMarked
-                },
-                onLongClick = {
-                    onCardClicked
-                }
-
+                onClick = { onCardMarked(card) },
+                onLongClick = { onCardClicked(card) }
             )
         }
     }
