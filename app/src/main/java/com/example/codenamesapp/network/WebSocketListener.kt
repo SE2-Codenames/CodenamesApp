@@ -110,7 +110,7 @@ class CodenamesWebSocketListener(
 
 
             else -> {
-                mainHandler.post { onMessage(text) }
+                Log.d("WebSocket", "Ignorierte Nachricht: $text")
             }
         }
     }

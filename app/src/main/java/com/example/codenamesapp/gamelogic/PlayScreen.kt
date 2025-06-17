@@ -32,18 +32,17 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 
 @Composable
 fun GameBoardScreen(
     viewModel: GameStateViewModel,
-    communication: Communication
+    communication: Communication,
+    messages: SnapshotStateList<String>
 ) {
     LockLandscapeOrientation()
     println("Spielerrolle vom Server (IsSpymaster): $viewModel.myIsSpymaster")
 
-    val messages = remember {
-        mutableStateListOf("Willkommen!" , "Erster Hinweis: ${viewModel.hintText}.")
-    }
 
     var showOverlay by remember { mutableStateOf(false) }
 
@@ -175,7 +174,6 @@ fun GameBoardScreen(
                             val word = hintWordInput.trim()
                             val number = hintNumberInput.trim().toIntOrNull() ?: 0
                             viewModel.sendHint(word, number, communication)
-                            messages.add("Your Hint: $word ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
                 }
