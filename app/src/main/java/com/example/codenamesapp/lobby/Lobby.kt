@@ -37,7 +37,7 @@ fun LobbyScreen(
 
     println("🔍 localPlayer found: ${localPlayer != null}")
     // val isReady = localPlayer?.isReady ?: false
-    val minPlayersRequired = 1
+    val minPlayersRequired = 2
     val enoughPlayers = playerList.size >= minPlayersRequired
     val allReady = enoughPlayers && playerList.all { it.isReady }
 
