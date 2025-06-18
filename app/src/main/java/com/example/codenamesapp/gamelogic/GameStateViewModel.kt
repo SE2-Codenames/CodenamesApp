@@ -12,23 +12,24 @@ import com.example.codenamesapp.network.Communication
 
 open class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val payload = mutableStateOf<PayloadResponseMove?>(null)
-    val player = mutableStateOf(null)
-    val teamTurn = mutableStateOf<TeamRole?>(null) // team whose turn it is
-    val playerRole = mutableStateOf(false) // isSpymaster from server (ignore for UI)
+    val player = mutableStateOf<String?>(null)
+    val teamTurn = mutableStateOf<TeamRole?>(null)
+    val playerRole = mutableStateOf(false)
     var onShowGameBoard: (() -> Unit)? = null
     val gameState: GamePhase?
         get() = gameManager.getGameState()?.gameState
 
-
     var onResetGame: (() -> Unit)? = null
-    // OWN selections
+
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
     val isPlayerTurn = mutableStateOf(!myIsSpymaster.value && (myTeam == teamTurn))
 
     val playerList = mutableStateOf<List<Player>>(emptyList())
 
-    // Scores for Red and Blue Team
+    val ownPlayerName = mutableStateOf<String?>(null)
+    val currentPlayer = mutableStateOf<Player?>(null)
+
     val scoreRed : Int
         get() = gameManager.getScore(TeamRole.RED)
     val scoreBlue : Int
@@ -42,14 +43,12 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
         myIsSpymaster.value = false
         hasReset.value = false
     }
+
     val hasReset = mutableStateOf(false)
-    // creating Card-List
     val cardList = mutableListOf<Card>()
 
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
-        println("Empfangene Karten:")
         val preparedCards = gameState.card.mapIndexed { index, card ->
-            println(" ${card.word}, role=${card.cardRole}, revealed=${card.revealed}")
             val isMarkedValue = gameState.markedCards?.getOrNull(index) ?: false
             card.apply { isMarked = mutableStateOf(isMarkedValue) }
         }
@@ -98,12 +97,13 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
     }
 
     val gameEndResult = mutableStateOf<GameEndResult?>(null)
-
-    //onGameOver callback
     var onGameOver: (GameEndResult) -> Unit = { _ -> }
 
     fun updatePlayerList(newList: List<Player>) {
         playerList.value = newList
+        val name = ownPlayerName.value
+        if (name != null) {
+            currentPlayer.value = newList.find { it.name.trim().equals(name.trim(), ignoreCase = true) }
+        }
     }
-
 }

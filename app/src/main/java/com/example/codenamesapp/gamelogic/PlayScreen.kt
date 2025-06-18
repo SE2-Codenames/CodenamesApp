@@ -43,6 +43,8 @@ import com.example.codenamesapp.model.GamePhase.*
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.text.KeyboardOptions
+
 
 
 @Composable
@@ -162,15 +164,23 @@ fun GameBoardScreen(
 
     if (showOverlay) {
         Box(
-            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             Card(
                 shape = RoundedCornerShape(0.dp),
                 elevation = CardDefaults.cardElevation(8.dp),
-                modifier = Modifier .width(300.dp).wrapContentHeight().background(MaterialTheme.colorScheme.onPrimary)
+                modifier = Modifier
+                    .width(300.dp)
+                    .wrapContentHeight()
+                    .background(MaterialTheme.colorScheme.onPrimary)
             ) {
-                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text("Enter Hint:")
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -180,61 +190,39 @@ fun GameBoardScreen(
                     TextField(
                         value = hintWordInput,
                         onValueChange = { hintWordInput = it },
-                        label = { Text("Word") }
+                        label = { Text("Word") },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    // dropdown for hintNumberInput
-                    val options = if (viewModel.teamTurn.value == TeamRole.RED) {
-                        (1..viewModel.scoreRed).map { it.toString() }
-                    } else {
-                        (1..viewModel.scoreBlue).map { it.toString() }
-                    }
-                    var expanded by remember { mutableStateOf(false) }
-                    Box(
-                        modifier = Modifier
-                            .clickable { expanded = true }
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = hintNumberInput,
-                            onValueChange = { },
-                            label = { Text("Count") },
-                            modifier = Modifier.fillMaxWidth(),
-                            readOnly = true,
-                            trailingIcon = {
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
-                            }
-                        )
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            options.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        hintNumberInput = option
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
+
+                    TextField(
+                        value = hintNumberInput,
+                        onValueChange = { input ->
+                            hintNumberInput = input.filter { it.isDigit() }
+                        },
+                        label = { Text("Count") },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     ButtonsGui("Send", onClick = {
                         showOverlay = false
-                        if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
-                            val word = hintWordInput.trim()
-                            val number = hintNumberInput.trim().toIntOrNull() ?: 0
-                            viewModel.sendHint(word, number, communication)
-                            messages.add("Your Hint: $word ($number)")
+                        val number = hintNumberInput.toIntOrNull() ?: 0
+                        if (hintWordInput.isNotBlank() && number > 0) {
+                            viewModel.sendHint(hintWordInput.trim(), number, communication)
+                            messages.add("Your Hint: ${hintWordInput.trim()} ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
                 }
             }
         }
     }
+
 
     if (showExpose) {
         ExposeDialog(

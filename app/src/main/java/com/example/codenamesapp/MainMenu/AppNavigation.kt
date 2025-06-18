@@ -104,7 +104,6 @@ fun AppNavigation(
 
         composable("lobby") {
             LobbyScreen(
-                playerName = playerNameState.value ?: "",
                 playerList = playerListState.value,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,

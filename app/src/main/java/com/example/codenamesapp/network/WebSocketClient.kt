@@ -46,9 +46,17 @@ class WebSocketClient(
         val request = Request.Builder().url(url).build()
         val listener = CodenamesWebSocketListener(
             onMessage = onMessageReceived,
-            onPlayersUpdated = onPlayerListUpdated,
+            onPlayersUpdated = { playerList ->
+                onPlayerListUpdated(playerList)
+
+                // ✅ Navigiere zur Lobby, wenn wir noch nicht dort sind
+                if (navController.currentDestination?.route != "lobby") {
+                    navController.navigate("lobby")
+                }
+            },
             onConnectionEstablished = {
                 send("USER:$playerName")
+                gameStateViewModel.ownPlayerName.value = playerName
                 onSuccess()
             },
             onShowGameBoard = {

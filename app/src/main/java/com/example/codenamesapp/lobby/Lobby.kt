@@ -1,27 +1,26 @@
 package com.example.codenamesapp.lobby
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.codenamesapp.R
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
-import androidx.compose.foundation.Image
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.testTag
-import com.example.codenamesapp.R
-import androidx.compose.ui.res.painterResource
 
 @Composable
 fun LobbyScreen(
-    playerName: String?,
     playerList: List<Player>,
     socketClient: WebSocketClient,
     gameStateViewModel: GameStateViewModel,
@@ -29,22 +28,16 @@ fun LobbyScreen(
     onStartGame: () -> Unit,
     sendMessage: (String) -> Unit = { socketClient.send(it) }
 ) {
-    //val localPlayer = playerList.find { it.name == playerName }
-
+    val ownName by gameStateViewModel.ownPlayerName
     val localPlayer = playerList.find {
-        it.name.trim().equals(playerName?.trim(), ignoreCase = true)
+        it.name.trim().equals(ownName?.trim(), ignoreCase = true)
     }
 
-    println("🔍 localPlayer found: ${localPlayer != null}")
-    // val isReady = localPlayer?.isReady ?: false
     val minPlayersRequired = 2
     val enoughPlayers = playerList.size >= minPlayersRequired
     val allReady = enoughPlayers && playerList.all { it.isReady }
 
     val isAlreadyReady = localPlayer?.isReady == true
-
-    //Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
-    //gameStateViewModel.player.value = localPlayer.name
 
     Image(
         painter = painterResource(R.drawable.muster_logo),
@@ -69,8 +62,8 @@ fun LobbyScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TeamColumn("Red Team", TeamRole.RED, playerList, playerName)
-            TeamColumn("Blue Team", TeamRole.BLUE, playerList, playerName)
+            TeamColumn("Red Team", TeamRole.RED, playerList, ownName)
+            TeamColumn("Blue Team", TeamRole.BLUE, playerList, ownName)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -103,10 +96,7 @@ fun LobbyScreen(
             }
 
             if (gameStateViewModel.myTeam.value != null) {
-
                 Spacer(modifier = Modifier.height(8.dp))
-
-
                 Text("Wähle deine Rolle:")
 
                 val team = gameStateViewModel.myTeam.value!!
@@ -120,9 +110,7 @@ fun LobbyScreen(
                         isSelected = gameStateViewModel.myIsSpymaster.value == true,
                         selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
-                            if (!gameStateViewModel.myIsSpymaster.value && isSpymasterTaken) {
-                                return@ColoredToggleButton
-                            }
+                            if (!gameStateViewModel.myIsSpymaster.value && isSpymasterTaken) return@ColoredToggleButton
                             sendMessage("SPYMASTER_TOGGLE:${player.name}")
                             gameStateViewModel.myIsSpymaster.value = true
                         },
@@ -149,7 +137,7 @@ fun LobbyScreen(
             Button(
                 onClick = {
                     if (!isAlreadyReady) {
-                        sendMessage("READY:$playerName")
+                        sendMessage("READY:${player.name}")
                     }
                 },
                 enabled = !isAlreadyReady,
@@ -157,12 +145,9 @@ fun LobbyScreen(
             ) {
                 Text(if (isAlreadyReady) "Bereit" else "Bereit ?")
             }
-
-
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
 
         Button(
             onClick = onStartGame,
@@ -176,8 +161,7 @@ fun LobbyScreen(
             Text("Warte auf alle Spieler...", style = MaterialTheme.typography.bodyMedium)
         }
 
-
-        Button(onClick = onBackToConnection,  modifier = Modifier.testTag("BackButton")) {
+        Button(onClick = onBackToConnection, modifier = Modifier.testTag("BackButton")) {
             Text("Zurück")
         }
     }
@@ -209,7 +193,6 @@ fun ColoredToggleButton(
     }
 }
 
-
 @Composable
 fun TeamColumn(
     title: String,
@@ -238,9 +221,6 @@ fun TeamColumn(
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
-
-                //Text(player.name)
-
                 Text(
                     buildString {
                         append(player.name)
