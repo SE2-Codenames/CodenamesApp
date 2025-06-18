@@ -20,6 +20,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/*
+* primary = main text color
+* onPrimary = main background color
+* secondary = diverse grey
+* teritary = diverse blue
+* error = diverse red
+* */
+
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
     onPrimary = CustomBlack,

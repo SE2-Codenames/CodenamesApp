@@ -10,7 +10,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,7 +33,10 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.codenamesapp.R
+import com.example.codenamesapp.model.GamePhase.*
+import com.example.codenamesapp.ui.theme.CodenamesAppTheme
+
 
 @Composable
 fun GameBoardScreen(
@@ -50,7 +54,7 @@ fun GameBoardScreen(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                val teamColor = when (viewModel.team.value) {
+                val teamColor = when (viewModel.teamTurn.value) {
                     TeamRole.RED -> DarkRed
                     TeamRole.BLUE -> DarkBlue
                     else -> DarkGrey
@@ -68,7 +72,7 @@ fun GameBoardScreen(
                 )
             }
             //.padding(WindowInsets.systemBars.asPaddingValues())
-            .consumeWindowInsets(WindowInsets.systemBars)
+            //.consumeWindowInsets(WindowInsets.systemBars)
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
@@ -79,14 +83,18 @@ fun GameBoardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    CardsRemaining(redScore = viewModel.scoreRed, blueScore = viewModel.scoreBlue)
+                    CardsRemaining(viewModel = viewModel)
                 }
                 Column(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
                     if (viewModel.myIsSpymaster.value) {
                         ButtonsGui(
-                            text = "Give A Hint!", onClick = { showOverlay = true },
+                            text = "Give A Hint!", onClick = {
+                                if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)) {
+                                    showOverlay = true
+                                }
+                            },
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
                     }
@@ -99,7 +107,7 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(viewModel.myIsSpymaster.value, viewModel.myTeam.value)
+                    PlayerRoleScreen(viewModel = viewModel)
                 }
             }
 
@@ -122,9 +130,7 @@ fun GameBoardScreen(
                             viewModel.markCard(index, communication)
                         }
                     },
-                    cardList = viewModel.cardList,
-                    isSpymaster = viewModel.myIsSpymaster.value,
-                    isPlayerTurn = viewModel.isPlayerTurn
+                    viewModel = viewModel
                 )
             }
 
@@ -160,12 +166,44 @@ fun GameBoardScreen(
                         onValueChange = { hintWordInput = it },
                         label = { Text("Word") }
                     )
-                    TextField(
-                        value = hintNumberInput,
-                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() } },
-                        label = { Text("Count") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
+                    // dropdown for hintNumberInput
+                    val options = if (viewModel.teamTurn.value == TeamRole.RED) {
+                        (1..viewModel.scoreRed).map { it.toString() }
+                    } else {
+                        (1..viewModel.scoreBlue).map { it.toString() }
+                    }
+                    var expanded by remember { mutableStateOf(false) }
+                    Box(
+                        modifier = Modifier
+                            .clickable { expanded = true }
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = hintNumberInput,
+                            onValueChange = { },
+                            label = { Text("Count") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
+                            }
+                        )
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            options.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        hintNumberInput = option
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
                     ButtonsGui("Send", onClick = {
@@ -193,17 +231,17 @@ fun LockLandscapeOrientation() {
 
 // Column 1: Remaining Cards, Player Role, Logo ----------------------------------------------------
 @Composable
-fun CardsRemaining(redScore: Int, blueScore: Int) {
-    Text(redScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+fun CardsRemaining(viewModel: GameStateViewModel) {
+    Text(viewModel.scoreRed.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
     Spacer(Modifier.width(50.dp))
-    Text(blueScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+    Text(viewModel.scoreBlue.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
 }
 
 @Composable
-fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
+fun PlayerRoleScreen(viewModel: GameStateViewModel) {
     val image = painterResource(R.drawable.muster_logo)
-    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    val roleText = if (isSpymaster) "Spymaster" else "Operative"
+    val textColor = if (viewModel.myTeam.value == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+    val roleText = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative"
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -227,9 +265,7 @@ fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
 fun GameBoardGrid(
     onCardClicked: (Card) -> Unit,
     onCardMarked: (Card) -> Unit,
-    cardList: List<Card>,
-    isSpymaster: Boolean,
-    isPlayerTurn: Boolean
+    viewModel: GameStateViewModel
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -238,8 +274,9 @@ fun GameBoardGrid(
         horizontalArrangement = Arrangement.SpaceEvenly,
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(cardList) { card ->
+        items(viewModel.cardList) { card ->
             GameCard(
+                viewModel= viewModel,
                 card = card,
                 isSpymaster = isSpymaster,
                 onClick = { onCardMarked(card) },
@@ -251,14 +288,16 @@ fun GameBoardGrid(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymaster: Boolean) {
+fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
         BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+    } else if (card.revealed && viewModel.myIsSpymaster.value) {
+        BorderStroke(5.dp, MaterialTheme.colorScheme.error)
     } else {
         BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
     }
 
-    val backgroundImage = if (card.revealed || isSpymaster) {
+    val backgroundImage = if (card.revealed || viewModel.myIsSpymaster.value) {
         when (card.cardRole) {
             CardRole.RED -> MaterialTheme.colorScheme.error
             CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
@@ -269,10 +308,13 @@ fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymast
         MaterialTheme.colorScheme.secondary
     }
 
+    val actualOnClick = if (!card.revealed) onClick else ({ })
+    val actualOnLongClick = if (!card.revealed) onLongClick else ({ })
+
     Card(
         modifier = Modifier
             .height(70.dp)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .combinedClickable(onClick = actualOnClick, onLongClick = actualOnLongClick)
             .padding(2.dp),
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)

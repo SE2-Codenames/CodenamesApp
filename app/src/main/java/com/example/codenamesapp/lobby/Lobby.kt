@@ -71,7 +71,7 @@ fun LobbyScreen(
                 ColoredToggleButton(
                     label = "Red",
                     isSelected = gameStateViewModel.myTeam.value == TeamRole.RED,
-                    selectedColor = Color.Red,
+                    selectedColor = MaterialTheme.colorScheme.error,
                     onClick = {
                         sendMessage("JOIN_TEAM:${player.name}:RED")
                         gameStateViewModel.myTeam.value = TeamRole.RED
@@ -82,7 +82,7 @@ fun LobbyScreen(
                 ColoredToggleButton(
                     label = "Blue",
                     isSelected = gameStateViewModel.myTeam.value == TeamRole.BLUE,
-                    selectedColor = Color.Blue,
+                    selectedColor = MaterialTheme.colorScheme.tertiary,
                     onClick = {
                         sendMessage("JOIN_TEAM:${player.name}:BLUE")
                         gameStateViewModel.myTeam.value = TeamRole.BLUE
@@ -108,7 +108,7 @@ fun LobbyScreen(
                     ColoredToggleButton(
                         label = "Spymaster",
                         isSelected = gameStateViewModel.myIsSpymaster.value == true,
-                        selectedColor = if (team == TeamRole.RED) Color.Red else Color.Blue,
+                        selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
                             if (!gameStateViewModel.myIsSpymaster.value && isSpymasterTaken) {
                                 return@ColoredToggleButton
@@ -122,7 +122,7 @@ fun LobbyScreen(
                     ColoredToggleButton(
                         label = "Operative",
                         isSelected = gameStateViewModel.myIsSpymaster.value == false,
-                        selectedColor = if (team == TeamRole.RED) Color.Red else Color.Blue,
+                        selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
                             if (gameStateViewModel.myIsSpymaster.value == true) {
                                 sendMessage("SPYMASTER_TOGGLE:${player.name}")
@@ -161,7 +161,7 @@ fun ColoredToggleButton(
         enabled = enabled,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) selectedColor else Color.LightGray,
+            containerColor = if (isSelected) selectedColor else MaterialTheme.colorScheme.secondary,
             contentColor = if (isSelected) Color.White else Color.Black
         )
     ) {

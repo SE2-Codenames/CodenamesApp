@@ -57,7 +57,7 @@ class CodenamesWebSocketListener(
                 try {
                     val payload = gson.fromJson(json, PayloadResponseMove::class.java)
                     gameStateViewModel.payload.value = payload
-                    gameStateViewModel.team.value = payload.teamRole
+                    gameStateViewModel.teamTurn.value = payload.teamRole
                     gameStateViewModel.playerRole.value = payload.isSpymaster
 
                     gameStateViewModel.loadGame(payload)
