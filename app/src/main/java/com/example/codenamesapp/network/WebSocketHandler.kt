@@ -48,19 +48,38 @@ class WebSocketHandler(
         Log.e("WebSocketHandler", "Fehler bei WebSocket-Verbindung", t)
     }
 
-    private fun parsePlayers(data: String): List<Player> {
-        return data.split(";")
-            .filter { it.isNotBlank() }
-            .map { entry ->
-                val parts = entry.split(",")
-                val name = parts.getOrNull(0)?.trim().orEmpty()
-                val team = parts.getOrNull(1)?.trim()?.let {
-                    if (it.equals("RED", ignoreCase = true)) TeamRole.RED
-                    else if (it.equals("BLUE", ignoreCase = true)) TeamRole.BLUE
-                    else null
-                }
-                val isSpymaster = parts.getOrNull(2)?.trim()?.toBooleanStrictOrNull() ?: false
-                Player(name, team, isSpymaster)
+    fun parsePlayers(playersMessage: String): List<Player> {
+        val playersString = playersMessage.removePrefix("PLAYERS:")
+        if (playersString.isBlank()) return emptyList()
+
+        val players = mutableListOf<Player>()
+        val playerEntries = playersString.split(";").filter { it.isNotBlank() }
+
+        for (entry in playerEntries) {
+            val parts = entry.split(",")
+            if (parts.size < 4) {
+                continue
             }
+
+            val name = parts[0].trim()
+            val team = parts[1].trim().uppercase().let {
+                when (it) {
+                    "RED" -> TeamRole.RED
+                    "BLUE" -> TeamRole.BLUE
+                    else -> null
+                }
+            }
+            val spymaster = parts[2].trim().toBoolean()
+            val ready = parts[3].trim().toBoolean()
+
+            players.add(Player(name, team, spymaster, ready))
+        }
+
+        return players
     }
+
+
+
+
+
 }

@@ -40,14 +40,16 @@ class CodenamesWebSocketListener(
                     .filter { it.isNotBlank() }
                     .mapNotNull { entry ->
                         val parts = entry.split(",")
-                        if (parts.size == 3) {
+                        if (parts.size >= 4) {
                             Player(
                                 name = parts[0],
                                 team = parts[1].takeIf { it.isNotEmpty() }?.let { TeamRole.valueOf(it) },
-                                isSpymaster = parts[2].toBoolean()
+                                isSpymaster = parts[2].toBoolean(),
+                                isReady = parts[3].toBoolean()
                             )
                         } else null
                     }
+
 
                 mainHandler.post { onPlayersUpdated(playerList) }
             }

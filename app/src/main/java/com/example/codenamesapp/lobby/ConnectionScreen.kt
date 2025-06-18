@@ -76,8 +76,8 @@ fun ConnectionScreen(
                     socketClient.setPlayerName(playerName)
                     socketClient.connect(
                         onSuccess = {
-                            onConnectionEstablished(playerName)
-                            navController.navigate("lobby")
+                            //onConnectionEstablished(playerName)
+                            //navController.navigate("lobby")
                         },
                         onError = {
                             error = "Verbindungsfehler: $it"
@@ -88,6 +88,7 @@ fun ConnectionScreen(
                                     showUsernameTakenDialog = true
                                 }
                                 "USERNAME_OK" -> {
+                                    onConnectionEstablished(playerName)
                                     navController.navigate("lobby")
                                 }
                                 else -> onMessageReceived(message)

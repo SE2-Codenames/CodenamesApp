@@ -29,9 +29,19 @@ fun LobbyScreen(
     onStartGame: () -> Unit,
     sendMessage: (String) -> Unit = { socketClient.send(it) }
 ) {
+    //val localPlayer = playerList.find { it.name == playerName }
+
     val localPlayer = playerList.find {
         it.name.trim().equals(playerName?.trim(), ignoreCase = true)
     }
+
+    println("🔍 localPlayer found: ${localPlayer != null}")
+    // val isReady = localPlayer?.isReady ?: false
+    val minPlayersRequired = 2
+    val enoughPlayers = playerList.size >= minPlayersRequired
+    val allReady = enoughPlayers && playerList.all { it.isReady }
+
+    val isAlreadyReady = localPlayer?.isReady == true
 
     //Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
     //gameStateViewModel.player.value = localPlayer.name
@@ -133,13 +143,39 @@ fun LobbyScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    if (!isAlreadyReady) {
+                        sendMessage("READY:$playerName")
+                    }
+                },
+                enabled = !isAlreadyReady,
+                modifier = Modifier.testTag("ReadyButton")
+            ) {
+                Text(if (isAlreadyReady) "Bereit" else "Bereit ?")
+            }
+
+
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = onStartGame,  modifier = Modifier.testTag("StartGame")) {
+
+        Button(
+            onClick = onStartGame,
+            enabled = allReady,
+            modifier = Modifier.testTag("StartGame")
+        ) {
             Text("Spiel starten")
         }
+
+        if (!allReady) {
+            Text("Warte auf alle Spieler...", style = MaterialTheme.typography.bodyMedium)
+        }
+
 
         Button(onClick = onBackToConnection,  modifier = Modifier.testTag("BackButton")) {
             Text("Zurück")

@@ -6,6 +6,7 @@ import com.example.codenamesapp.MainMenu.GameEndResult
 import com.example.codenamesapp.model.Card
 import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.PayloadResponseMove
+import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.Communication
 
@@ -24,6 +25,8 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
     val isPlayerTurn = mutableStateOf(!myIsSpymaster.value && (myTeam == teamTurn))
+
+    val playerList = mutableStateOf<List<Player>>(emptyList())
 
     // Scores for Red and Blue Team
     val scoreRed : Int
@@ -98,5 +101,9 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
 
     //onGameOver callback
     var onGameOver: (GameEndResult) -> Unit = { _ -> }
+
+    fun updatePlayerList(newList: List<Player>) {
+        playerList.value = newList
+    }
 
 }
