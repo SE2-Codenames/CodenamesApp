@@ -143,8 +143,12 @@ fun GameBoardScreen(
                         val isOperativeTurn = viewModel.isPlayerTurn
                         val isSpymaster = viewModel.myIsSpymaster.value
 
-                        if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
-                            card.isMarked.value = true
+                        if (index != -1 && isOperativeTurn && !isSpymaster) {
+                            if (!isAlreadyMarked){
+                                card.isMarked.value = true
+                            }else{
+                                card.isMarked.value = false
+                            }
                             viewModel.markCard(index, communication)
                         }
                     },
@@ -215,7 +219,6 @@ fun GameBoardScreen(
                         val number = hintNumberInput.toIntOrNull() ?: 0
                         if (hintWordInput.isNotBlank() && number > 0) {
                             viewModel.sendHint(hintWordInput.trim(), number, communication)
-                            messages.add("Your Hint: ${hintWordInput.trim()} ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
                 }
