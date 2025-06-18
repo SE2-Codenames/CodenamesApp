@@ -87,7 +87,7 @@ fun GameBoardScreen(
     ) {
 
         DetectThreeFinger {
-            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
+            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
                 showExpose = true
             }
         }
@@ -140,7 +140,7 @@ fun GameBoardScreen(
                         val index = viewModel.cardList.indexOf(card)
                         val isAlreadyMarked = card.isMarked.value
 
-                        val isOperativeTurn = viewModel.isPlayerTurn.value
+                        val isOperativeTurn = viewModel.isPlayerTurn
                         val isSpymaster = viewModel.myIsSpymaster.value
 
                         if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
@@ -270,7 +270,7 @@ fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
                     if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
                         lastShakeTime = currentTime
 
-                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
                             println("Shake erkannt – sende clearMarks")
                             communication.sendClearMarks()
                         }

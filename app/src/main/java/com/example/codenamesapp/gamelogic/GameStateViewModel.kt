@@ -23,7 +23,8 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
 
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
-    val isPlayerTurn = mutableStateOf(!myIsSpymaster.value && (myTeam == teamTurn))
+    val isPlayerTurn: Boolean
+        get() = !myIsSpymaster.value && (myTeam.value == teamTurn.value)
 
     val playerList = mutableStateOf<List<Player>>(emptyList())
 
