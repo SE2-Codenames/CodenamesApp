@@ -80,6 +80,15 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
         communication.markCard(index)
     }
 
+    fun updateMarkedCards(markedCards: List<Boolean>) {
+        if (cardList.isEmpty()) return
+        for (i in markedCards.indices) {
+            if (i < cardList.size) {
+                cardList[i].isMarked.value = markedCards[i]
+            }
+        }
+    }
+
     val gameEndResult = mutableStateOf<GameEndResult?>(null)
 
     //onGameOver callback

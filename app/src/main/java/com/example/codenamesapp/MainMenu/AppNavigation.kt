@@ -27,6 +27,7 @@ fun AppNavigation(
     val coroutineScope = rememberCoroutineScope()
     val playerNameState = remember { mutableStateOf<String?>(null) }
     val playerListState = remember { mutableStateOf(listOf<Player>()) }
+    val messages = remember { mutableStateListOf<String>() }
     val gameStateViewModel: GameStateViewModel = viewModel(
         factory = GameStateViewModelFactory(GameManager())
     )
@@ -89,8 +90,9 @@ fun AppNavigation(
                     playerNameState.value = name
                     navController.navigate("lobby")
                 },
-                onMessageReceived = {
-                    println("📨 Server: $it")
+                onMessageReceived = { msg ->
+                    println("📨 Server: $msg")
+                    messages.add(msg)
                 },
                 onPlayerListUpdated = {
                     playerListState.value = it
@@ -126,7 +128,8 @@ fun AppNavigation(
             if (payload != null && team != null && isSpymaster != null) {
                 GameBoardScreen(
                     viewModel = gameStateViewModel,
-                    communication = communication
+                    communication = communication,
+                    messages = messages
                 )
             }
         }
