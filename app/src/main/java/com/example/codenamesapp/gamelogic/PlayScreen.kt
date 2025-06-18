@@ -2,6 +2,10 @@ package com.example.codenamesapp
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,6 +42,9 @@ import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 
+import kotlin.math.sqrt
+import androidx.compose.ui.input.pointer.pointerInput
+
 
 @Composable
 fun GameBoardScreen(
@@ -46,10 +53,12 @@ fun GameBoardScreen(
     messages: SnapshotStateList<String>
 ) {
     LockLandscapeOrientation()
+    DetectShake(viewModel, communication)
     println("Spielerrolle vom Server (IsSpymaster): $viewModel.myIsSpymaster")
 
 
     var showOverlay by remember { mutableStateOf(false) }
+    var showExpose by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -75,6 +84,13 @@ fun GameBoardScreen(
             //.padding(WindowInsets.systemBars.asPaddingValues())
             //.consumeWindowInsets(WindowInsets.systemBars)
     ) {
+
+        DetectThreeFinger {
+            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                showExpose = true
+            }
+        }
+
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
             // Column 1: Info & Buttons
@@ -100,7 +116,7 @@ fun GameBoardScreen(
                         )
                     }
                     ButtonsGui(
-                        text = "Expose!", onClick = { /* TODO */ },
+                        text = "Expose!", onClick = { showExpose = true },
                         modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                     )
                 }
@@ -213,11 +229,24 @@ fun GameBoardScreen(
                             val word = hintWordInput.trim()
                             val number = hintNumberInput.trim().toIntOrNull() ?: 0
                             viewModel.sendHint(word, number, communication)
+                            messages.add("Your Hint: $word ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
                 }
             }
         }
+    }
+
+    if (showExpose) {
+        ExposeDialog(
+            onConfirm = {
+                showExpose = false
+                communication.expose()
+            },
+            onDismiss = {
+                showExpose = false
+            }
+        )
     }
 }
 
@@ -227,6 +256,46 @@ fun LockLandscapeOrientation() {
     val activity = context as? Activity
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    }
+}
+
+@Composable
+fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
+    val context = LocalContext.current
+    val sensorManager = remember {
+        context.getSystemService(Activity.SENSOR_SERVICE) as SensorManager
+    }
+    val accelerometer = remember {
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    }
+
+    var lastShakeTime by remember { mutableStateOf(0L) }
+    val shakeThreshold = 12f
+
+    DisposableEffect(Unit) {
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                event?.let {
+                    val (x, y, z) = it.values
+                    val acceleration = sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH
+                    val currentTime = System.currentTimeMillis()
+
+                    if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
+                        lastShakeTime = currentTime
+
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                            println("Shake erkannt – sende clearMarks")
+                            communication.sendClearMarks()
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        onDispose {
+            sensorManager.unregisterListener(listener)
+        }
     }
 }
 
@@ -356,3 +425,42 @@ fun ChatBox(messages: List<String>) {
         }
     }
 }
+
+@Composable
+fun ExposeDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Team entlarven") },
+        text = { Text("Hat das gegnerische Team geschummelt?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Ja")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Nein")
+            }
+        }
+    )
+}
+
+@Composable
+fun DetectThreeFinger(onTripleTap: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val downCount = event.changes.count { it.pressed }
+                        if (downCount == 3) {
+                            onTripleTap()
+                        }
+                    }
+                }
+            }
+    )
+}
+
