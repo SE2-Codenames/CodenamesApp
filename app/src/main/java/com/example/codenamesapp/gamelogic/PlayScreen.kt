@@ -41,7 +41,6 @@ import com.example.codenamesapp.ui.theme.*
 import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
-
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
 
@@ -86,7 +85,7 @@ fun GameBoardScreen(
     ) {
 
         DetectThreeFinger {
-            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
                 showExpose = true
             }
         }
@@ -283,7 +282,7 @@ fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
                     if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
                         lastShakeTime = currentTime
 
-                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
                             println("Shake erkannt – sende clearMarks")
                             communication.sendClearMarks()
                         }
