@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -122,7 +123,7 @@ fun GameBoardScreen(
                         val index = viewModel.cardList.indexOf(card)
                         val isAlreadyMarked = card.isMarked.value
 
-                        val isOperativeTurn = viewModel.isPlayerTurn
+                        val isOperativeTurn = viewModel.isPlayerTurn.value
                         val isSpymaster = viewModel.myIsSpymaster.value
 
                         if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
@@ -278,7 +279,6 @@ fun GameBoardGrid(
             GameCard(
                 viewModel= viewModel,
                 card = card,
-                isSpymaster = isSpymaster,
                 onClick = { onCardMarked(card) },
                 onLongClick = { onCardClicked(card) }
             )

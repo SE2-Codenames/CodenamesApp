@@ -8,14 +8,16 @@ import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.codenamesapp.GameBoardScreen
 import okhttp3.WebSocket
+import okio.ByteString
 
 class DummyCommunication : Communication(
     object : WebSocket {
         override fun request() = TODO()
         override fun queueSize(): Long = 0
         override fun send(text: String): Boolean = true
-        override fun send(bytes: okio.ByteString): Boolean = true
+        override fun send(bytes: ByteString): Boolean = true
         override fun close(code: Int, reason: String?): Boolean = true
         override fun cancel() {}
     }
@@ -52,6 +54,9 @@ fun GameBoardScreenPreview() {
 
 
     CodenamesAppTheme {
-        GameBoardScreen(viewModel = dummyViewModel, communication = dummyCommunication)
+        GameBoardScreen(
+            viewModel = dummyViewModel, communication = dummyCommunication,
+            messages = TODO()
+        )
     }
 }

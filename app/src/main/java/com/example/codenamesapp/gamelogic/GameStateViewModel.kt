@@ -9,7 +9,7 @@ import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.Communication
 
-class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
+open class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     val payload = mutableStateOf<PayloadResponseMove?>(null)
     val player = mutableStateOf(null)
     val teamTurn = mutableStateOf<TeamRole?>(null) // team whose turn it is
@@ -23,7 +23,7 @@ class GameStateViewModel(private val gameManager : GameManager) : ViewModel() {
     // OWN selections
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
-    val isPlayerTurn = !myIsSpymaster.value && (myTeam == teamTurn)
+    val isPlayerTurn = mutableStateOf(!myIsSpymaster.value && (myTeam == teamTurn))
 
     // Scores for Red and Blue Team
     val scoreRed : Int

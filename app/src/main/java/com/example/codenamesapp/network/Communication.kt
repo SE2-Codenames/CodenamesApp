@@ -9,7 +9,7 @@ data class Message(
     val data: Map<String, String>
 )
 
-class Communication(
+open class Communication(
     private val socket: WebSocket
 ) {
     fun send(message: String) {
