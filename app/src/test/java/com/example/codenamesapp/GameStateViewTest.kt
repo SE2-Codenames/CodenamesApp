@@ -38,7 +38,8 @@ class GameStateViewTest {
         remainingGuesses = 2,
         hint = "fruit",
         card = sampleCards,
-        isSpymaster = false
+        isSpymaster = false,
+        markedCards = emptyList()
     )
 
     @BeforeEach

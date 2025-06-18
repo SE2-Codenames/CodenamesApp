@@ -20,7 +20,8 @@ class GameManagerTest {
             gameState = GamePhase.SPYMASTER_TURN,
             remainingGuesses = 0,
             card = emptyList(),
-            isSpymaster = false
+            isSpymaster = false,
+            markedCards = emptyList()
         )
     }
 
@@ -76,5 +77,12 @@ class GameManagerTest {
         gameManager.loadGameState(state)
         assertEquals(0, gameManager.getScore(TeamRole.RED)) // getOrNull(0) → null → 0
         assertEquals(0, gameManager.getScore(TeamRole.BLUE)) // getOrNull(1) → null → 0
+    }
+
+    @Test
+    fun testGetScoreWhenGameStateIsNull() {
+        // gameState is null (initial state)
+        assertEquals(0, gameManager.getScore(TeamRole.RED))
+        assertEquals(0, gameManager.getScore(TeamRole.BLUE))
     }
 }
