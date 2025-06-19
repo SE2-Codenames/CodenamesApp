@@ -108,6 +108,12 @@ fun GameBoardScreen(
                             },
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
+                    } else {
+                        ButtonsGui(text = "Skip!", onClick = {
+                            if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)) {
+                                /*TODO*/
+                            }
+                        }, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
                     ButtonsGui(
                         text = "Expose!", onClick = { showExpose = true },
