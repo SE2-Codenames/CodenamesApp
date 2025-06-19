@@ -8,7 +8,7 @@ import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.gamelogic.GameBoardScreen
 import okhttp3.WebSocket
 import okio.ByteString
 
