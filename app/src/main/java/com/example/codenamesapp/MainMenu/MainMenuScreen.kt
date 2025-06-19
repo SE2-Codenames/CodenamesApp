@@ -62,9 +62,9 @@ fun MainMenuScreen(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.Bottom // TODO: better solution for buttons not overlapping text
+                .padding(horizontal = 64.dp, vertical = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(40.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.Bottom
         ) {
             ButtonsContent(
                 onPlayClicked,
@@ -107,7 +107,7 @@ fun ButtonsContent ( // the 3 Buttons
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    ButtonsGui(text = "Settings", onClick = { onSettingsClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+    //ButtonsGui(text = "Settings", onClick = { onSettingsClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
-    Spacer(modifier = Modifier.height(48.dp))
+    //Spacer(modifier = Modifier.height(48.dp))
 }
