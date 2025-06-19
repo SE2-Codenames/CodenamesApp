@@ -27,8 +27,7 @@ import com.example.codenamesapp.ui.theme.*
 @Composable
 fun MainMenuScreen(
     onPlayClicked: () -> Unit,
-    onRulesClicked: () -> Unit,
-    onSettingsClicked: () -> Unit
+    onRulesClicked: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -68,8 +67,7 @@ fun MainMenuScreen(
         ) {
             ButtonsContent(
                 onPlayClicked,
-                onRulesClicked,
-                onSettingsClicked
+                onRulesClicked
             )
         }
     }
@@ -96,8 +94,7 @@ fun MainHeading () { // Logo & Title
 @Composable
 fun ButtonsContent ( // the 3 Buttons
     onPlayClicked: () -> Unit,
-    onRulesClicked: () -> Unit,
-    onSettingsClicked: () -> Unit
+    onRulesClicked: () -> Unit
 ) {
     ButtonsGui(text = "Play", onClick = { onPlayClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
@@ -106,8 +103,4 @@ fun ButtonsContent ( // the 3 Buttons
     ButtonsGui(text = "Rules", onClick = { onRulesClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
     Spacer(modifier = Modifier.height(16.dp))
-
-    //ButtonsGui(text = "Settings", onClick = { onSettingsClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
-
-    //Spacer(modifier = Modifier.height(48.dp))
 }

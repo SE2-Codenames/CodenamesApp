@@ -68,8 +68,7 @@ fun AppNavigation(
         composable("menu") {
             MainMenuScreen(
                 onPlayClicked = { navController.navigate("connection") },
-                onRulesClicked = { navController.navigate("rules") },
-                onSettingsClicked = { navController.navigate("settings") }
+                onRulesClicked = { navController.navigate("rules") }
             )
         }
 
