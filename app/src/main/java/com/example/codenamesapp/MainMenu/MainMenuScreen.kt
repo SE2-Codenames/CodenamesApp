@@ -43,8 +43,7 @@ fun MainMenuScreen(
             MainHeading()
             ButtonsContent(
                 onPlayClicked,
-                onRulesClicked,
-                onSettingsClicked
+                onRulesClicked
             )
         }
     } else {
