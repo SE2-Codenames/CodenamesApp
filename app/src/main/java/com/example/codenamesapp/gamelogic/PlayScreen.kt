@@ -161,6 +161,7 @@ fun GameBoardScreen(
         }
     }
 
+    // HINT Screen if showOverlay = true
     if (showOverlay) {
         Box(
             modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
@@ -171,7 +172,7 @@ fun GameBoardScreen(
                 elevation = CardDefaults.cardElevation(8.dp),
                 modifier = Modifier .width(300.dp).wrapContentHeight().background(MaterialTheme.colorScheme.onPrimary)
             ) {
-                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Enter Hint:")
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -231,12 +232,13 @@ fun GameBoardScreen(
                             viewModel.sendHint(word, number, communication)
                             messages.add("Your Hint: $word ($number)")
                         }
-                    }, modifier = Modifier.height(10.dp))
+                    }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
                 }
             }
         }
     }
 
+    // EXPOSE Screen
     if (showExpose) {
         ExposeDialog(
             onConfirm = {
