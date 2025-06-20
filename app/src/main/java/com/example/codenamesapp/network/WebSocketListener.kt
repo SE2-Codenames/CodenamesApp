@@ -66,8 +66,8 @@ class CodenamesWebSocketListener(
                 }
             }
 
-            text.startsWith("MARKED:") -> {
-                val json = text.removePrefix("MARKED:")
+            text.startsWith("MARK:") -> {
+                val json = text.removePrefix("MARK:")
                 try {
                     val markedMap = gson.fromJson(json, Map::class.java)
                     val rawList = markedMap["markedCards"] as? List<*>
