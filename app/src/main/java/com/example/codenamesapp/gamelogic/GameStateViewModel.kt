@@ -3,6 +3,7 @@ package com.example.codenamesapp.gamelogic
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.codenamesapp.MainMenu.GameEndResult
+import com.example.codenamesapp.R
 import com.example.codenamesapp.model.Card
 import com.example.codenamesapp.model.GamePhase
 import com.example.codenamesapp.model.PayloadResponseMove
@@ -48,6 +49,12 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
 
     val hasReset = mutableStateOf(false)
     val cardList = mutableListOf<Card>()
+
+    // image list for card background
+    val redCards = listOf(R.drawable.card_red1, R.drawable.card_red2)
+    val blueCards = listOf(R.drawable.card_blue1, R.drawable.card_blue2)
+    val neutralCards = listOf(R.drawable.card_neutral1, R.drawable.card_neutral2)
+    val assasinCard = R.drawable.card_black
 
     fun loadCardsFromGameState (gameState: PayloadResponseMove) {
         val preparedCards = gameState.card.mapIndexed { index, card ->

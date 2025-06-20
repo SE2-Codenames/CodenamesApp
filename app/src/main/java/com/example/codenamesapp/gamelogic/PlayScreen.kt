@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +36,7 @@ import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 
 
 @Composable
@@ -371,23 +373,25 @@ fun CardsRemaining(viewModel: GameStateViewModel) {
 
 @Composable
 fun PlayerRoleScreen(viewModel: GameStateViewModel) {
-    val image = painterResource(R.drawable.muster_logo)
     val textColor = if (viewModel.myTeam.value == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    val roleText = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative"
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Box(
+        contentAlignment = Alignment.BottomCenter,
         modifier = Modifier.padding(8.dp)
     ) {
-        Image(
-            painter = image,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp)
-        )
+        Spacer(modifier = Modifier.height(30.dp))
         Text(
-            text = roleText,
+            text = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative",
             style = MaterialTheme.typography.headlineLarge.copy(color = textColor)
+        )
+        Image(
+            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(top = 48.dp),
+            contentScale = ContentScale.Fit,
+            alpha = 0.05f
         )
     }
 }
@@ -428,15 +432,33 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
         BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
     }
 
-    val backgroundImage = if (card.revealed || viewModel.myIsSpymaster.value) {
+    val backgroundImage = remember(card.word) {
         when (card.cardRole) {
-            CardRole.RED -> MaterialTheme.colorScheme.error
-            CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
-            CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
-            CardRole.ASSASSIN -> CustomBlack
+            CardRole.RED -> viewModel.redCards.random()
+            CardRole.BLUE -> viewModel.blueCards.random()
+            CardRole.NEUTRAL -> viewModel.neutralCards.random()
+            CardRole.ASSASSIN -> viewModel.assasinCard
         }
-    } else {
-        MaterialTheme.colorScheme.secondary
+    }
+
+    val backgroundModifier = when {
+        card.revealed -> {
+            Modifier.background(Color.Transparent).paint(
+                painterResource(backgroundImage),
+                contentScale = ContentScale.Crop
+            )
+        }
+        viewModel.myIsSpymaster.value -> {
+            Modifier.background(
+                when (card.cardRole) {
+                    CardRole.RED -> MaterialTheme.colorScheme.error
+                    CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
+                    CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
+                    CardRole.ASSASSIN -> CustomBlack
+                }
+            )
+        }
+        else -> Modifier.background(MaterialTheme.colorScheme.secondary)
     }
 
     val canMark = viewModel.isPlayerTurn
@@ -452,7 +474,7 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().background(backgroundImage)) {
+        Box(modifier = Modifier.fillMaxSize().then(backgroundModifier)) {
             Text(
                 text = card.word,
                 color = Color.White,
@@ -494,16 +516,16 @@ fun ChatBox(messages: List<String>) {
 fun ExposeDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Team entlarven") },
-        text = { Text("Hat das gegnerische Team geschummelt?") },
+        title = { Text("Expose Team") },
+        text = { Text("Did the opposing team cheat?") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Ja")
+                Text("Yes")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Nein")
+                Text("No")
             }
         }
     )
