@@ -14,15 +14,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,8 +35,6 @@ import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.graphics.RectangleShape
 
 
 @Composable
@@ -60,16 +55,6 @@ fun GameBoardScreen(
         modifier = Modifier
             .fillMaxSize(),
         viewModel = viewModel
-//            .border(
-//                width = 8.dp,
-//                brush = Brush.verticalGradient(
-//                    colors = listOf(
-//                        Color.Transparent,
-//                        teamColor
-//                    )
-//                ),
-//                shape = RectangleShape
-//            )
     ) {
 
         DetectThreeFinger {
@@ -260,11 +245,12 @@ fun GameBoardScreen(
 
 @Composable
 fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, content: @Composable BoxScope.() -> Unit) {
-    val teamColor = when (viewModel.teamTurn.value) {
+    var teamColor = when (viewModel.teamTurn.value) {
         TeamRole.RED -> DarkRed
         TeamRole.BLUE -> DarkBlue
         else -> DarkGrey
     }
+    teamColor = teamColor.copy(alpha = 0.5f)
 
     Box(modifier = modifier) {
         // oben
@@ -278,7 +264,7 @@ fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, conten
                     )
                 )
         )
-        // Unten
+        // unten
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -290,7 +276,7 @@ fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, conten
                     )
                 )
         )
-        // Links
+        // links
         Box(
             modifier = Modifier
                 .fillMaxHeight()
@@ -301,7 +287,7 @@ fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, conten
                     )
                 )
         )
-        // Rechts
+        // rechts
         Box(
             modifier = Modifier
                 .fillMaxHeight()
@@ -313,7 +299,7 @@ fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, conten
                     )
                 )
         )
-        // Inhalt
+        // content
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -432,7 +418,7 @@ fun GameBoardGrid(
 @Composable
 fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
-        BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+        BorderStroke(3.dp, MaterialTheme.colorScheme.onSecondary)
     } else if (card.revealed && viewModel.myIsSpymaster.value) {
         BorderStroke(5.dp, MaterialTheme.colorScheme.error)
     } else {
