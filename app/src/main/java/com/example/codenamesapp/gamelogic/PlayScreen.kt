@@ -56,25 +56,20 @@ fun GameBoardScreen(
     var showOverlay by remember { mutableStateOf(false) }
     var showExpose by remember { mutableStateOf(false) }
 
-    val teamColor = when (viewModel.teamTurn.value) {
-        TeamRole.RED -> DarkRed
-        TeamRole.BLUE -> DarkBlue
-        else -> DarkGrey
-    }
-
-    Box(
+    GradientBoxBorder(
         modifier = Modifier
-            .fillMaxSize()
-            .border(
-                width = 8.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        teamColor
-                    )
-                ),
-                shape = RectangleShape
-            )
+            .fillMaxSize(),
+        viewModel = viewModel
+//            .border(
+//                width = 8.dp,
+//                brush = Brush.verticalGradient(
+//                    colors = listOf(
+//                        Color.Transparent,
+//                        teamColor
+//                    )
+//                ),
+//                shape = RectangleShape
+//            )
     ) {
 
         DetectThreeFinger {
@@ -259,6 +254,71 @@ fun GameBoardScreen(
             onDismiss = {
                 showExpose = false
             }
+        )
+    }
+}
+
+@Composable
+fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, content: @Composable BoxScope.() -> Unit) {
+    val teamColor = when (viewModel.teamTurn.value) {
+        TeamRole.RED -> DarkRed
+        TeamRole.BLUE -> DarkBlue
+        else -> DarkGrey
+    }
+
+    Box(modifier = modifier) {
+        // oben
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(teamColor, Color.Transparent)
+                    )
+                )
+        )
+        // Unten
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, teamColor)
+                    )
+                )
+        )
+        // Links
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(teamColor, Color.Transparent)
+                    )
+                )
+        )
+        // Rechts
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+                .align(Alignment.CenterEnd)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color.Transparent, teamColor)
+                    )
+                )
+        )
+        // Inhalt
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            content = content
         )
     }
 }
