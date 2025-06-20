@@ -27,6 +27,21 @@ import androidx.compose.ui.unit.sp
 * teritary = diverse blue
 * error = diverse red
 * */
+/*
+DarkColorScheme
+primary = Color.White,
+onPrimary = CustomBlack,
+secondary = DarkGrey,
+tertiary = DarkBlue,
+error = DarkRed
+
+LightColorScheme
+primary = CustomBlack,
+onPrimary = Color.White,
+secondary = LightGrey,
+tertiary = LightBlue,
+error = LightRed
+*/
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
@@ -34,6 +49,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = DarkGrey,
     tertiary = DarkBlue,
     error = DarkRed
+
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -58,7 +74,7 @@ private val LightColorScheme = lightColorScheme(
 fun CodenamesAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

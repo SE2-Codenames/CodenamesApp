@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
+import com.example.codenamesapp.ui.theme.ButtonsGui
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,9 +67,9 @@ fun ConnectionScreen(
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        Button(onClick = {
+        ButtonsGui(text = "Verbinden", onClick = {
             coroutineScope.launch(Dispatchers.IO) {
                 try {
                     val url = "ws://$host:$port"
@@ -101,9 +102,7 @@ fun ConnectionScreen(
                     Log.e("ConnectionScreen", "Verbindungsaufbau fehlgeschlagen", e)
                 }
             }
-        }) {
-            Text("Verbinden")
-        }
+        }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
         Spacer(modifier = Modifier.height(24.dp))
 

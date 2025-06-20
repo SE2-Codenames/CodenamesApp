@@ -6,7 +6,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.codenamesapp.GameBoardScreen
+import com.example.codenamesapp.gamelogic.GameBoardScreen
 import com.example.codenamesapp.MainMenuScreen
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.lobby.LobbyScreen
@@ -68,8 +68,7 @@ fun AppNavigation(
         composable("menu") {
             MainMenuScreen(
                 onPlayClicked = { navController.navigate("connection") },
-                onRulesClicked = { navController.navigate("rules") },
-                onSettingsClicked = { navController.navigate("settings") }
+                onRulesClicked = { navController.navigate("rules") }
             )
         }
 

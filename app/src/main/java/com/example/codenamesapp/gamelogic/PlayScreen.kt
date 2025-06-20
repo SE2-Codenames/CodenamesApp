@@ -1,4 +1,4 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.gamelogic
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -17,30 +17,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
 import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
-import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.text.KeyboardOptions
@@ -115,6 +110,12 @@ fun GameBoardScreen(
                             },
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
+                    } else {
+                        ButtonsGui(text = "Skip!", onClick = {
+                            if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)) {
+                                /*TODO*/
+                            }
+                        }, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
                     ButtonsGui(
                         text = "Expose!", onClick = { showExpose = true },
@@ -166,25 +167,18 @@ fun GameBoardScreen(
         }
     }
 
+    // HINT Screen if showOverlay = true
     if (showOverlay) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             Card(
                 shape = RoundedCornerShape(0.dp),
                 elevation = CardDefaults.cardElevation(8.dp),
-                modifier = Modifier
-                    .width(300.dp)
-                    .wrapContentHeight()
-                    .background(MaterialTheme.colorScheme.onPrimary)
+                modifier = Modifier .width(300.dp).wrapContentHeight().background(MaterialTheme.colorScheme.onPrimary)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Enter Hint:")
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -197,20 +191,44 @@ fun GameBoardScreen(
                         label = { Text("Word") },
                         modifier = Modifier.fillMaxWidth()
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextField(
-                        value = hintNumberInput,
-                        onValueChange = { input ->
-                            hintNumberInput = input.filter { it.isDigit() }
-                        },
-                        label = { Text("Count") },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    // dropdown for hintNumberInput
+                    val options = if (viewModel.teamTurn.value == TeamRole.RED) {
+                        (1..viewModel.scoreRed).map { it.toString() }
+                    } else {
+                        (1..viewModel.scoreBlue).map { it.toString() }
+                    }
+                    var expanded by remember { mutableStateOf(false) }
+                    Box(
+                        modifier = Modifier
+                            .clickable { expanded = true }
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = hintNumberInput,
+                            onValueChange = { },
+                            label = { Text("Count") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
+                            }
+                        )
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            options.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        hintNumberInput = option
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -220,13 +238,13 @@ fun GameBoardScreen(
                         if (hintWordInput.isNotBlank() && number > 0) {
                             viewModel.sendHint(hintWordInput.trim(), number, communication)
                         }
-                    }, modifier = Modifier.height(10.dp))
+                    }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
                 }
             }
         }
     }
 
-
+    // EXPOSE Screen
     if (showExpose) {
         ExposeDialog(
             onConfirm = {
@@ -273,7 +291,7 @@ fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
                     if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
                         lastShakeTime = currentTime
 
-                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
                             println("Shake erkannt – sende clearMarks")
                             communication.sendClearMarks()
                         }
