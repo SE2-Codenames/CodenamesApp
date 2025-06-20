@@ -191,42 +191,51 @@ fun GameBoardScreen(
                         label = { Text("Word") },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    // dropdown for hintNumberInput
-                    val options = if (viewModel.teamTurn.value == TeamRole.RED) {
-                        (1..viewModel.scoreRed).map { it.toString() }
+                    // Zähler für Hint-Anzahl (statt Dropdown)
+                    val maxHintNumber = if (viewModel.teamTurn.value == TeamRole.RED) {
+                        viewModel.scoreRed.value
                     } else {
-                        (1..viewModel.scoreBlue).map { it.toString() }
+                        viewModel.scoreBlue.value
                     }
-                    var expanded by remember { mutableStateOf(false) }
-                    Box(
+
+                    // Init, falls leer
+                    if (hintNumberInput.isBlank()) hintNumberInput = "0"
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
-                            .clickable { expanded = true }
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = 8.dp)
                     ) {
-                        OutlinedTextField(
-                            value = hintNumberInput,
-                            onValueChange = { },
-                            label = { Text("Count") },
-                            modifier = Modifier.fillMaxWidth(),
-                            readOnly = true,
-                            trailingIcon = {
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
-                            }
-                        )
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                        Button(
+                            onClick = {
+                                val current = hintNumberInput.toIntOrNull() ?: 1
+                                if (current > 1) {
+                                    hintNumberInput = (current - 1).toString()
+                                }
+                            },
+                            modifier = Modifier.size(40.dp)
                         ) {
-                            options.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        hintNumberInput = option
-                                        expanded = false
-                                    }
-                                )
-                            }
+                            Text("-")
+                        }
+
+                        Text(
+                            text = hintNumberInput,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                val current = hintNumberInput.toIntOrNull() ?: 1
+                                if (current < maxHintNumber) {
+                                    hintNumberInput = (current + 1).toString()
+                                }
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Text("+")
                         }
                     }
 
@@ -291,7 +300,7 @@ fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
                     if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
                         lastShakeTime = currentTime
 
-                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
                             println("Shake erkannt – sende clearMarks")
                             communication.sendClearMarks()
                         }
@@ -310,9 +319,9 @@ fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
 // Column 1: Remaining Cards, Player Role, Logo ----------------------------------------------------
 @Composable
 fun CardsRemaining(viewModel: GameStateViewModel) {
-    Text(viewModel.scoreRed.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+    Text(viewModel.scoreRed.value.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
     Spacer(Modifier.width(50.dp))
-    Text(viewModel.scoreBlue.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+    Text(viewModel.scoreBlue.value.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
 }
 
 @Composable
@@ -385,8 +394,10 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
         MaterialTheme.colorScheme.secondary
     }
 
-    val actualOnClick = if (!card.revealed) onClick else ({ })
-    val actualOnLongClick = if (!card.revealed) onLongClick else ({ })
+    val canMark = viewModel.isPlayerTurn
+
+    val actualOnClick = if (!card.revealed && canMark) onClick else ({})
+    val actualOnLongClick = if (!card.revealed && canMark) onLongClick else ({})
 
     Card(
         modifier = Modifier

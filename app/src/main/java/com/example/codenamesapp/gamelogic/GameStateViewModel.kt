@@ -24,17 +24,18 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
     val myTeam = mutableStateOf<TeamRole?>(null)
     val myIsSpymaster = mutableStateOf(false)
     val isPlayerTurn: Boolean
-        get() = !myIsSpymaster.value && (myTeam.value == teamTurn.value)
+        get() = !myIsSpymaster.value &&
+                (myTeam.value == teamTurn.value) &&
+                (gameState == GamePhase.OPERATIVE_TURN)
+
 
     val playerList = mutableStateOf<List<Player>>(emptyList())
 
     val ownPlayerName = mutableStateOf<String?>(null)
     val currentPlayer = mutableStateOf<Player?>(null)
 
-    val scoreRed : Int
-        get() = gameManager.getScore(TeamRole.RED)
-    val scoreBlue : Int
-        get() = gameManager.getScore(TeamRole.BLUE)
+    val scoreRed = mutableStateOf(0)
+    val scoreBlue = mutableStateOf(0)
 
     fun resetState() {
         payload.value = null
@@ -66,7 +67,11 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
         gameManager.loadGameState(state)
         payload.value = state
         loadCardsFromGameState(state)
+
+        scoreRed.value = gameManager.getScore(TeamRole.RED)
+        scoreBlue.value = gameManager.getScore(TeamRole.BLUE)
     }
+
 
     fun handleCardClick (index: Int, communication: Communication) {
         communication.giveCard(index)
