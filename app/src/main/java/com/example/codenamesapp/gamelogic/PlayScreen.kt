@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ import com.example.codenamesapp.model.GamePhase.*
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 
 
 @Composable
@@ -189,16 +191,20 @@ fun GameBoardScreen(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                     ) {
-                        Button(
+                        val current = hintNumberInput.toIntOrNull() ?: 1
+                        OutlinedButton(
                             onClick = {
-                                val current = hintNumberInput.toIntOrNull() ?: 1
                                 if (current > 1) {
                                     hintNumberInput = (current - 1).toString()
                                 }
                             },
-                            modifier = Modifier.size(40.dp)
+                            enabled = current > 1,
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("-")
+                            Text("-", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                         }
 
                         Text(
@@ -207,16 +213,19 @@ fun GameBoardScreen(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
 
-                        Button(
+                        OutlinedButton(
                             onClick = {
-                                val current = hintNumberInput.toIntOrNull() ?: 1
                                 if (current < maxHintNumber) {
                                     hintNumberInput = (current + 1).toString()
                                 }
                             },
-                            modifier = Modifier.size(40.dp)
+                            enabled = current < maxHintNumber,
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("+")
+                            Text("+", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                         }
                     }
 
