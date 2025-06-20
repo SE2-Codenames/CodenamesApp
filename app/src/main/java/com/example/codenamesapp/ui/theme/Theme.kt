@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 * primary = main text color
 * onPrimary = main background color
 * secondary = diverse grey
+* onSecondary = diverse peach for marked cards
 * teritary = diverse blue
 * error = diverse red
 * */
@@ -47,6 +48,7 @@ private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
     onPrimary = CustomBlack,
     secondary = DarkGrey,
+    onSecondary = DarkPeach,
     tertiary = DarkBlue,
     error = DarkRed
 
@@ -56,6 +58,7 @@ private val LightColorScheme = lightColorScheme(
     primary = CustomBlack,
     onPrimary = Color.White,
     secondary = LightGrey,
+    onSecondary = LightPeach,
     tertiary = LightBlue,
     error = LightRed
 

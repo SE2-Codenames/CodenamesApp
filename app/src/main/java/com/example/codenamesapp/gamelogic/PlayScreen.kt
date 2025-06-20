@@ -14,15 +14,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,8 +35,6 @@ import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.text.KeyboardOptions
-
 
 
 @Composable
@@ -60,29 +55,10 @@ fun GameBoardScreen(
             viewModel.gameState == OPERATIVE_TURN
 
 
-    Box(
+    GradientBoxBorder(
         modifier = Modifier
-            .fillMaxSize()
-            .drawBehind {
-                val teamColor = when (viewModel.teamTurn.value) {
-                    TeamRole.RED -> DarkRed
-                    TeamRole.BLUE -> DarkBlue
-                    else -> DarkGrey
-                }
-
-                drawRect(
-                    brush = Brush.radialGradient(
-                        0.0f to Color.White,
-                        0.95f to Color.White,
-                        1.0f to teamColor.copy(alpha = 0.2f),
-                        center = center,
-                        radius = size.minDimension * 1.22f
-                    ),
-                    size = size
-                )
-            }
-            //.padding(WindowInsets.systemBars.asPaddingValues())
-            //.consumeWindowInsets(WindowInsets.systemBars)
+            .fillMaxSize(),
+        viewModel = viewModel
     ) {
 
         if (canExpose) {
@@ -280,6 +256,72 @@ fun GameBoardScreen(
 }
 
 @Composable
+fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, content: @Composable BoxScope.() -> Unit) {
+    var teamColor = when (viewModel.teamTurn.value) {
+        TeamRole.RED -> DarkRed
+        TeamRole.BLUE -> DarkBlue
+        else -> DarkGrey
+    }
+    teamColor = teamColor.copy(alpha = 0.5f)
+
+    Box(modifier = modifier) {
+        // oben
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(teamColor, Color.Transparent)
+                    )
+                )
+        )
+        // unten
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, teamColor)
+                    )
+                )
+        )
+        // links
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(teamColor, Color.Transparent)
+                    )
+                )
+        )
+        // rechts
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+                .align(Alignment.CenterEnd)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color.Transparent, teamColor)
+                    )
+                )
+        )
+        // content
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            content = content
+        )
+    }
+}
+
+@Composable
 fun LockLandscapeOrientation() {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -388,7 +430,7 @@ fun GameBoardGrid(
 @Composable
 fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
-        BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+        BorderStroke(3.dp, MaterialTheme.colorScheme.onSecondary)
     } else if (card.revealed && viewModel.myIsSpymaster.value) {
         BorderStroke(5.dp, MaterialTheme.colorScheme.error)
     } else {

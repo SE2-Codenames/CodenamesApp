@@ -13,4 +13,5 @@ val DarkGrey = Color(0xFFAAAAAA)
 
 val CustomBlack = Color(0xFF0E1111)
 
-val md_theme_light_primary = CustomBlack
+val DarkPeach = Color(0xFFFF7439)
+val LightPeach = Color(0xFFFFB99C)
