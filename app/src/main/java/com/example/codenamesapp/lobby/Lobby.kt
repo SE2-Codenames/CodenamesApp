@@ -135,17 +135,12 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = {
-                    if (!isAlreadyReady) {
-                        sendMessage("READY:${player.name}")
-                    }
-                },
-                enabled = !isAlreadyReady,
-                modifier = Modifier.testTag("ReadyButton")
-            ) {
-                Text(if (isAlreadyReady) "Ready" else "Ready ?")
-            }
+            ButtonsGui(text = if (isAlreadyReady) "Ready" else "Ready ?", onClick = {
+                if (!isAlreadyReady) {
+                    sendMessage("READY:${player.name}")
+                }
+            }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp),
+                enabled = !isAlreadyReady)
         }
 
         Spacer(modifier = Modifier.height(24.dp))

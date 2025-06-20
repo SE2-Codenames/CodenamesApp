@@ -78,20 +78,23 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
                     if (viewModel.myIsSpymaster.value) {
+                        val hintButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)
                         ButtonsGui(
                             text = "Give A Hint!", onClick = {
-                                if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)) {
+                                if (hintButtonClickable) {
                                     showOverlay = true
                                 }
                             },
+                            enabled = hintButtonClickable,
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
                     } else {
+                        val skipButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)
                         ButtonsGui(text = "Skip!", onClick = {
-                            if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)) {
+                            if (skipButtonClickable) {
                                 /*TODO*/
                             }
-                        }, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
+                        }, enabled = skipButtonClickable, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
                     ButtonsGui(
                         text = "Expose!", onClick = { showExpose = true },
