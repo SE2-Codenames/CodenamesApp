@@ -58,7 +58,7 @@ open class Communication(
 
     fun expose() {
         val json = com.google.gson.JsonObject().apply {
-            addProperty("expose", true)
+            addProperty("EXPOSE", true)
         }
         send(json.toString())
     }
