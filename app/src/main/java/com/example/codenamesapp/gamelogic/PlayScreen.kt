@@ -39,7 +39,7 @@ import com.example.codenamesapp.model.GamePhase.*
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.text.KeyboardOptions
-
+import androidx.compose.ui.graphics.RectangleShape
 
 
 @Composable
@@ -56,29 +56,25 @@ fun GameBoardScreen(
     var showOverlay by remember { mutableStateOf(false) }
     var showExpose by remember { mutableStateOf(false) }
 
+    val teamColor = when (viewModel.teamTurn.value) {
+        TeamRole.RED -> DarkRed
+        TeamRole.BLUE -> DarkBlue
+        else -> DarkGrey
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .drawBehind {
-                val teamColor = when (viewModel.teamTurn.value) {
-                    TeamRole.RED -> DarkRed
-                    TeamRole.BLUE -> DarkBlue
-                    else -> DarkGrey
-                }
-
-                drawRect(
-                    brush = Brush.radialGradient(
-                        0.0f to Color.White,
-                        0.95f to Color.White,
-                        1.0f to teamColor.copy(alpha = 0.2f),
-                        center = center,
-                        radius = size.minDimension * 1.22f
-                    ),
-                    size = size
-                )
-            }
-            //.padding(WindowInsets.systemBars.asPaddingValues())
-            //.consumeWindowInsets(WindowInsets.systemBars)
+            .border(
+                width = 8.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        teamColor
+                    )
+                ),
+                shape = RectangleShape
+            )
     ) {
 
         DetectThreeFinger {
