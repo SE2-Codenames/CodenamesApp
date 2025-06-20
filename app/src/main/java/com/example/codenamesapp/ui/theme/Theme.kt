@@ -95,9 +95,10 @@ fun CodenamesAppTheme(
 }
 
 @Composable
-fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier) { // Design of the Buttons
+fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier, enabled: Boolean = true) { // Design of the Buttons
     Button( onClick = onClick,
         modifier = modifier,
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(containerColor = Transparent),
         shape = RectangleShape,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)

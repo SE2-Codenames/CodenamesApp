@@ -55,6 +55,10 @@ fun GameBoardScreen(
 
     var showOverlay by remember { mutableStateOf(false) }
     var showExpose by remember { mutableStateOf(false) }
+    val canExpose = !viewModel.myIsSpymaster.value &&
+            viewModel.teamTurn.value != viewModel.myTeam.value &&
+            viewModel.gameState == OPERATIVE_TURN
+
 
     Box(
         modifier = Modifier
@@ -81,11 +85,12 @@ fun GameBoardScreen(
             //.consumeWindowInsets(WindowInsets.systemBars)
     ) {
 
-        DetectThreeFinger {
-            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+        if (canExpose) {
+            DetectThreeFinger {
                 showExpose = true
             }
         }
+
 
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
@@ -117,10 +122,17 @@ fun GameBoardScreen(
                             }
                         }, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
+
                     ButtonsGui(
-                        text = "Expose!", onClick = { showExpose = true },
-                        modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
+                        text = "Expose!",
+                        onClick = { if (canExpose) showExpose = true },
+                        modifier = Modifier
+                            .width(250.dp)
+                            .height(48.dp)
+                            .padding(4.dp),
+                        enabled = canExpose
                     )
+
                 }
                 Column(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
@@ -199,7 +211,7 @@ fun GameBoardScreen(
                     }
 
                     // Init, falls leer
-                    if (hintNumberInput.isBlank()) hintNumberInput = "0"
+                    if (hintNumberInput.isBlank()) hintNumberInput = "1"
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

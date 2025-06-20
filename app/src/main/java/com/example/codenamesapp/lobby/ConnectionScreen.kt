@@ -25,7 +25,7 @@ fun ConnectionScreen(
     socketClient: WebSocketClient,
     modifier: Modifier = Modifier
 ) {
-    var host by remember { mutableStateOf("10.0.2.2") } // needs to be 10.0.2.2 if testing on emulator          192.168.0.99
+    var host by remember { mutableStateOf("192.168.0.99") } // needs to be 10.0.2.2 if testing on emulator          192.168.0.99
     var port by remember { mutableStateOf("8081") }
     var playerName by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
