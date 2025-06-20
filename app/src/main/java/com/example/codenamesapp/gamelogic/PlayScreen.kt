@@ -87,7 +87,7 @@ fun GameBoardScreen(
     ) {
 
         DetectThreeFinger {
-            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
+            if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
                 showExpose = true
             }
         }
@@ -140,11 +140,15 @@ fun GameBoardScreen(
                         val index = viewModel.cardList.indexOf(card)
                         val isAlreadyMarked = card.isMarked.value
 
-                        val isOperativeTurn = viewModel.isPlayerTurn.value
+                        val isOperativeTurn = viewModel.isPlayerTurn
                         val isSpymaster = viewModel.myIsSpymaster.value
 
-                        if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
-                            card.isMarked.value = true
+                        if (index != -1 && isOperativeTurn && !isSpymaster) {
+                            if (!isAlreadyMarked){
+                                card.isMarked.value = true
+                            }else{
+                                card.isMarked.value = false
+                            }
                             viewModel.markCard(index, communication)
                         }
                     },
@@ -215,7 +219,6 @@ fun GameBoardScreen(
                         val number = hintNumberInput.toIntOrNull() ?: 0
                         if (hintWordInput.isNotBlank() && number > 0) {
                             viewModel.sendHint(hintWordInput.trim(), number, communication)
-                            messages.add("Your Hint: ${hintWordInput.trim()} ($number)")
                         }
                     }, modifier = Modifier.height(10.dp))
                 }
@@ -270,7 +273,7 @@ fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
                     if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
                         lastShakeTime = currentTime
 
-                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn.value) {
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
                             println("Shake erkannt – sende clearMarks")
                             communication.sendClearMarks()
                         }

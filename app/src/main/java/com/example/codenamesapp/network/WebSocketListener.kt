@@ -49,8 +49,6 @@ class CodenamesWebSocketListener(
                             )
                         } else null
                     }
-
-
                 mainHandler.post { onPlayersUpdated(playerList) }
             }
 
@@ -61,7 +59,6 @@ class CodenamesWebSocketListener(
                     gameStateViewModel.payload.value = payload
                     gameStateViewModel.teamTurn.value = payload.teamRole
                     gameStateViewModel.playerRole.value = payload.isSpymaster
-
                     gameStateViewModel.loadGame(payload)
                     Log.d("DEBUG", "✅ Karten empfangen: ${payload.card.size}")
                 } catch (e: Exception) {
@@ -74,23 +71,19 @@ class CodenamesWebSocketListener(
                 try {
                     val markedMap = gson.fromJson(json, Map::class.java)
                     val rawList = markedMap["markedCards"] as? List<*>
-
                     if (rawList != null) {
                         val markedBooleans = rawList.map { it as Boolean }
                         mainHandler.post {
                             gameStateViewModel.updateMarkedCards(markedBooleans)
                         }
                     }
-
                 } catch (e: Exception) {
                     Log.e("WebSocket", "❌ Fehler beim Parsen der MARKED-Nachricht: $json", e)
                 }
             }
 
             text.startsWith("SHOW_GAMEBOARD") -> {
-                mainHandler.post {
-                    onShowGameBoard()
-                }
+                mainHandler.post { onShowGameBoard() }
             }
 
             text.startsWith("RESET") -> {
@@ -110,7 +103,6 @@ class CodenamesWebSocketListener(
                 }
             }
 
-
             else -> {
                 Log.d("WebSocket", "Ignorierte Nachricht: $text")
             }
@@ -123,16 +115,15 @@ class CodenamesWebSocketListener(
             "card" -> "Chosen Card: ${msg.card?.word ?: "?"}"
             "expose" -> "Expose: ${msg.message}"
             "win" -> "${msg.message} (${msg.team}, Points: ${msg.score})"
+            "text" -> msg.message ?: "Leere Nachricht"
             else -> "Unknown message: ${msg.type}"
         }
         onMessage(formatted)
     }
 
-
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.e("CodenamesWebSocket", "❌ Fehler: ${t.localizedMessage}", t)
         val errorMsg = " Verbindung fehlgeschlagen: ${t.localizedMessage ?: "Unbekannter Fehler"}"
-        Log.e("CodenamesWebSocket", errorMsg, t)
         onError(errorMsg)
     }
 
