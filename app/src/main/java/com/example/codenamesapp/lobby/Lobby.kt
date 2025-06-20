@@ -69,7 +69,7 @@ fun LobbyScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         localPlayer?.let { player ->
-            Text("Wähle dein Team:")
+            Text("Choose your Team:")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ColoredToggleButton(
                     label = "Red",
@@ -97,7 +97,7 @@ fun LobbyScreen(
 
             if (gameStateViewModel.myTeam.value != null) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Wähle deine Rolle:")
+                Text("Choose your Role:")
 
                 val team = gameStateViewModel.myTeam.value!!
                 val isSpymasterTaken = playerList.any {
@@ -143,7 +143,7 @@ fun LobbyScreen(
                 enabled = !isAlreadyReady,
                 modifier = Modifier.testTag("ReadyButton")
             ) {
-                Text(if (isAlreadyReady) "Bereit" else "Bereit ?")
+                Text(if (isAlreadyReady) "Ready" else "Ready ?")
             }
         }
 
@@ -154,15 +154,15 @@ fun LobbyScreen(
             enabled = allReady,
             modifier = Modifier.testTag("StartGame")
         ) {
-            Text("Spiel starten")
+            Text("Start Game")
         }
 
         if (!allReady) {
-            Text("Warte auf alle Spieler...", style = MaterialTheme.typography.bodyMedium)
+            Text("Waiting for all players...", style = MaterialTheme.typography.bodyMedium)
         }
 
-        Button(onClick = onBackToConnection, modifier = Modifier.testTag("BackButton")) {
-            Text("Zurück")
+        TextButton(onClick = onBackToConnection) {
+            Text("Back")
         }
     }
 }
