@@ -18,6 +18,7 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
+import com.example.codenamesapp.ui.theme.ButtonsGui
 
 @Composable
 fun LobbyScreen(
@@ -149,21 +150,13 @@ fun LobbyScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = onStartGame,
-            enabled = allReady,
-            modifier = Modifier.testTag("StartGame")
-        ) {
-            Text("Start Game")
-        }
+        ButtonsGui(text = "Start Game", onClick = onStartGame, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp), enabled = allReady)
 
         if (!allReady) {
             Text("Waiting for all players...", style = MaterialTheme.typography.bodyMedium)
         }
 
-        TextButton(onClick = onBackToConnection) {
-            Text("Back")
-        }
+        ButtonsGui(text = "Back", onClick = onBackToConnection, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
     }
 }
 
