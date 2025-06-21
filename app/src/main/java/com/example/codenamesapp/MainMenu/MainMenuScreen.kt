@@ -76,7 +76,7 @@ fun MainMenuScreen(
 @Composable
 fun MainHeading () { // Logo & Title
     // image for logo (just prototype for now)
-    val image = if (!isSystemInDarkTheme()) painterResource(R.drawable.muster_logo_white) else painterResource(R.drawable.muster_logo_black)
+    val image = if (!isSystemInDarkTheme()) painterResource(R.drawable.muster_logo) else painterResource(R.drawable.muster_logo_black)
     Box(Modifier
         .height(160.dp)
         .padding(bottom = 25.dp)) {

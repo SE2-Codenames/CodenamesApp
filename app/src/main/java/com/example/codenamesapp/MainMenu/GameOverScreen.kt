@@ -4,16 +4,20 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,37 +44,71 @@ fun GameOverScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        GameResultContent(winningTeam, isAssassinTriggered)
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        ScoreDisplay(scoreRed, scoreBlue)
-
-        Spacer(modifier = Modifier.height(if (isLandscape) 20.dp else 48.dp))
-
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
-            contentDescription = "Game Logo",
-            modifier = Modifier.size(if (isLandscape) 100.dp else 120.dp)
-        )
-
-        Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 48.dp))
-
-        ButtonsGui(
-            text = "Main Menu",
-            onClick = { navController.navigate("menu") { popUpTo(0)}},
+            painter = painterResource(id = R.drawable.codenamesgameoverscreen),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
-                .width(280.dp)
-                .height(60.dp),
+                .fillMaxSize()
+                .alpha(1f)
         )
+
+        CompositionLocalProvider(LocalContentColor provides Color.White) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                
+
+                GameResultContent(winningTeam, isAssassinTriggered)
+
+
+                ScoreDisplay(scoreRed, scoreBlue)
+                Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 16.dp))
+
+                Image(
+                    painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo else R.drawable.muster_logo_black),
+                    contentDescription = "Game Logo",
+                    modifier = Modifier.size(if (isLandscape) 100.dp else 120.dp)
+                )
+
+                ButtonsGui(
+                    text = "Main Menu",
+                    onClick = { navController.navigate("menu") { popUpTo(0) } },
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(50.dp),
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                )
+            }
+        }
+    }
+}
+@Composable
+fun ButtonsGui(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        )
+    ) {
+        Text(text = text,
+            fontSize = 21.sp,
+            fontWeight = FontWeight.Bold)
     }
 }
 
@@ -83,20 +121,20 @@ private fun GameResultContent(
         Text(
             text = "GAME OVER",
             style = MaterialTheme.typography.headlineLarge.copy(
-                color = Color.Red,
-                fontWeight = FontWeight.Bold
+                color = Color.White,
+                fontWeight = FontWeight.Bold, fontSize = 40.sp
             )
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(70.dp))
         Text(
             text = "The assassin was triggered!",
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
         )
         val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
         Text(
             text = "${losingTeam.name} Team loses!",
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = if (losingTeam == TeamRole.RED) Color.Red else Color.Blue
+            style = MaterialTheme.typography.headlineMedium.copy(
+                color = if (losingTeam == TeamRole.RED) Color.White else Color.White,fontSize = 30.sp, fontWeight = FontWeight.Bold
             )
         )
     } else {
@@ -104,14 +142,14 @@ private fun GameResultContent(
             Text(
                 text = "VICTORY!",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    color = if (team == TeamRole.RED) Color.Red else Color.Blue,
-                    fontWeight = FontWeight.Bold
+                    color = if (team == TeamRole.RED) Color.White else Color.White,
+                    fontWeight = FontWeight.Bold, fontSize = 40.sp
                 )
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(100.dp))
             Text(
                 text = "${team.name} Team Wins!",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineLarge.copy(color = Color.White,fontWeight = FontWeight.Bold)
             )
         } ?: run {
             Text(
@@ -131,21 +169,21 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Red Team",
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Red)
+                style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             )
             Text(
                 text = scoreRed.toString(),
-                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
+                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, fontSize = 50.sp)
             )
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Blue Team",
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Blue)
+                style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             )
             Text(
                 text = scoreBlue.toString(),
-                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
+                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, fontSize = 50.sp)
             )
         }
     }
