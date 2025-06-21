@@ -27,9 +27,10 @@ class LobbyScreenTest {
             val gameManager = GameManager()
             val gameStateViewModel = GameStateViewModel(gameManager)
             val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
+                //playerName = "stefan",
                 playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -66,9 +67,10 @@ class LobbyScreenTest {
             val gameManager = GameManager()
             val gameStateViewModel = GameStateViewModel(gameManager)
             val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
+                //playerName = "stefan",
                 playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -90,9 +92,10 @@ class LobbyScreenTest {
             val navController = rememberNavController()
             val gameStateViewModel = GameStateViewModel(GameManager())
             val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
+                //playerName = "stefan",
                 playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -115,9 +118,10 @@ class LobbyScreenTest {
             val navController = rememberNavController()
             val gameStateViewModel = GameStateViewModel(GameManager())
             val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
+                //playerName = "stefan",
                 playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -130,7 +134,34 @@ class LobbyScreenTest {
         composeTestRule.onNodeWithTag("StartGame").assertIsEnabled()
     }
 
+    @Test
+    fun testLobbyScreenIsScrollable() {
+        val playerList = mutableStateListOf<Player>().apply {
+            repeat(20) {
+                add(Player(name = "Player$it", team = if (it % 2 == 0) TeamRole.RED else TeamRole.BLUE, isSpymaster = false))
+            }
+        }
 
+        composeTestRule.setContent {
+            val navController = rememberNavController()
+            val gameStateViewModel = GameStateViewModel(GameManager())
+            gameStateViewModel.ownPlayerName.value = "Player0"
+            val socketClient = WebSocketClient(gameStateViewModel, navController)
 
+            LobbyScreen(
+                playerList = playerList,
+                socketClient = socketClient,
+                gameStateViewModel = gameStateViewModel,
+                onBackToConnection = {},
+                onStartGame = {},
+                sendMessage = {}
+            )
+        }
+
+        composeTestRule.onNodeWithTag("LobbyScrollArea")
+            .performTouchInput { swipeUp() }
+
+        composeTestRule.onNodeWithText("Player19").assertExists()
+    }
 
 }
