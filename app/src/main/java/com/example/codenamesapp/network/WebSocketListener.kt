@@ -34,6 +34,12 @@ class CodenamesWebSocketListener(
         Log.d("CodenamesWebSocket", "📨 Nachricht empfangen: $text")
 
         when {
+            text == "USERNAME_TAKEN" -> {
+                mainHandler.post {
+                    onMessage("USERNAME_TAKEN")
+                }
+            }
+
             text.startsWith("PLAYERS:") -> {
                 val playerList = text.removePrefix("PLAYERS:")
                     .split(";")
@@ -49,7 +55,10 @@ class CodenamesWebSocketListener(
                             )
                         } else null
                     }
-                mainHandler.post { onPlayersUpdated(playerList) }
+                mainHandler.post {
+                    gameStateViewModel.updatePlayerList(playerList)
+                    onPlayersUpdated(playerList)
+                }
             }
 
             text.startsWith("GAME_STATE:") -> {
@@ -81,7 +90,6 @@ class CodenamesWebSocketListener(
                     Log.e("WebSocket", "❌ Fehler beim Parsen der MARKED-Nachricht: $json", e)
                 }
             }
-
             text.startsWith("SHOW_GAMEBOARD") -> {
                 mainHandler.post { onShowGameBoard() }
             }
@@ -108,6 +116,7 @@ class CodenamesWebSocketListener(
             }
         }
     }
+
 
     private fun handleChatMessage(msg: ChatMessage) {
         val formatted = when (msg.type) {
