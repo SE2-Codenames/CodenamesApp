@@ -62,8 +62,9 @@ fun LobbyScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TeamColumn("Red Team", TeamRole.RED, playerList, ownName)
-            TeamColumn("Blue Team", TeamRole.BLUE, playerList, ownName)
+            TeamColumn("Red Team", TeamRole.RED, playerList, ownName, gameStateViewModel)
+            TeamColumn("Blue Team", TeamRole.BLUE, playerList, ownName, gameStateViewModel)
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -79,6 +80,7 @@ fun LobbyScreen(
                         sendMessage("JOIN_TEAM:${player.name}:RED")
                         gameStateViewModel.myTeam.value = TeamRole.RED
                         gameStateViewModel.myIsSpymaster.value = false
+
                     },
                     modifier = Modifier.testTag("Button_Red"),
                 )
@@ -100,29 +102,36 @@ fun LobbyScreen(
                 Text("Wähle deine Rolle:")
 
                 val team = gameStateViewModel.myTeam.value!!
-                val isSpymasterTaken = playerList.any {
+               val isSpymasterTaken = playerList.any {
                     it.team == team && it.isSpymaster && it.name != player.name
                 }
+
+                val isLocalPlayerSpymaster = gameStateViewModel.myIsSpymaster.value
+                val spymasterButtonEnabled = !isSpymasterTaken || isLocalPlayerSpymaster
+
+
+
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ColoredToggleButton(
                         label = "Spymaster",
-                        isSelected = gameStateViewModel.myIsSpymaster.value == true,
+                        isSelected = isLocalPlayerSpymaster,
                         selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
-                            if (!gameStateViewModel.myIsSpymaster.value && isSpymasterTaken) return@ColoredToggleButton
+                            // Always toggle the spymaster state
                             sendMessage("SPYMASTER_TOGGLE:${player.name}")
-                            gameStateViewModel.myIsSpymaster.value = true
+                            gameStateViewModel.myIsSpymaster.value = !isLocalPlayerSpymaster
                         },
                         modifier = Modifier.testTag("Button_Spymaster"),
-                        enabled = !isSpymasterTaken || gameStateViewModel.myIsSpymaster.value == true
+                        enabled = spymasterButtonEnabled
                     )
+
                     ColoredToggleButton(
                         label = "Operative",
-                        isSelected = gameStateViewModel.myIsSpymaster.value == false,
+                        isSelected = !isLocalPlayerSpymaster,
                         selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
-                            if (gameStateViewModel.myIsSpymaster.value == true) {
+                            if (isLocalPlayerSpymaster) {
                                 sendMessage("SPYMASTER_TOGGLE:${player.name}")
                             }
                             gameStateViewModel.myIsSpymaster.value = false
@@ -198,33 +207,46 @@ fun TeamColumn(
     title: String,
     team: TeamRole,
     players: List<Player>,
-    playerName: String?
+    playerName: String?,
+    gameStateViewModel: GameStateViewModel // 🆕 added parameter
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(title, style = MaterialTheme.typography.headlineSmall)
+
         players.filter { it.team == team }.forEach { player ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {
-                val icon_name = when {
-                    player.team == TeamRole.RED && player.isSpymaster -> R.drawable.icon_red_spymaster
-                    player.team == TeamRole.RED && !player.isSpymaster -> R.drawable.icon_red_operative
-                    player.team == TeamRole.BLUE && player.isSpymaster -> R.drawable.icon_blue_spymaster
-                    player.team == TeamRole.BLUE && !player.isSpymaster -> R.drawable.icon_blue_operative
-                    else -> R.drawable.icon_blue_operative
+                val isLocalPlayer = player.name.trim().equals(playerName?.trim(), ignoreCase = true)
+
+                // 🆕 fallback logic: for the local player, override with current selected state
+                val effectiveIsSpymaster = if (isLocalPlayer) {
+                    gameStateViewModel.myIsSpymaster.value
+                } else {
+                    player.isSpymaster
                 }
+
+                val iconResId = when {
+                    team == TeamRole.RED && effectiveIsSpymaster -> R.drawable.icon_red_spymaster
+                    team == TeamRole.RED && !effectiveIsSpymaster -> R.drawable.icon_red_operative
+                    team == TeamRole.BLUE && effectiveIsSpymaster -> R.drawable.icon_blue_spymaster
+                    team == TeamRole.BLUE && !effectiveIsSpymaster -> R.drawable.icon_blue_operative
+                    else -> R.drawable.icon_blue_operative // fallback
+                }
+
                 Image(
-                    painter = painterResource(id = icon_name),
+                    painter = painterResource(id = iconResId),
                     contentDescription = null,
                     modifier = Modifier.size(44.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
+
                 Text(
                     buildString {
                         append(player.name)
-                        if (player.name.trim().equals(playerName?.trim(), ignoreCase = true)) {
+                        if (isLocalPlayer) {
                             append(" (You)")
                         }
                     }
@@ -233,3 +255,4 @@ fun TeamColumn(
         }
     }
 }
+
