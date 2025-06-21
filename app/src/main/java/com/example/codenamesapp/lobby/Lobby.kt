@@ -37,7 +37,7 @@ fun LobbyScreen(
         it.name.trim().equals(ownName?.trim(), ignoreCase = true)
     }
 
-    val minPlayersRequired = 1
+    val minPlayersRequired = 2
     val enoughPlayers = playerList.size >= minPlayersRequired
     val allReady = enoughPlayers && playerList.all { it.isReady }
 
