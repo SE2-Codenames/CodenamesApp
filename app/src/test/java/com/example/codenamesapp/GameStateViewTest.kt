@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import com.example.codenamesapp.model.Player
 
 class GameStateViewTest {
 
@@ -124,4 +125,66 @@ class GameStateViewTest {
 
         verify { socket.send("HINT:$word:$number") }
     }
+
+    @Test
+    fun testSendMarkedCards() {
+        viewModel.cardList.addAll(sampleCards)
+        viewModel.cardList[0].isMarked.value = true
+        viewModel.cardList[1].isMarked.value = false
+
+        viewModel.sendMarkedCards(communication)
+
+        verify { socket.send("SELECT:0") }
+        verify(exactly = 0) { socket.send("SELECT:1") }
+    }
+
+    @Test
+    fun testMarkCard() {
+        viewModel.markCard(1, communication)
+
+        verify { socket.send("MARK:1") }
+    }
+
+    @Test
+    fun testUpdateMarkedCards() {
+        viewModel.cardList.addAll(sampleCards)
+        viewModel.updateMarkedCards(listOf(true, false))
+
+        assertTrue(viewModel.cardList[0].isMarked.value)
+        assertFalse(viewModel.cardList[1].isMarked.value)
+    }
+
+    @Test
+    fun testResetState() {
+        viewModel.payload.value = payload
+        viewModel.teamTurn.value = TeamRole.RED
+        viewModel.playerRole.value = true
+        viewModel.myTeam.value = TeamRole.BLUE
+        viewModel.myIsSpymaster.value = true
+        viewModel.hasReset.value = true
+
+        viewModel.resetState()
+
+        assertNull(viewModel.payload.value)
+        assertNull(viewModel.teamTurn.value)
+        assertFalse(viewModel.playerRole.value)
+        assertNull(viewModel.myTeam.value)
+        assertFalse(viewModel.myIsSpymaster.value)
+        assertFalse(viewModel.hasReset.value)
+    }
+
+    @Test
+    fun testUpdatePlayerListSetsCurrentPlayer() {
+        val players = listOf(
+            Player(name = "Alice", team = TeamRole.RED, isSpymaster = false, isReady = false),
+            Player(name = "Bob", team = TeamRole.BLUE, isSpymaster = true, isReady = true)
+        )
+
+        viewModel.ownPlayerName.value = "Bob"
+
+        viewModel.updatePlayerList(players)
+
+        assertEquals("Bob", viewModel.currentPlayer.value?.name)
+    }
+
 }
