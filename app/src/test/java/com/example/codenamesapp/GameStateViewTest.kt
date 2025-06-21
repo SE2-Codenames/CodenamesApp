@@ -76,8 +76,8 @@ class GameStateViewTest {
     fun testTeamScores () {
         viewModel.loadGame(payload)
 
-        assertEquals(3, viewModel.scoreRed)
-        assertEquals(4, viewModel.scoreBlue)
+        assertEquals(3, viewModel.scoreRed.value)
+        assertEquals(4, viewModel.scoreBlue.value)
     }
 
     @Test
