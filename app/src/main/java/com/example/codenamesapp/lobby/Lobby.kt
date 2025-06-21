@@ -1,6 +1,7 @@
 package com.example.codenamesapp.lobby
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -18,6 +19,7 @@ import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
+import com.example.codenamesapp.ui.theme.ButtonsGui
 
 @Composable
 fun LobbyScreen(
@@ -40,7 +42,7 @@ fun LobbyScreen(
     val isAlreadyReady = localPlayer?.isReady == true
 
     Image(
-        painter = painterResource(R.drawable.muster_logo),
+        painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo_white),
         contentDescription = null,
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +71,7 @@ fun LobbyScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         localPlayer?.let { player ->
-            Text("Wähle dein Team:")
+            Text("Choose your Team:")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ColoredToggleButton(
                     label = "Red",
@@ -97,7 +99,7 @@ fun LobbyScreen(
 
             if (gameStateViewModel.myTeam.value != null) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Wähle deine Rolle:")
+                Text("Choose your Role:")
 
                 val team = gameStateViewModel.myTeam.value!!
                 val isSpymasterTaken = playerList.any {
@@ -134,36 +136,23 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = {
-                    if (!isAlreadyReady) {
-                        sendMessage("READY:${player.name}")
-                    }
-                },
-                enabled = !isAlreadyReady,
-                modifier = Modifier.testTag("ReadyButton")
-            ) {
-                Text(if (isAlreadyReady) "Bereit" else "Bereit ?")
-            }
+            ButtonsGui(text = if (isAlreadyReady) "Ready" else "Ready ?", onClick = {
+                if (!isAlreadyReady) {
+                    sendMessage("READY:${player.name}")
+                }
+            }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp),
+                enabled = !isAlreadyReady)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = onStartGame,
-            enabled = allReady,
-            modifier = Modifier.testTag("StartGame")
-        ) {
-            Text("Spiel starten")
-        }
+        ButtonsGui(text = "Start Game", onClick = onStartGame, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp), enabled = allReady)
 
         if (!allReady) {
-            Text("Warte auf alle Spieler...", style = MaterialTheme.typography.bodyMedium)
+            Text("Waiting for all players...", style = MaterialTheme.typography.bodyMedium)
         }
 
-        Button(onClick = onBackToConnection, modifier = Modifier.testTag("BackButton")) {
-            Text("Zurück")
-        }
+        ButtonsGui(text = "Back", onClick = onBackToConnection, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
     }
 }
 

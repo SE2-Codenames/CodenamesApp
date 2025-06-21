@@ -38,7 +38,7 @@ fun ConnectionScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Verbindung zum Server", style = MaterialTheme.typography.headlineMedium)
+        Text("Connection to Server", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -63,13 +63,13 @@ fun ConnectionScreen(
         TextField(
             value = playerName,
             onValueChange = { playerName = it },
-            label = { Text("Spielername") },
+            label = { Text("Player Name") },
             singleLine = true
         )
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        ButtonsGui(text = "Verbinden", onClick = {
+        ButtonsGui(text = "Connect", onClick = {
             coroutineScope.launch(Dispatchers.IO) {
                 try {
                     val url = "ws://$host:$port"
@@ -81,7 +81,7 @@ fun ConnectionScreen(
                             //navController.navigate("lobby")
                         },
                         onError = {
-                            error = "Verbindungsfehler: $it"
+                            error = "Connection Error: $it"
                         },
                         onMessageReceived = { message ->
                             when (message) {
@@ -98,8 +98,8 @@ fun ConnectionScreen(
                         onPlayerListUpdated = onPlayerListUpdated
                     )
                 } catch (e: Exception) {
-                    error = "Fehler: ${e.localizedMessage}"
-                    Log.e("ConnectionScreen", "Verbindungsaufbau fehlgeschlagen", e)
+                    error = "Error: ${e.localizedMessage}"
+                    Log.e("ConnectionScreen", "Connection to Server failed", e)
                 }
             }
         }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
@@ -107,7 +107,7 @@ fun ConnectionScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         TextButton(onClick = { navController.popBackStack() }) {
-            Text("Zurück") // or "Go back"
+            Text("Back") // or "Go back"
         }
 
         if (error != null) {
@@ -123,8 +123,8 @@ fun ConnectionScreen(
                         Text("OK")
                     }
                 },
-                title = { Text("Benutzername vergeben") },
-                text = { Text("Der eingegebene Benutzername ist bereits vergeben. Bitte wähle einen anderen.") }
+                title = { Text("Enter Player Name") },
+                text = { Text("The entered Player Name is already taken. Please choose another one.") }
             )
         }
     }

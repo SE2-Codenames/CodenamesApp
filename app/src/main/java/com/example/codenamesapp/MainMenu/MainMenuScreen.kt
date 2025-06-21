@@ -2,6 +2,7 @@ package com.example.codenamesapp
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,7 +76,7 @@ fun MainMenuScreen(
 @Composable
 fun MainHeading () { // Logo & Title
     // image for logo (just prototype for now)
-    val image = painterResource(R.drawable.muster_logo)
+    val image = if (!isSystemInDarkTheme()) painterResource(R.drawable.muster_logo_white) else painterResource(R.drawable.muster_logo_black)
     Box(Modifier
         .height(160.dp)
         .padding(bottom = 25.dp)) {

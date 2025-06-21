@@ -2,6 +2,7 @@ package com.example.codenamesapp.MainMenu
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -39,7 +40,7 @@ fun RulesScreen(onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
-            painter = painterResource(R.drawable.muster_logo),
+            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo_white),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()

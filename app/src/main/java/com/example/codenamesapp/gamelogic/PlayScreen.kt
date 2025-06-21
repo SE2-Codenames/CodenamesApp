@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
@@ -20,8 +21,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -35,6 +38,8 @@ import com.example.codenamesapp.R
 import com.example.codenamesapp.model.GamePhase.*
 import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 
 
 @Composable
@@ -83,20 +88,23 @@ fun GameBoardScreen(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
                     if (viewModel.myIsSpymaster.value) {
+                        val hintButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)
                         ButtonsGui(
                             text = "Give A Hint!", onClick = {
-                                if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)) {
+                                if (hintButtonClickable) {
                                     showOverlay = true
                                 }
                             },
+                            enabled = hintButtonClickable,
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
                     } else {
+                        val skipButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)
                         ButtonsGui(text = "Skip!", onClick = {
-                            if ((viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)) {
+                            if (skipButtonClickable) {
                                 /*TODO*/
                             }
-                        }, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
+                        }, enabled = skipButtonClickable, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
 
                     ButtonsGui(
@@ -196,16 +204,20 @@ fun GameBoardScreen(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                     ) {
-                        Button(
+                        val current = hintNumberInput.toIntOrNull() ?: 1
+                        OutlinedButton(
                             onClick = {
-                                val current = hintNumberInput.toIntOrNull() ?: 1
                                 if (current > 1) {
                                     hintNumberInput = (current - 1).toString()
                                 }
                             },
-                            modifier = Modifier.size(40.dp)
+                            enabled = current > 1,
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("-")
+                            Text("-", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                         }
 
                         Text(
@@ -214,16 +226,19 @@ fun GameBoardScreen(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
 
-                        Button(
+                        OutlinedButton(
                             onClick = {
-                                val current = hintNumberInput.toIntOrNull() ?: 1
                                 if (current < maxHintNumber) {
                                     hintNumberInput = (current + 1).toString()
                                 }
                             },
-                            modifier = Modifier.size(40.dp)
+                            enabled = current < maxHintNumber,
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("+")
+                            Text("+", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                         }
                     }
 
@@ -380,23 +395,25 @@ fun CardsRemaining(viewModel: GameStateViewModel) {
 
 @Composable
 fun PlayerRoleScreen(viewModel: GameStateViewModel) {
-    val image = painterResource(R.drawable.muster_logo)
     val textColor = if (viewModel.myTeam.value == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    val roleText = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative"
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Box(
+        contentAlignment = Alignment.BottomCenter,
         modifier = Modifier.padding(8.dp)
     ) {
-        Image(
-            painter = image,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp)
-        )
+        Spacer(modifier = Modifier.height(30.dp))
         Text(
-            text = roleText,
+            text = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative",
             style = MaterialTheme.typography.headlineLarge.copy(color = textColor)
+        )
+        Image(
+            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(top = 48.dp),
+            contentScale = ContentScale.Fit,
+            alpha = 0.05f
         )
     }
 }
@@ -431,21 +448,38 @@ fun GameBoardGrid(
 fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
         BorderStroke(3.dp, MaterialTheme.colorScheme.onSecondary)
-    } else if (card.revealed && viewModel.myIsSpymaster.value) {
-        BorderStroke(5.dp, MaterialTheme.colorScheme.error)
     } else {
         BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
     }
 
-    val backgroundImage = if (card.revealed || viewModel.myIsSpymaster.value) {
+    val backgroundImage = remember(card.word) {
         when (card.cardRole) {
-            CardRole.RED -> MaterialTheme.colorScheme.error
-            CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
-            CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
-            CardRole.ASSASSIN -> CustomBlack
+            CardRole.RED -> viewModel.redCards.random()
+            CardRole.BLUE -> viewModel.blueCards.random()
+            CardRole.NEUTRAL -> viewModel.neutralCards.random()
+            CardRole.ASSASSIN -> viewModel.assasinCard
         }
-    } else {
-        MaterialTheme.colorScheme.secondary
+    }
+
+    val backgroundModifier = when {
+        card.revealed -> {
+            Modifier.background(Color.Transparent).paint(
+                painterResource(backgroundImage),
+                contentScale = ContentScale.Crop
+            )
+                .graphicsLayer(alpha = 0.5f)
+        }
+        viewModel.myIsSpymaster.value -> {
+            Modifier.background(
+                when (card.cardRole) {
+                    CardRole.RED -> MaterialTheme.colorScheme.error
+                    CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
+                    CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
+                    CardRole.ASSASSIN -> CustomBlack
+                }
+            )
+        }
+        else -> Modifier.background(MaterialTheme.colorScheme.secondary)
     }
 
     val canMark = viewModel.isPlayerTurn
@@ -461,10 +495,11 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().background(backgroundImage)) {
+        Box(modifier = Modifier.fillMaxSize().then(backgroundModifier)) {
             Text(
                 text = card.word,
                 color = Color.White,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Center).padding(4.dp)
             )
         }
@@ -480,8 +515,7 @@ fun ChatBox(messages: List<String>) {
             .fillMaxWidth()
             .fillMaxHeight(0.66f)
             .padding(8.dp)
-            .border(1.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp))
-            .background(MaterialTheme.colorScheme.onPrimary),
+            .border(0.5.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp)),
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
@@ -503,16 +537,16 @@ fun ChatBox(messages: List<String>) {
 fun ExposeDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Team entlarven") },
-        text = { Text("Hat das gegnerische Team geschummelt?") },
+        title = { Text("Expose Team") },
+        text = { Text("Did the opposing team cheat?") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Ja")
+                Text("Yes")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Nein")
+                Text("No")
             }
         }
     )

@@ -99,13 +99,16 @@ fun CodenamesAppTheme(
 
 @Composable
 fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier, enabled: Boolean = true) { // Design of the Buttons
+
+    val buttonColor = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+
     Button( onClick = onClick,
         modifier = modifier,
-        enabled = enabled,
         colors = ButtonDefaults.buttonColors(containerColor = Transparent),
         shape = RectangleShape,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        border = BorderStroke(1.dp, buttonColor),
+        enabled = enabled
     ) {
-        Text(text, fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
+        Text(text, fontSize = 22.sp, color = buttonColor)
     }
 }
