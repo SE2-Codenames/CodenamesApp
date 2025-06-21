@@ -58,7 +58,7 @@ fun GameOverScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp)
+                    .padding(10.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -72,9 +72,9 @@ fun GameOverScreen(
                 Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 16.dp))
 
                 Image(
-                    painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo else R.drawable.muster_logo_black),
+                    painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
                     contentDescription = "Game Logo",
-                    modifier = Modifier.size(if (isLandscape) 100.dp else 120.dp)
+                    modifier = Modifier.size(if (isLandscape) 100.dp else 130.dp)
                 )
 
                 ButtonsGui(
@@ -118,19 +118,21 @@ private fun GameResultContent(
     isAssassinTriggered: Boolean
 ) {
     if (isAssassinTriggered) {
+        Spacer(modifier = Modifier.height(65.dp))
         Text(
-            text = "GAME OVER",
+            text = "GAME OVER!",
             style = MaterialTheme.typography.headlineLarge.copy(
                 color = Color.White,
                 fontWeight = FontWeight.Bold, fontSize = 40.sp
             )
         )
-        Spacer(modifier = Modifier.height(70.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         Text(
             text = "The assassin was triggered!",
-            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 29.sp, fontWeight = FontWeight.Bold)
         )
         val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "${losingTeam.name} Team loses!",
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -167,6 +169,7 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = "Red Team",
                 style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
@@ -177,6 +180,7 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
             )
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = "Blue Team",
                 style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
