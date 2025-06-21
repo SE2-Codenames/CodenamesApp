@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -435,8 +436,6 @@ fun GameBoardGrid(
 fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
         BorderStroke(3.dp, MaterialTheme.colorScheme.onSecondary)
-    } else if (card.revealed && viewModel.myIsSpymaster.value) {
-        BorderStroke(5.dp, MaterialTheme.colorScheme.error)
     } else {
         BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
     }
@@ -456,6 +455,7 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
                 painterResource(backgroundImage),
                 contentScale = ContentScale.Crop
             )
+                .graphicsLayer(alpha = 0.5f)
         }
         viewModel.myIsSpymaster.value -> {
             Modifier.background(
@@ -487,6 +487,7 @@ fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onL
             Text(
                 text = card.word,
                 color = Color.White,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Center).padding(4.dp)
             )
         }
@@ -502,8 +503,7 @@ fun ChatBox(messages: List<String>) {
             .fillMaxWidth()
             .fillMaxHeight(0.66f)
             .padding(8.dp)
-            .border(1.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp))
-            .background(MaterialTheme.colorScheme.onPrimary),
+            .border(0.5.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp)),
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
