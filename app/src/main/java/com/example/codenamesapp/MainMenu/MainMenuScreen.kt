@@ -2,6 +2,7 @@ package com.example.codenamesapp
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,8 +28,7 @@ import com.example.codenamesapp.ui.theme.*
 @Composable
 fun MainMenuScreen(
     onPlayClicked: () -> Unit,
-    onRulesClicked: () -> Unit,
-    onSettingsClicked: () -> Unit
+    onRulesClicked: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -44,8 +44,7 @@ fun MainMenuScreen(
             MainHeading()
             ButtonsContent(
                 onPlayClicked,
-                onRulesClicked,
-                onSettingsClicked
+                onRulesClicked
             )
         }
     } else {
@@ -62,14 +61,13 @@ fun MainMenuScreen(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.Bottom // TODO: better solution for buttons not overlapping text
+                .padding(horizontal = 64.dp, vertical = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(40.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.Bottom
         ) {
             ButtonsContent(
                 onPlayClicked,
-                onRulesClicked,
-                onSettingsClicked
+                onRulesClicked
             )
         }
     }
@@ -78,7 +76,7 @@ fun MainMenuScreen(
 @Composable
 fun MainHeading () { // Logo & Title
     // image for logo (just prototype for now)
-    val image = painterResource(R.drawable.muster_logo)
+    val image = if (!isSystemInDarkTheme()) painterResource(R.drawable.muster_logo_white) else painterResource(R.drawable.muster_logo_black)
     Box(Modifier
         .height(160.dp)
         .padding(bottom = 25.dp)) {
@@ -96,8 +94,7 @@ fun MainHeading () { // Logo & Title
 @Composable
 fun ButtonsContent ( // the 3 Buttons
     onPlayClicked: () -> Unit,
-    onRulesClicked: () -> Unit,
-    onSettingsClicked: () -> Unit
+    onRulesClicked: () -> Unit
 ) {
     ButtonsGui(text = "Play", onClick = { onPlayClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
@@ -106,8 +103,4 @@ fun ButtonsContent ( // the 3 Buttons
     ButtonsGui(text = "Rules", onClick = { onRulesClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
     Spacer(modifier = Modifier.height(16.dp))
-
-    ButtonsGui(text = "Settings", onClick = { onSettingsClicked() }, Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
-
-    Spacer(modifier = Modifier.height(48.dp))
 }

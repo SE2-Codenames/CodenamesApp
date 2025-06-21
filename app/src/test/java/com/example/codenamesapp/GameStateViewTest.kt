@@ -38,7 +38,8 @@ class GameStateViewTest {
         remainingGuesses = 2,
         hint = "fruit",
         card = sampleCards,
-        isSpymaster = false
+        isSpymaster = false,
+        markedCards = emptyList()
     )
 
     @BeforeEach
@@ -54,7 +55,7 @@ class GameStateViewTest {
     @Test
     fun testInitialStates() {
         assertNull(viewModel.payload.value)
-        assertNull(viewModel.team.value)
+        assertNull(viewModel.teamTurn.value)
         assertFalse(viewModel.playerRole.value)
         assertNull(viewModel.myTeam.value)
         assertFalse(viewModel.myIsSpymaster.value)

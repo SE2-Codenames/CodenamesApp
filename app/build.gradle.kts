@@ -23,14 +23,11 @@ sonar {
         )
         property("sonar.coverage.exclusions",
             "**/gamelogic/PlayScreen.kt," +
-                    "**/MainMenu/MainMenuScreen.kt," +
-                    "**/MainMenu/GameRules.kt," +
-                    "**/MainMenu/MainActivity.kt," +
-                    "**/MainMenu/AppNavigation.kt," +
-                    "**/lobby/ConnectionScreen.kt," +
+                    "**/lobby/ConnectionScreen.kt,"+
                     "**/lobby/Lobby.kt," +
-                    "**/network/WebSocketHandler.kt," +
+                    "**/MainMenu/*.kt," +
                     "**/network/WebSocketClient.kt," +
+                    "**/network/WebSocketHandler.kt," +
                     "**/network/WebSocketListener.kt," +
                     "**/ui/theme/**"
         )

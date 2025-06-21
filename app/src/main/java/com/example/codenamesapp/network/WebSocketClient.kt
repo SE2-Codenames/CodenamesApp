@@ -24,6 +24,8 @@ class WebSocketClient(
     private var url: String = ""
     private var playerName: String = ""
 
+    var onMessageReceived: ((String) -> Unit)? = null
+
     fun setUrl(url: String) {
         this.url = url
     }
@@ -36,8 +38,8 @@ class WebSocketClient(
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
         onMessageReceived: (String) -> Unit,
-        onPlayerListUpdated: (List<com.example.codenamesapp.model.Player>) -> Unit
-    ) {
+        onPlayerListUpdated: (List<Player>) -> Unit
+    ){
         if (url.isBlank() || playerName.isBlank()) {
             onError("URL oder Spielername fehlt.")
             return
@@ -45,11 +47,17 @@ class WebSocketClient(
 
         val request = Request.Builder().url(url).build()
         val listener = CodenamesWebSocketListener(
-            onMessage = onMessageReceived,
-            onPlayersUpdated = onPlayerListUpdated,
+            onMessage = { msg -> onMessageReceived?.invoke(msg) },
+            onPlayersUpdated = { playerList ->
+                onPlayerListUpdated(playerList)
+                if (navController.currentDestination?.route != "lobby") {
+                    navController.navigate("lobby")
+                }
+            },
             onConnectionEstablished = {
-                onSuccess()
                 send("USER:$playerName")
+                gameStateViewModel.ownPlayerName.value = playerName
+                onSuccess()
             },
             onShowGameBoard = {
                 navController.navigate("gameboard")
@@ -78,7 +86,9 @@ class WebSocketClient(
         onMessageReceived: (String) -> Unit,
         onPlayerListUpdated: (List<Player>) -> Unit
     ) {
+        this.onMessageReceived = onMessageReceived
         close()
         connect(onSuccess, onError, onMessageReceived, onPlayerListUpdated)
     }
+
 }

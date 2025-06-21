@@ -1,3 +1,4 @@
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
@@ -17,20 +18,20 @@ class LobbyScreenTest {
 
     @Test
     fun testTeamAndRoleSelectionEnablesStartButton() {
+        val playerList = mutableStateListOf(
+            Player("stefan", TeamRole.RED, false, isReady = false)
+        )
+
         composeTestRule.setContent {
             val navController = rememberNavController()
-
             val gameManager = GameManager()
             val gameStateViewModel = GameStateViewModel(gameManager)
-
-            val socketClient = WebSocketClient(
-                gameStateViewModel = gameStateViewModel,
-                navController = navController
-            )
+            val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
-                playerList = listOf(Player("stefan", TeamRole.RED, false)),
+                //playerName = "stefan",
+                playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
                 onBackToConnection = {},
@@ -41,7 +42,17 @@ class LobbyScreenTest {
 
         composeTestRule.onNodeWithTag("Button_Red").performClick()
         composeTestRule.onNodeWithTag("Button_Operative").performClick()
-        composeTestRule.onNodeWithTag("StartGame").assertIsEnabled()
+
+        composeTestRule.onNodeWithTag("ReadyButton").assertIsEnabled()
+
+        composeTestRule.runOnIdle {
+            val index = playerList.indexOfFirst { it.name == "stefan" }
+            if (index != -1) {
+                playerList[index] = playerList[index].copy(isReady = true)
+            }
+        }
+
+        composeTestRule.onNodeWithTag("ReadyButton").assertIsNotEnabled()
     }
 
     @Test
@@ -56,9 +67,10 @@ class LobbyScreenTest {
             val gameManager = GameManager()
             val gameStateViewModel = GameStateViewModel(gameManager)
             val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
+                //playerName = "stefan",
                 playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -80,9 +92,10 @@ class LobbyScreenTest {
             val navController = rememberNavController()
             val gameStateViewModel = GameStateViewModel(GameManager())
             val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
 
             LobbyScreen(
-                playerName = "stefan",
+                //playerName = "stefan",
                 playerList = playerList,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -95,6 +108,60 @@ class LobbyScreenTest {
         composeTestRule.onNodeWithText("stefan (You)").assertExists()
     }
 
+    @Test
+    fun testStartGameButtonEnabledWhenAllPlayersReady() {
+        val playerList = listOf(
+            Player(name = "stefan", team = TeamRole.RED, isSpymaster = false, isReady = true)
+        )
 
+        composeTestRule.setContent {
+            val navController = rememberNavController()
+            val gameStateViewModel = GameStateViewModel(GameManager())
+            val socketClient = WebSocketClient(gameStateViewModel, navController)
+            gameStateViewModel.ownPlayerName.value = "stefan"
+
+            LobbyScreen(
+                //playerName = "stefan",
+                playerList = playerList,
+                socketClient = socketClient,
+                gameStateViewModel = gameStateViewModel,
+                onBackToConnection = {},
+                onStartGame = {},
+                sendMessage = {}
+            )
+        }
+
+        composeTestRule.onNodeWithTag("StartGame").assertIsEnabled()
+    }
+
+    @Test
+    fun testLobbyScreenIsScrollable() {
+        val playerList = mutableStateListOf<Player>().apply {
+            repeat(20) {
+                add(Player(name = "Player$it", team = if (it % 2 == 0) TeamRole.RED else TeamRole.BLUE, isSpymaster = false))
+            }
+        }
+
+        composeTestRule.setContent {
+            val navController = rememberNavController()
+            val gameStateViewModel = GameStateViewModel(GameManager())
+            gameStateViewModel.ownPlayerName.value = "Player0"
+            val socketClient = WebSocketClient(gameStateViewModel, navController)
+
+            LobbyScreen(
+                playerList = playerList,
+                socketClient = socketClient,
+                gameStateViewModel = gameStateViewModel,
+                onBackToConnection = {},
+                onStartGame = {},
+                sendMessage = {}
+            )
+        }
+
+        composeTestRule.onNodeWithTag("LobbyScrollArea")
+            .performTouchInput { swipeUp() }
+
+        composeTestRule.onNodeWithText("Player19").assertExists()
+    }
 
 }

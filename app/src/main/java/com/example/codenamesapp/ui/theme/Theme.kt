@@ -20,18 +20,45 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/*
+* primary = main text color
+* onPrimary = main background color
+* secondary = diverse grey
+* onSecondary = diverse peach for marked cards
+* teritary = diverse blue
+* error = diverse red
+* */
+/*
+DarkColorScheme
+primary = Color.White,
+onPrimary = CustomBlack,
+secondary = DarkGrey,
+tertiary = DarkBlue,
+error = DarkRed
+
+LightColorScheme
+primary = CustomBlack,
+onPrimary = Color.White,
+secondary = LightGrey,
+tertiary = LightBlue,
+error = LightRed
+*/
+
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
     onPrimary = CustomBlack,
     secondary = DarkGrey,
+    onSecondary = DarkPeach,
     tertiary = DarkBlue,
     error = DarkRed
+
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = CustomBlack,
     onPrimary = Color.White,
     secondary = LightGrey,
+    onSecondary = LightPeach,
     tertiary = LightBlue,
     error = LightRed
 
@@ -50,7 +77,7 @@ private val LightColorScheme = lightColorScheme(
 fun CodenamesAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -71,13 +98,17 @@ fun CodenamesAppTheme(
 }
 
 @Composable
-fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier) { // Design of the Buttons
+fun ButtonsGui (text: String, onClick: () -> Unit, modifier: Modifier, enabled: Boolean = true) { // Design of the Buttons
+
+    val buttonColor = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+
     Button( onClick = onClick,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(containerColor = Transparent),
         shape = RectangleShape,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        border = BorderStroke(1.dp, buttonColor),
+        enabled = enabled
     ) {
-        Text(text, fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
+        Text(text, fontSize = 22.sp, color = buttonColor)
     }
 }

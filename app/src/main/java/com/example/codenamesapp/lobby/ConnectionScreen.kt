@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
+import com.example.codenamesapp.ui.theme.ButtonsGui
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ fun ConnectionScreen(
     socketClient: WebSocketClient,
     modifier: Modifier = Modifier
 ) {
-    var host by remember { mutableStateOf("10.0.2.2") } // needs to be 10.0.2.2 if testing on emulator
+    var host by remember { mutableStateOf("10.0.2.2") } // needs to be 10.0.2.2 if testing on emulator          192.168.0.99
     var port by remember { mutableStateOf("8081") }
     var playerName by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
@@ -37,7 +38,7 @@ fun ConnectionScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Verbindung zum Server", style = MaterialTheme.typography.headlineMedium)
+        Text("Connection to Server", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -62,13 +63,13 @@ fun ConnectionScreen(
         TextField(
             value = playerName,
             onValueChange = { playerName = it },
-            label = { Text("Spielername") },
+            label = { Text("Player Name") },
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        Button(onClick = {
+        ButtonsGui(text = "Connect", onClick = {
             coroutineScope.launch(Dispatchers.IO) {
                 try {
                     val url = "ws://$host:$port"
@@ -76,11 +77,11 @@ fun ConnectionScreen(
                     socketClient.setPlayerName(playerName)
                     socketClient.connect(
                         onSuccess = {
-                            onConnectionEstablished(playerName)
-                            navController.navigate("lobby")
+                            //onConnectionEstablished(playerName)
+                            //navController.navigate("lobby")
                         },
                         onError = {
-                            error = "Verbindungsfehler: $it"
+                            error = "Connection Error: $it"
                         },
                         onMessageReceived = { message ->
                             when (message) {
@@ -88,6 +89,7 @@ fun ConnectionScreen(
                                     showUsernameTakenDialog = true
                                 }
                                 "USERNAME_OK" -> {
+                                    onConnectionEstablished(playerName)
                                     navController.navigate("lobby")
                                 }
                                 else -> onMessageReceived(message)
@@ -96,18 +98,16 @@ fun ConnectionScreen(
                         onPlayerListUpdated = onPlayerListUpdated
                     )
                 } catch (e: Exception) {
-                    error = "Fehler: ${e.localizedMessage}"
-                    Log.e("ConnectionScreen", "Verbindungsaufbau fehlgeschlagen", e)
+                    error = "Error: ${e.localizedMessage}"
+                    Log.e("ConnectionScreen", "Connection to Server failed", e)
                 }
             }
-        }) {
-            Text("Verbinden")
-        }
+        }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
 
         Spacer(modifier = Modifier.height(24.dp))
 
         TextButton(onClick = { navController.popBackStack() }) {
-            Text("Zurück") // or "Go back"
+            Text("Back") // or "Go back"
         }
 
         if (error != null) {
@@ -123,8 +123,8 @@ fun ConnectionScreen(
                         Text("OK")
                     }
                 },
-                title = { Text("Benutzername vergeben") },
-                text = { Text("Der eingegebene Benutzername ist bereits vergeben. Bitte wähle einen anderen.") }
+                title = { Text("Enter Player Name") },
+                text = { Text("The entered Player Name is already taken. Please choose another one.") }
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.example.codenamesapp.network
 
 import kotlinx.serialization.*
+import kotlinx.serialization.json.JsonObject
 import okhttp3.WebSocket
 
 @Serializable
@@ -9,7 +10,7 @@ data class Message(
     val data: Map<String, String>
 )
 
-class Communication(
+open class Communication(
     private val socket: WebSocket
 ) {
     fun send(message: String) {
@@ -47,4 +48,16 @@ class Communication(
     fun sendChat(message: String) {
         send("CHAT:$message")
     }
+
+    fun sendClearMarks() {
+        val json = com.google.gson.JsonObject().apply {
+            addProperty("clearMarks", true)
+        }
+        send(json.toString())
+    }
+
+    fun expose() {
+        send("EXPOSE:true")
+    }
+
 }

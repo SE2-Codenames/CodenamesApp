@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -56,7 +57,7 @@ fun GameOverScreen(
         Spacer(modifier = Modifier.height(if (isLandscape) 20.dp else 48.dp))
 
         Image(
-            painter = painterResource(R.drawable.muster_logo),
+            painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
             contentDescription = "Game Logo",
             modifier = Modifier.size(if (isLandscape) 100.dp else 120.dp)
         )

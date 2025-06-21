@@ -12,3 +12,6 @@ val LightGrey = Color(0xFFCECFD3)
 val DarkGrey = Color(0xFFAAAAAA)
 
 val CustomBlack = Color(0xFF0E1111)
+
+val DarkPeach = Color(0xFFFF7439)
+val LightPeach = Color(0xFFFFB99C)

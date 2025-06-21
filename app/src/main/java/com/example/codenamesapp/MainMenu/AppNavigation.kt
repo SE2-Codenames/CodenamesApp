@@ -6,15 +6,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.codenamesapp.gamelogic.GameBoardScreen
 import com.example.codenamesapp.MainMenuScreen
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.lobby.LobbyScreen
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.network.WebSocketClient
-import com.example.codenamesapp.GameBoardScreen
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.gamelogic.GameStateViewModelFactory
-import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.screens.ConnectionScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +26,7 @@ fun AppNavigation(
     val coroutineScope = rememberCoroutineScope()
     val playerNameState = remember { mutableStateOf<String?>(null) }
     val playerListState = remember { mutableStateOf(listOf<Player>()) }
+    val messages = remember { mutableStateListOf<String>() }
     val gameStateViewModel: GameStateViewModel = viewModel(
         factory = GameStateViewModelFactory(GameManager())
     )
@@ -68,8 +68,7 @@ fun AppNavigation(
         composable("menu") {
             MainMenuScreen(
                 onPlayClicked = { navController.navigate("connection") },
-                onRulesClicked = { navController.navigate("rules") },
-                onSettingsClicked = { navController.navigate("settings") }
+                onRulesClicked = { navController.navigate("rules") }
             )
         }
 
@@ -89,8 +88,9 @@ fun AppNavigation(
                     playerNameState.value = name
                     navController.navigate("lobby")
                 },
-                onMessageReceived = {
-                    println("📨 Server: $it")
+                onMessageReceived = { msg ->
+                    println("📨 Server: $msg")
+                    messages.add(msg)
                 },
                 onPlayerListUpdated = {
                     playerListState.value = it
@@ -103,7 +103,6 @@ fun AppNavigation(
 
         composable("lobby") {
             LobbyScreen(
-                playerName = playerNameState.value ?: "",
                 playerList = playerListState.value,
                 socketClient = socketClient,
                 gameStateViewModel = gameStateViewModel,
@@ -118,7 +117,7 @@ fun AppNavigation(
 
         composable("gameboard") {
             val payload = gameStateViewModel.payload.value
-            val team = gameStateViewModel.team.value
+            val team = gameStateViewModel.teamTurn.value
             val isSpymaster = gameStateViewModel.playerRole.value
             val communication = socketClient.communication
 
@@ -126,7 +125,8 @@ fun AppNavigation(
             if (payload != null && team != null && isSpymaster != null) {
                 GameBoardScreen(
                     viewModel = gameStateViewModel,
-                    communication = communication
+                    communication = communication,
+                    messages = messages
                 )
             }
         }

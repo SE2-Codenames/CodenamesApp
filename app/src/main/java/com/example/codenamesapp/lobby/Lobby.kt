@@ -1,27 +1,30 @@
 package com.example.codenamesapp.lobby
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.codenamesapp.R
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.Player
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
-import androidx.compose.foundation.Image
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.testTag
-import com.example.codenamesapp.R
-import androidx.compose.ui.res.painterResource
+import com.example.codenamesapp.ui.theme.ButtonsGui
 
 @Composable
 fun LobbyScreen(
-    playerName: String?,
     playerList: List<Player>,
     socketClient: WebSocketClient,
     gameStateViewModel: GameStateViewModel,
@@ -29,15 +32,19 @@ fun LobbyScreen(
     onStartGame: () -> Unit,
     sendMessage: (String) -> Unit = { socketClient.send(it) }
 ) {
+    val ownName by gameStateViewModel.ownPlayerName
     val localPlayer = playerList.find {
-        it.name.trim().equals(playerName?.trim(), ignoreCase = true)
+        it.name.trim().equals(ownName?.trim(), ignoreCase = true)
     }
 
-    //Text("localPlayer gefunden: ${localPlayer?.name ?: "NEIN"}")
-    //gameStateViewModel.player.value = localPlayer.name
+    val minPlayersRequired = 1
+    val enoughPlayers = playerList.size >= minPlayersRequired
+    val allReady = enoughPlayers && playerList.all { it.isReady }
+
+    val isAlreadyReady = localPlayer?.isReady == true
 
     Image(
-        painter = painterResource(R.drawable.muster_logo),
+        painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo_white),
         contentDescription = null,
         modifier = Modifier
             .fillMaxSize()
@@ -49,7 +56,9 @@ fun LobbyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+            .testTag("LobbyScrollArea"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -59,30 +68,32 @@ fun LobbyScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TeamColumn("Red Team", TeamRole.RED, playerList, playerName)
-            TeamColumn("Blue Team", TeamRole.BLUE, playerList, playerName)
+            TeamColumn("Red Team", TeamRole.RED, playerList, ownName, gameStateViewModel)
+            TeamColumn("Blue Team", TeamRole.BLUE, playerList, ownName, gameStateViewModel)
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         localPlayer?.let { player ->
-            Text("Wähle dein Team:")
+            Text("Choose your Team:")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ColoredToggleButton(
                     label = "Red",
                     isSelected = gameStateViewModel.myTeam.value == TeamRole.RED,
-                    selectedColor = Color.Red,
+                    selectedColor = MaterialTheme.colorScheme.error,
                     onClick = {
                         sendMessage("JOIN_TEAM:${player.name}:RED")
                         gameStateViewModel.myTeam.value = TeamRole.RED
                         gameStateViewModel.myIsSpymaster.value = false
+
                     },
                     modifier = Modifier.testTag("Button_Red"),
                 )
                 ColoredToggleButton(
                     label = "Blue",
                     isSelected = gameStateViewModel.myTeam.value == TeamRole.BLUE,
-                    selectedColor = Color.Blue,
+                    selectedColor = MaterialTheme.colorScheme.tertiary,
                     onClick = {
                         sendMessage("JOIN_TEAM:${player.name}:BLUE")
                         gameStateViewModel.myTeam.value = TeamRole.BLUE
@@ -93,38 +104,40 @@ fun LobbyScreen(
             }
 
             if (gameStateViewModel.myTeam.value != null) {
-
                 Spacer(modifier = Modifier.height(8.dp))
-
-
-                Text("Wähle deine Rolle:")
+                Text("Choose your Role:")
 
                 val team = gameStateViewModel.myTeam.value!!
-                val isSpymasterTaken = playerList.any {
+               val isSpymasterTaken = playerList.any {
                     it.team == team && it.isSpymaster && it.name != player.name
                 }
+
+                val isLocalPlayerSpymaster = gameStateViewModel.myIsSpymaster.value
+                val spymasterButtonEnabled = !isSpymasterTaken || isLocalPlayerSpymaster
+
+
+
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ColoredToggleButton(
                         label = "Spymaster",
-                        isSelected = gameStateViewModel.myIsSpymaster.value == true,
-                        selectedColor = if (team == TeamRole.RED) Color.Red else Color.Blue,
+                        isSelected = isLocalPlayerSpymaster,
+                        selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
-                            if (!gameStateViewModel.myIsSpymaster.value && isSpymasterTaken) {
-                                return@ColoredToggleButton
-                            }
+                            // Always toggle the spymaster state
                             sendMessage("SPYMASTER_TOGGLE:${player.name}")
-                            gameStateViewModel.myIsSpymaster.value = true
+                            gameStateViewModel.myIsSpymaster.value = !isLocalPlayerSpymaster
                         },
                         modifier = Modifier.testTag("Button_Spymaster"),
-                        enabled = !isSpymasterTaken || gameStateViewModel.myIsSpymaster.value == true
+                        enabled = spymasterButtonEnabled
                     )
+
                     ColoredToggleButton(
                         label = "Operative",
-                        isSelected = gameStateViewModel.myIsSpymaster.value == false,
-                        selectedColor = if (team == TeamRole.RED) Color.Red else Color.Blue,
+                        isSelected = !isLocalPlayerSpymaster,
+                        selectedColor = if (team == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
                         onClick = {
-                            if (gameStateViewModel.myIsSpymaster.value == true) {
+                            if (isLocalPlayerSpymaster) {
                                 sendMessage("SPYMASTER_TOGGLE:${player.name}")
                             }
                             gameStateViewModel.myIsSpymaster.value = false
@@ -133,17 +146,26 @@ fun LobbyScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ButtonsGui(text = if (isAlreadyReady) "Ready" else "Ready ?", onClick = {
+                if (!isAlreadyReady) {
+                    sendMessage("READY:${player.name}")
+                }
+            }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp),
+                enabled = !isAlreadyReady)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = onStartGame,  modifier = Modifier.testTag("StartGame")) {
-            Text("Spiel starten")
+        ButtonsGui(text = "Start Game", onClick = onStartGame, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp), enabled = allReady)
+
+        if (!allReady) {
+            Text("Waiting for all players...", style = MaterialTheme.typography.bodyMedium)
         }
 
-        Button(onClick = onBackToConnection,  modifier = Modifier.testTag("BackButton")) {
-            Text("Zurück")
-        }
+        ButtonsGui(text = "Back", onClick = onBackToConnection, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
     }
 }
 
@@ -161,7 +183,7 @@ fun ColoredToggleButton(
         enabled = enabled,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) selectedColor else Color.LightGray,
+            containerColor = if (isSelected) selectedColor else MaterialTheme.colorScheme.secondary,
             contentColor = if (isSelected) Color.White else Color.Black
         )
     ) {
@@ -173,42 +195,51 @@ fun ColoredToggleButton(
     }
 }
 
-
 @Composable
 fun TeamColumn(
     title: String,
     team: TeamRole,
     players: List<Player>,
-    playerName: String?
+    playerName: String?,
+    gameStateViewModel: GameStateViewModel // 🆕 added parameter
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(title, style = MaterialTheme.typography.headlineSmall)
+
         players.filter { it.team == team }.forEach { player ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {
-                val icon_name = when {
-                    player.team == TeamRole.RED && player.isSpymaster -> R.drawable.icon_red_spymaster
-                    player.team == TeamRole.RED && !player.isSpymaster -> R.drawable.icon_red_operative
-                    player.team == TeamRole.BLUE && player.isSpymaster -> R.drawable.icon_blue_spymaster
-                    player.team == TeamRole.BLUE && !player.isSpymaster -> R.drawable.icon_blue_operative
-                    else -> R.drawable.icon_blue_operative
+                val isLocalPlayer = player.name.trim().equals(playerName?.trim(), ignoreCase = true)
+
+                // 🆕 fallback logic: for the local player, override with current selected state
+                val effectiveIsSpymaster = if (isLocalPlayer) {
+                    gameStateViewModel.myIsSpymaster.value
+                } else {
+                    player.isSpymaster
                 }
+
+                val iconResId = when {
+                    team == TeamRole.RED && effectiveIsSpymaster -> R.drawable.icon_red_spymaster
+                    team == TeamRole.RED && !effectiveIsSpymaster -> R.drawable.icon_red_operative
+                    team == TeamRole.BLUE && effectiveIsSpymaster -> R.drawable.icon_blue_spymaster
+                    team == TeamRole.BLUE && !effectiveIsSpymaster -> R.drawable.icon_blue_operative
+                    else -> R.drawable.icon_blue_operative // fallback
+                }
+
                 Image(
-                    painter = painterResource(id = icon_name),
+                    painter = painterResource(id = iconResId),
                     contentDescription = null,
                     modifier = Modifier.size(44.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                //Text(player.name)
-
                 Text(
                     buildString {
                         append(player.name)
-                        if (player.name.trim().equals(playerName?.trim(), ignoreCase = true)) {
+                        if (isLocalPlayer) {
                             append(" (You)")
                         }
                     }
@@ -217,3 +248,4 @@ fun TeamColumn(
         }
     }
 }
+

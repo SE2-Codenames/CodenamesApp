@@ -70,7 +70,8 @@ class PayloadTest {
             remainingGuesses = 3,
             hint = "Hinweis",
             card = cardList,
-            isSpymaster = true
+            isSpymaster = true,
+            markedCards = emptyList()
         )
 
         assertEquals(score, response.score)

@@ -1,7 +1,11 @@
-package com.example.codenamesapp
+package com.example.codenamesapp.gamelogic
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,68 +13,66 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.*
 import com.example.codenamesapp.network.Communication
 import com.example.codenamesapp.ui.theme.*
+import com.example.codenamesapp.R
+import com.example.codenamesapp.model.GamePhase.*
+import kotlin.math.sqrt
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
+
 
 @Composable
 fun GameBoardScreen(
     viewModel: GameStateViewModel,
-    communication: Communication
+    communication: Communication,
+    messages: SnapshotStateList<String>
 ) {
     LockLandscapeOrientation()
+    DetectShake(viewModel, communication)
     println("Spielerrolle vom Server (IsSpymaster): $viewModel.myIsSpymaster")
 
-    val messages = remember {
-        mutableStateListOf("Willkommen!" , "Erster Hinweis: ${viewModel.hintText}.")
-    }
 
     var showOverlay by remember { mutableStateOf(false) }
+    var showExpose by remember { mutableStateOf(false) }
+    val canExpose = !viewModel.myIsSpymaster.value &&
+            viewModel.teamTurn.value != viewModel.myTeam.value &&
+            viewModel.gameState == OPERATIVE_TURN
 
-    Box(
+
+    GradientBoxBorder(
         modifier = Modifier
-            .fillMaxSize()
-            .drawBehind {
-                val teamColor = when (viewModel.team.value) {
-                    TeamRole.RED -> DarkRed
-                    TeamRole.BLUE -> DarkBlue
-                    else -> DarkGrey
-                }
-
-                drawRect(
-                    brush = Brush.radialGradient(
-                        0.0f to Color.White,
-                        0.95f to Color.White,
-                        1.0f to teamColor.copy(alpha = 0.2f),
-                        center = center,
-                        radius = size.minDimension * 1.22f
-                    ),
-                    size = size
-                )
-            }
-            //.padding(WindowInsets.systemBars.asPaddingValues())
-            .consumeWindowInsets(WindowInsets.systemBars)
+            .fillMaxSize(),
+        viewModel = viewModel
     ) {
+
+        if (canExpose) {
+            DetectThreeFinger {
+                showExpose = true
+            }
+        }
+
+
         Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
             // Column 1: Info & Buttons
@@ -80,27 +82,47 @@ fun GameBoardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    CardsRemaining(redScore = viewModel.scoreRed, blueScore = viewModel.scoreBlue)
+                    CardsRemaining(viewModel = viewModel)
                 }
                 Column(
                     modifier = Modifier.align(Alignment.Center).padding(8.dp)
                 ) {
                     if (viewModel.myIsSpymaster.value) {
+                        val hintButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == SPYMASTER_TURN)
                         ButtonsGui(
-                            text = "Give A Hint!", onClick = { showOverlay = true },
+                            text = "Give A Hint!", onClick = {
+                                if (hintButtonClickable) {
+                                    showOverlay = true
+                                }
+                            },
+                            enabled = hintButtonClickable,
                             modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
                         )
+                    } else {
+                        val skipButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)
+                        ButtonsGui(text = "Skip!", onClick = {
+                            if (skipButtonClickable) {
+                                /*TODO*/
+                            }
+                        }, enabled = skipButtonClickable, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
+
                     ButtonsGui(
-                        text = "Expose!", onClick = { /* TODO */ },
-                        modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp)
+                        text = "Expose!",
+                        onClick = { if (canExpose) showExpose = true },
+                        modifier = Modifier
+                            .width(250.dp)
+                            .height(48.dp)
+                            .padding(4.dp),
+                        enabled = canExpose
                     )
+
                 }
                 Column(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    PlayerRoleScreen(viewModel.myIsSpymaster.value, viewModel.myTeam.value)
+                    PlayerRoleScreen(viewModel = viewModel)
                 }
             }
 
@@ -118,14 +140,16 @@ fun GameBoardScreen(
                         val isOperativeTurn = viewModel.isPlayerTurn
                         val isSpymaster = viewModel.myIsSpymaster.value
 
-                        if (index != -1 && !isAlreadyMarked && isOperativeTurn && !isSpymaster) {
-                            card.isMarked.value = true
+                        if (index != -1 && isOperativeTurn && !isSpymaster) {
+                            if (!isAlreadyMarked){
+                                card.isMarked.value = true
+                            }else{
+                                card.isMarked.value = false
+                            }
                             viewModel.markCard(index, communication)
                         }
                     },
-                    cardList = viewModel.cardList,
-                    isSpymaster = viewModel.myIsSpymaster.value,
-                    isPlayerTurn = viewModel.isPlayerTurn
+                    viewModel = viewModel
                 )
             }
 
@@ -139,6 +163,7 @@ fun GameBoardScreen(
         }
     }
 
+    // HINT Screen if showOverlay = true
     if (showOverlay) {
         Box(
             modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
@@ -149,7 +174,7 @@ fun GameBoardScreen(
                 elevation = CardDefaults.cardElevation(8.dp),
                 modifier = Modifier .width(300.dp).wrapContentHeight().background(MaterialTheme.colorScheme.onPrimary)
             ) {
-                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Enter Hint:")
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -159,28 +184,155 @@ fun GameBoardScreen(
                     TextField(
                         value = hintWordInput,
                         onValueChange = { hintWordInput = it },
-                        label = { Text("Word") }
+                        label = { Text("Word") },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    TextField(
-                        value = hintNumberInput,
-                        onValueChange = { hintNumberInput = it.filter { c -> c.isDigit() } },
-                        label = { Text("Count") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
+                    // Zähler für Hint-Anzahl (statt Dropdown)
+                    val maxHintNumber = if (viewModel.teamTurn.value == TeamRole.RED) {
+                        viewModel.scoreRed.value
+                    } else {
+                        viewModel.scoreBlue.value
+                    }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    // Init, falls leer
+                    if (hintNumberInput.isBlank()) hintNumberInput = "1"
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+                        val current = hintNumberInput.toIntOrNull() ?: 1
+                        OutlinedButton(
+                            onClick = {
+                                if (current > 1) {
+                                    hintNumberInput = (current - 1).toString()
+                                }
+                            },
+                            enabled = current > 1,
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("-", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+                        }
+
+                        Text(
+                            text = hintNumberInput,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        OutlinedButton(
+                            onClick = {
+                                if (current < maxHintNumber) {
+                                    hintNumberInput = (current + 1).toString()
+                                }
+                            },
+                            enabled = current < maxHintNumber,
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("+", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     ButtonsGui("Send", onClick = {
                         showOverlay = false
-                        if (hintWordInput.isNotBlank() && hintNumberInput.isNotBlank()) {
-                            val word = hintWordInput.trim()
-                            val number = hintNumberInput.trim().toIntOrNull() ?: 0
-                            viewModel.sendHint(word, number, communication)
-                            messages.add("Your Hint: $word ($number)")
+                        val number = hintNumberInput.toIntOrNull() ?: 0
+                        if (hintWordInput.isNotBlank() && number > 0) {
+                            viewModel.sendHint(hintWordInput.trim(), number, communication)
                         }
-                    }, modifier = Modifier.height(10.dp))
+                    }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
                 }
             }
         }
+    }
+
+    // EXPOSE Screen
+    if (showExpose) {
+        ExposeDialog(
+            onConfirm = {
+                showExpose = false
+                communication.expose()
+            },
+            onDismiss = {
+                showExpose = false
+            }
+        )
+    }
+}
+
+@Composable
+fun GradientBoxBorder (modifier: Modifier, viewModel: GameStateViewModel, content: @Composable BoxScope.() -> Unit) {
+    var teamColor = when (viewModel.teamTurn.value) {
+        TeamRole.RED -> DarkRed
+        TeamRole.BLUE -> DarkBlue
+        else -> DarkGrey
+    }
+    teamColor = teamColor.copy(alpha = 0.5f)
+
+    Box(modifier = modifier) {
+        // oben
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(teamColor, Color.Transparent)
+                    )
+                )
+        )
+        // unten
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, teamColor)
+                    )
+                )
+        )
+        // links
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(teamColor, Color.Transparent)
+                    )
+                )
+        )
+        // rechts
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+                .align(Alignment.CenterEnd)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color.Transparent, teamColor)
+                    )
+                )
+        )
+        // content
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            content = content
+        )
     }
 }
 
@@ -193,33 +345,75 @@ fun LockLandscapeOrientation() {
     }
 }
 
+@Composable
+fun DetectShake(viewModel:GameStateViewModel, communication: Communication) {
+    val context = LocalContext.current
+    val sensorManager = remember {
+        context.getSystemService(Activity.SENSOR_SERVICE) as SensorManager
+    }
+    val accelerometer = remember {
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    }
+
+    var lastShakeTime by remember { mutableStateOf(0L) }
+    val shakeThreshold = 12f
+
+    DisposableEffect(Unit) {
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                event?.let {
+                    val (x, y, z) = it.values
+                    val acceleration = sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH
+                    val currentTime = System.currentTimeMillis()
+
+                    if (acceleration > shakeThreshold && currentTime - lastShakeTime > 1000) {
+                        lastShakeTime = currentTime
+
+                        if (!viewModel.myIsSpymaster.value && viewModel.isPlayerTurn) {
+                            println("Shake erkannt – sende clearMarks")
+                            communication.sendClearMarks()
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        onDispose {
+            sensorManager.unregisterListener(listener)
+        }
+    }
+}
+
 // Column 1: Remaining Cards, Player Role, Logo ----------------------------------------------------
 @Composable
-fun CardsRemaining(redScore: Int, blueScore: Int) {
-    Text(redScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+fun CardsRemaining(viewModel: GameStateViewModel) {
+    Text(viewModel.scoreRed.value.toString(), style = TextStyle(color = MaterialTheme.colorScheme.error, fontSize = 80.sp, fontWeight = FontWeight.Bold))
     Spacer(Modifier.width(50.dp))
-    Text(blueScore.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
+    Text(viewModel.scoreBlue.value.toString(), style = TextStyle(color = MaterialTheme.colorScheme.tertiary, fontSize = 80.sp, fontWeight = FontWeight.Bold))
 }
 
 @Composable
-fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
-    val image = painterResource(R.drawable.muster_logo)
-    val textColor = if (teamRole == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
-    val roleText = if (isSpymaster) "Spymaster" else "Operative"
+fun PlayerRoleScreen(viewModel: GameStateViewModel) {
+    val textColor = if (viewModel.myTeam.value == TeamRole.RED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Box(
+        contentAlignment = Alignment.BottomCenter,
         modifier = Modifier.padding(8.dp)
     ) {
-        Image(
-            painter = image,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp)
-        )
+        Spacer(modifier = Modifier.height(30.dp))
         Text(
-            text = roleText,
+            text = if (viewModel.myIsSpymaster.value) "Spymaster" else "Operative",
             style = MaterialTheme.typography.headlineLarge.copy(color = textColor)
+        )
+        Image(
+            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(top = 48.dp),
+            contentScale = ContentScale.Fit,
+            alpha = 0.05f
         )
     }
 }
@@ -229,9 +423,7 @@ fun PlayerRoleScreen(isSpymaster: Boolean, teamRole: TeamRole?) {
 fun GameBoardGrid(
     onCardClicked: (Card) -> Unit,
     onCardMarked: (Card) -> Unit,
-    cardList: List<Card>,
-    isSpymaster: Boolean,
-    isPlayerTurn: Boolean
+    viewModel: GameStateViewModel
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
@@ -240,18 +432,12 @@ fun GameBoardGrid(
         horizontalArrangement = Arrangement.SpaceEvenly,
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(cardList) { card ->
+        items(viewModel.cardList) { card ->
             GameCard(
+                viewModel= viewModel,
                 card = card,
-                isSpymaster = isSpymaster,
-
-                onClick = {
-                    onCardMarked
-                },
-                onLongClick = {
-                    onCardClicked
-                }
-
+                onClick = { onCardMarked(card) },
+                onLongClick = { onCardClicked(card) }
             )
         }
     }
@@ -259,36 +445,61 @@ fun GameBoardGrid(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GameCard(card: Card, onClick: () -> Unit, onLongClick: () -> Unit, isSpymaster: Boolean) {
+fun GameCard(viewModel: GameStateViewModel, card: Card, onClick: () -> Unit, onLongClick: () -> Unit) {
     val border = if (card.isMarked.value) {
-        BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+        BorderStroke(3.dp, MaterialTheme.colorScheme.onSecondary)
     } else {
         BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary)
     }
 
-    val backgroundImage = if (card.revealed || isSpymaster) {
+    val backgroundImage = remember(card.word) {
         when (card.cardRole) {
-            CardRole.RED -> MaterialTheme.colorScheme.error
-            CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
-            CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
-            CardRole.ASSASSIN -> CustomBlack
+            CardRole.RED -> viewModel.redCards.random()
+            CardRole.BLUE -> viewModel.blueCards.random()
+            CardRole.NEUTRAL -> viewModel.neutralCards.random()
+            CardRole.ASSASSIN -> viewModel.assasinCard
         }
-    } else {
-        MaterialTheme.colorScheme.secondary
     }
+
+    val backgroundModifier = when {
+        card.revealed -> {
+            Modifier.background(Color.Transparent).paint(
+                painterResource(backgroundImage),
+                contentScale = ContentScale.Crop
+            )
+                .graphicsLayer(alpha = 0.5f)
+        }
+        viewModel.myIsSpymaster.value -> {
+            Modifier.background(
+                when (card.cardRole) {
+                    CardRole.RED -> MaterialTheme.colorScheme.error
+                    CardRole.BLUE -> MaterialTheme.colorScheme.tertiary
+                    CardRole.NEUTRAL -> MaterialTheme.colorScheme.secondary
+                    CardRole.ASSASSIN -> CustomBlack
+                }
+            )
+        }
+        else -> Modifier.background(MaterialTheme.colorScheme.secondary)
+    }
+
+    val canMark = viewModel.isPlayerTurn
+
+    val actualOnClick = if (!card.revealed && canMark) onClick else ({})
+    val actualOnLongClick = if (!card.revealed && canMark) onLongClick else ({})
 
     Card(
         modifier = Modifier
             .height(70.dp)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .combinedClickable(onClick = actualOnClick, onLongClick = actualOnLongClick)
             .padding(2.dp),
         border = border,
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().background(backgroundImage)) {
+        Box(modifier = Modifier.fillMaxSize().then(backgroundModifier)) {
             Text(
                 text = card.word,
                 color = Color.White,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Center).padding(4.dp)
             )
         }
@@ -304,8 +515,7 @@ fun ChatBox(messages: List<String>) {
             .fillMaxWidth()
             .fillMaxHeight(0.66f)
             .padding(8.dp)
-            .border(1.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp))
-            .background(MaterialTheme.colorScheme.onPrimary),
+            .border(0.5.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(2.dp)),
         verticalArrangement = Arrangement.Bottom,
         reverseLayout = true
     ) {
@@ -322,3 +532,42 @@ fun ChatBox(messages: List<String>) {
         }
     }
 }
+
+@Composable
+fun ExposeDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Expose Team") },
+        text = { Text("Did the opposing team cheat?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Yes")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("No")
+            }
+        }
+    )
+}
+
+@Composable
+fun DetectThreeFinger(onTripleTap: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val downCount = event.changes.count { it.pressed }
+                        if (downCount == 3) {
+                            onTripleTap()
+                        }
+                    }
+                }
+            }
+    )
+}
+
