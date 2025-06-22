@@ -11,6 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,7 +41,7 @@ fun GameOverScreen(
     isAssassinTriggered: Boolean = false,
     scoreRed: Int = 0,
     scoreBlue: Int = 0,
-    currentTeam: TeamRole
+    currentTeam: MutableState<TeamRole?>
 ) {
     LockLandscapeOrientation()
     val configuration = LocalConfiguration.current
@@ -128,8 +131,8 @@ fun ButtonsGui(
 private fun GameResultContent(
     winningTeam: TeamRole?,
     isAssassinTriggered: Boolean,
-    isLandscape : Boolean,
-    currentTeam: TeamRole
+    isLandscape: Boolean,
+    currentTeam: MutableState<TeamRole?>
 ) {
     if (isAssassinTriggered) {
         if(!isLandscape) {
@@ -177,7 +180,7 @@ private fun GameResultContent(
         )
     } else {
         winningTeam?.let { team ->
-            val resultText = if (currentTeam == team) "VICTORY!" else "DEFEAT!"
+            val resultText = if (currentTeam.value == team) "VICTORY!" else "DEFEAT!"
             Text(
                 text = resultText,
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -282,12 +285,13 @@ fun LockLandscapeOrientation() {
 fun PreviewRedVictory() {
     CodenamesAppTheme {
         val fakeNavController = rememberNavController()
+        val currentTeam = remember { mutableStateOf<TeamRole?>(TeamRole.RED) }
         GameOverScreen(
             navController = fakeNavController,
             winningTeam = TeamRole.RED,
             scoreRed = 8,
             scoreBlue = 5,
-            currentTeam = TeamRole.RED
+            currentTeam = currentTeam
         )
     }
 }
@@ -297,12 +301,13 @@ fun PreviewRedVictory() {
 fun PreviewBlueVictory() {
     CodenamesAppTheme {
         val fakeNavController = rememberNavController()
+        val currentTeam = remember { mutableStateOf<TeamRole?>(TeamRole.RED) }
         GameOverScreen(
             navController = fakeNavController,
             winningTeam = TeamRole.BLUE,
             scoreRed = 3,
             scoreBlue = 9,
-            currentTeam = TeamRole.RED
+            currentTeam = currentTeam
         )
     }
 }
@@ -312,13 +317,14 @@ fun PreviewBlueVictory() {
 fun PreviewAssassinTriggered() {
     CodenamesAppTheme {
         val fakeNavController = rememberNavController()
+        val currentTeam = remember { mutableStateOf<TeamRole?>(TeamRole.RED) }
         GameOverScreen(
             navController = fakeNavController,
             winningTeam = TeamRole.RED, // Red wins by default when assassin is triggered by blue
             isAssassinTriggered = true,
             scoreRed = 6,
             scoreBlue = 2,
-            currentTeam = TeamRole.RED
+            currentTeam = currentTeam
         )
     }
 }
@@ -333,6 +339,7 @@ fun PreviewAssassinTriggered() {
 fun PreviewGameOverLandscape() {
     CodenamesAppTheme {
         val fakeNavController = rememberNavController()
+        val currentTeam = remember { mutableStateOf<TeamRole?>(TeamRole.BLUE) }
 
         // Even though this won't affect preview, it's good to include
         LockLandscapeOrientation()
@@ -342,7 +349,7 @@ fun PreviewGameOverLandscape() {
             winningTeam = TeamRole.RED,
             scoreRed = 9,
             scoreBlue = 6,
-            currentTeam = TeamRole.BLUE
+            currentTeam = currentTeam
         )
     }
 }
@@ -357,6 +364,7 @@ fun PreviewGameOverLandscape() {
 fun PreviewAssassinTriggeredLandscape() {
     CodenamesAppTheme {
         val fakeNavController = rememberNavController()
+        val currentTeam = remember { mutableStateOf<TeamRole?>(TeamRole.BLUE) }
 
         // Landscape orientation setup
         LockLandscapeOrientation()
@@ -367,7 +375,7 @@ fun PreviewAssassinTriggeredLandscape() {
             isAssassinTriggered = true,
             scoreRed = 6,
             scoreBlue = 2,
-            currentTeam = TeamRole.BLUE
+            currentTeam = currentTeam
         )
     }
 }

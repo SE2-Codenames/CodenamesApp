@@ -133,7 +133,9 @@ fun AppNavigation(
 
         composable("gameover") { //null check
             val gameEndResult = gameStateViewModel.gameEndResult.value
-                ?: run {
+            val currentTeam = gameStateViewModel.teamTurn
+
+                if(gameEndResult == null) {
                     LaunchedEffect(Unit) {
                         navController.popBackStack()
                     }
@@ -145,7 +147,8 @@ fun AppNavigation(
                 winningTeam = gameEndResult.winningTeam,
                 isAssassinTriggered = gameEndResult.isAssassinTriggered,
                 scoreRed = gameEndResult.scoreRed,
-                scoreBlue = gameEndResult.scoreBlue
+                scoreBlue = gameEndResult.scoreBlue,
+                currentTeam = currentTeam
             )
         }
 
