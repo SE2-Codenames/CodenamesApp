@@ -1,6 +1,5 @@
 package com.example.codenamesapp.gamelogic
 
-import com.example.codenamesapp.model.GameState
 import com.example.codenamesapp.model.PayloadResponseMove
 import com.example.codenamesapp.model.TeamRole
 
