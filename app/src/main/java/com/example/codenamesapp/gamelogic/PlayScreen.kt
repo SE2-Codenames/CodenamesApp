@@ -54,6 +54,7 @@ fun GameBoardScreen(
 
 
     var showOverlay by remember { mutableStateOf(false) }
+    var showSkipDialog by remember { mutableStateOf(false) }
     var showExpose by remember { mutableStateOf(false) }
     val canExpose = !viewModel.myIsSpymaster.value &&
             viewModel.teamTurn.value != viewModel.myTeam.value &&
@@ -102,7 +103,7 @@ fun GameBoardScreen(
                         val skipButtonClickable = (viewModel.teamTurn.value == viewModel.myTeam.value) && (viewModel.gameState == OPERATIVE_TURN)
                         ButtonsGui(text = "Skip!", onClick = {
                             if (skipButtonClickable) {
-                                /*TODO*/
+                                showSkipDialog = true
                             }
                         }, enabled = skipButtonClickable, modifier = Modifier.width(250.dp).height(48.dp).padding(4.dp))
                     }
@@ -254,6 +255,30 @@ fun GameBoardScreen(
                 }
             }
         }
+    }
+
+    //Skipp Screen
+    if (showSkipDialog) {
+        AlertDialog(
+            onDismissRequest = { showSkipDialog = false },
+            title = { Text("Skip Turn") },
+            text = { Text("Are you sure you want to skip your turn?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSkipDialog = false
+                    communication.send("SKIP_TURN")
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSkipDialog = false
+                }) {
+                    Text("No")
+                }
+            }
+        )
     }
 
     // EXPOSE Screen
