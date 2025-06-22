@@ -432,7 +432,7 @@ fun PlayerRoleScreen(viewModel: GameStateViewModel) {
             style = MaterialTheme.typography.headlineLarge.copy(color = textColor)
         )
         Image(
-            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo else R.drawable.muster_logo_black),
+            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
