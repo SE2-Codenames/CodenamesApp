@@ -40,7 +40,7 @@ fun RulesScreen(onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
-            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo_white),
+            painter = painterResource(if (!isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
