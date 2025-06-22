@@ -75,14 +75,21 @@ fun GameOverScreen(
                 GameResultContent(winningTeam, isAssassinTriggered, isLandscape)
 
 
-                ScoreDisplay(scoreRed, scoreBlue)
-                Spacer(modifier = Modifier.height(if (isLandscape) 0.dp else 16.dp))
+                ScoreDisplay(scoreRed, scoreBlue, isLandscape)
+                if(!isLandscape) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }else{Spacer(modifier = Modifier.height(0.dp))
+                }
 
-                Image(
-                    painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
-                    contentDescription = "Game Logo",
-                    modifier = Modifier.size(if (isLandscape) 100.dp else 130.dp)
-                )
+                // Only show logo here in portrait mode
+                if (!isLandscape) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Image(
+                        painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
+                        contentDescription = "Game Logo",
+                        modifier = Modifier.size(130.dp)
+                    )
+                }
 
                 ButtonsGui(
                     text = "Main Menu",
@@ -126,7 +133,10 @@ private fun GameResultContent(
     isLandscape : Boolean
 ) {
     if (isAssassinTriggered) {
-        Spacer(modifier = Modifier.height(65.dp))
+        if(!isLandscape) {
+            Spacer(modifier = Modifier.height(55.dp))
+        } else {Spacer(modifier = Modifier.height(5.dp))
+        }
         Text(
             text = "GAME OVER!",
             style = MaterialTheme.typography.headlineLarge.copy(
@@ -139,7 +149,9 @@ private fun GameResultContent(
                 )
             )
         )
-        Spacer(modifier = Modifier.height(100.dp))
+        if (!isLandscape){Spacer(modifier = Modifier.height(100.dp))
+        }else{Spacer(modifier = Modifier.height(50.dp))
+        }
         Text(
             text = "The assassin was triggered!",
             style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 29.sp, fontWeight = FontWeight.Bold,shadow = Shadow(
@@ -149,7 +161,10 @@ private fun GameResultContent(
             ))
         )
         val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
-        Spacer(modifier = Modifier.height(20.dp))
+        if (!isLandscape) {
+            Spacer(modifier = Modifier.height(20.dp))
+        }else{ Spacer(modifier = Modifier.height(10.dp))
+        }
         Text(
             text = "${losingTeam.name} Team loses!",
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -176,8 +191,8 @@ private fun GameResultContent(
                 )
             )
             if (!isLandscape) {
-                Spacer(modifier = Modifier.height(100.dp))
-            } else { Spacer(modifier = Modifier.height(35.dp))
+                Spacer(modifier = Modifier.height(80.dp))
+            } else { Spacer(modifier = Modifier.height(85.dp))
             }
             Text(
                 text = "${team.name} Team Wins!",
@@ -198,7 +213,7 @@ private fun GameResultContent(
 }
 
 @Composable
-private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
+private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int, isLandscape: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -222,6 +237,15 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
                 ))
             )
         }
+
+        if (isLandscape) {
+            Image(
+                painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
+                contentDescription = "Game Logo",
+                modifier = Modifier.size(130.dp)
+            )
+        }
+
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(5.dp))
             Text(
@@ -315,6 +339,30 @@ fun PreviewGameOverLandscape() {
             winningTeam = TeamRole.RED,
             scoreRed = 9,
             scoreBlue = 6
+        )
+    }
+}
+
+@Preview(
+    name = "Assassin Triggered Landscape",
+    showBackground = true,
+    widthDp = 800,
+    heightDp = 480
+)
+@Composable
+fun PreviewAssassinTriggeredLandscape() {
+    CodenamesAppTheme {
+        val fakeNavController = rememberNavController()
+
+        // Landscape orientation setup
+        LockLandscapeOrientation()
+
+        GameOverScreen(
+            navController = fakeNavController,
+            winningTeam = TeamRole.RED,
+            isAssassinTriggered = true,
+            scoreRed = 6,
+            scoreBlue = 2
         )
     }
 }
