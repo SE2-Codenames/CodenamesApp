@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.example.codenamesapp.R
-import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
 
 class MainActivity : ComponentActivity() {

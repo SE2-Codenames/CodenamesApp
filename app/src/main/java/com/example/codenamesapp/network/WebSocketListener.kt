@@ -3,6 +3,7 @@ package com.example.codenamesapp.network
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.example.codenamesapp.MainMenu.GameEndResult
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.ChatMessage
 import com.example.codenamesapp.model.PayloadResponseMove
@@ -94,9 +95,34 @@ class CodenamesWebSocketListener(
                 mainHandler.post { onShowGameBoard() }
             }
 
-            text.startsWith("RESET") -> {
-                gameStateViewModel.resetState()
-                gameStateViewModel.onResetGame?.invoke()
+            text.startsWith("GAME_OVER") -> {
+                val json = text.removePrefix("GAME_OVER")
+                try {
+                    val map = gson.fromJson(json, Map::class.java)
+
+                    val winningTeam = (map["team"] as? String)?.let { TeamRole.valueOf(it) }
+                    val assassinTriggered = map["assassinTriggered"] as? Boolean ?: false
+
+                    val scoreArray = map["score"] as? List<*>
+                    val scoreRed = (scoreArray?.getOrNull(0) as? Double)?.toInt() ?: 0
+                    val scoreBlue = (scoreArray?.getOrNull(1) as? Double)?.toInt() ?: 0
+
+                    val result = GameEndResult(
+                        winningTeam = winningTeam,
+                        isAssassinTriggered = assassinTriggered,
+                        scoreRed = scoreRed,
+                        scoreBlue = scoreBlue
+                    )
+
+                    mainHandler.post {
+                        gameStateViewModel.gameEndResult.value = result
+
+                        // Verbindung schließen
+                        gameStateViewModel.onGameOver(result)
+                    }
+                } catch (e: Exception) {
+                    Log.e("WebSocket", "❌ Fehler beim Parsen von GAME_OVER: $json", e)
+                }
             }
 
             text.startsWith("CHAT:") -> {
@@ -124,7 +150,7 @@ class CodenamesWebSocketListener(
             "card" -> "Chosen Card: ${msg.card?.word ?: "?"}"
             "expose" -> "Expose: ${msg.message}"
             "win" -> "${msg.message} (${msg.team}, Points: ${msg.score})"
-            "text" -> msg.message ?: "Leere Nachricht"
+            "message" -> msg.message ?: "empty message"
             else -> "Unknown message: ${msg.type}"
         }
         onMessage(formatted)

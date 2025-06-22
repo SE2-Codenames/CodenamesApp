@@ -124,6 +124,7 @@ fun AppNavigation(
 
             if (payload != null && team != null && isSpymaster != null) {
                 GameBoardScreen(
+                    navController = navController,
                     viewModel = gameStateViewModel,
                     communication = communication,
                     messages = messages
@@ -131,21 +132,26 @@ fun AppNavigation(
             }
         }
 
-        composable("gameover") { //null check
+        composable("gameover") {
             val gameEndResult = gameStateViewModel.gameEndResult.value
-                ?: run {
-                    LaunchedEffect(Unit) {
-                        navController.popBackStack()
-                    }
-                    return@composable
-                }
+            val currentTeam = gameStateViewModel.teamTurn
 
-            GameOverScreen(
+            if (gameEndResult == null) {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack("menu", inclusive = false)
+                }
+                return@composable
+            }
+
+        GameOverScreen(
                 navController = navController,
                 winningTeam = gameEndResult.winningTeam,
                 isAssassinTriggered = gameEndResult.isAssassinTriggered,
                 scoreRed = gameEndResult.scoreRed,
-                scoreBlue = gameEndResult.scoreBlue
+                scoreBlue = gameEndResult.scoreBlue,
+                currentTeam = currentTeam,
+                socketClient = socketClient,
+                viewModel = gameStateViewModel
             )
         }
 

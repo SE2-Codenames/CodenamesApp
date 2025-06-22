@@ -50,7 +50,9 @@ class WebSocketClient(
             onMessage = { msg -> onMessageReceived?.invoke(msg) },
             onPlayersUpdated = { playerList ->
                 onPlayerListUpdated(playerList)
-                if (navController.currentDestination?.route != "lobby") {
+
+                val current = navController.currentDestination?.route
+                if (current != "lobby" && current != "gameover") {
                     navController.navigate("lobby")
                 }
             },

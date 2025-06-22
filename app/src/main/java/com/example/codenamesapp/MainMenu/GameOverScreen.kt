@@ -4,16 +4,18 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -23,10 +25,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.codenamesapp.R
 import com.example.codenamesapp.model.TeamRole
-import com.example.codenamesapp.ui.theme.ButtonsGui
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
+import com.example.codenamesapp.network.WebSocketClient
+import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun GameOverScreen(
@@ -34,119 +37,184 @@ fun GameOverScreen(
     winningTeam: TeamRole?,
     isAssassinTriggered: Boolean = false,
     scoreRed: Int = 0,
-    scoreBlue: Int = 0
+    scoreBlue: Int = 0,
+    currentTeam: MutableState<TeamRole?>,
+    socketClient: WebSocketClient,
+    viewModel: GameStateViewModel
 ) {
-    LockLandscapeOrientation()
+    UnlockOrientation()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        GameResultContent(winningTeam, isAssassinTriggered)
+    val backgroundImageId = if (isLandscape) {
+        R.drawable.gameoverscreen_landscape
+    } else {
+        R.drawable.codenamesgameoverscreen
+    }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        ScoreDisplay(scoreRed, scoreBlue)
-
-        Spacer(modifier = Modifier.height(if (isLandscape) 20.dp else 48.dp))
-
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_white else R.drawable.muster_logo_black),
-            contentDescription = "Game Logo",
-            modifier = Modifier.size(if (isLandscape) 100.dp else 120.dp)
+            painter = painterResource(id = backgroundImageId),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize().alpha(1f)
         )
 
-        Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 48.dp))
+        CompositionLocalProvider(LocalContentColor provides Color.White) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.height(if (isLandscape) 85.dp else 0.dp))
+                GameResultContent(winningTeam, isAssassinTriggered, isLandscape, currentTeam)
+                ScoreDisplay(scoreRed, scoreBlue, isLandscape)
 
-        ButtonsGui(
-            text = "Main Menu",
-            onClick = { navController.navigate("menu") { popUpTo(0)}},
-            modifier = Modifier
-                .width(280.dp)
-                .height(60.dp),
+                if (!isLandscape) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Image(
+                        painter = painterResource(R.drawable.muster_logo_black),
+                        contentDescription = "Game Logo",
+                        modifier = Modifier.size(130.dp)
+                    )
+                }
+
+                ButtonsGui(
+                    text = "Main Menu",
+                    onClick = {
+                        viewModel.resetState()
+                        viewModel.gameEndResult.value = null
+                        socketClient.close()
+                        navController.navigate("menu") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.width(200.dp).height(50.dp),
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ButtonsGui(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
         )
+    ) {
+        Text(text = text, fontSize = 21.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
 private fun GameResultContent(
     winningTeam: TeamRole?,
-    isAssassinTriggered: Boolean
+    isAssassinTriggered: Boolean,
+    isLandscape: Boolean,
+    currentTeam: MutableState<TeamRole?>
 ) {
     if (isAssassinTriggered) {
+        Spacer(modifier = Modifier.height(if (!isLandscape) 55.dp else 5.dp))
         Text(
-            text = "GAME OVER",
+            text = "GAME OVER!",
             style = MaterialTheme.typography.headlineLarge.copy(
-                color = Color.Red,
-                fontWeight = FontWeight.Bold
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 40.sp,
+                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
             )
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(if (!isLandscape) 100.dp else 50.dp))
         Text(
             text = "The assassin was triggered!",
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineMedium.copy(
+                color = Color.White,
+                fontSize = 29.sp,
+                fontWeight = FontWeight.Bold,
+                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
+            )
         )
         val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
+        Spacer(modifier = Modifier.height(if (!isLandscape) 20.dp else 10.dp))
         Text(
             text = "${losingTeam.name} Team loses!",
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = if (losingTeam == TeamRole.RED) Color.Red else Color.Blue
+            style = MaterialTheme.typography.headlineMedium.copy(
+                color = Color.White,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
             )
         )
     } else {
         winningTeam?.let { team ->
+            val resultText = if (currentTeam.value == team) "VICTORY!" else "DEFEAT!"
             Text(
-                text = "VICTORY!",
+                text = resultText,
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    color = if (team == TeamRole.RED) Color.Red else Color.Blue,
-                    fontWeight = FontWeight.Bold
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 40.sp,
+                    shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
                 )
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(if (!isLandscape) 80.dp else 85.dp))
             Text(
                 text = "${team.name} Team Wins!",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
+                )
             )
-        } ?: run {
-            Text(
-                text = "GAME OVER",
-                style = MaterialTheme.typography.headlineLarge
-            )
-        }
+        } ?: Text(text = "GAME OVER", style = MaterialTheme.typography.headlineLarge)
     }
 }
 
 @Composable
-private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
+private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int, isLandscape: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Red Team",
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Red)
-            )
-            Text(
-                text = scoreRed.toString(),
-                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
+            Text("Red Team", style = MaterialTheme.typography.headlineMedium.copy(
+                color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)))
+            Text("$scoreRed", style = MaterialTheme.typography.displayMedium.copy(
+                color = Color.White, fontSize = 50.sp,
+                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)))
+        }
+
+        if (isLandscape) {
+            Image(
+                painter = painterResource(R.drawable.muster_logo_black),
+                contentDescription = "Game Logo",
+                modifier = Modifier.size(130.dp)
             )
         }
+
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Blue Team",
-                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Blue)
-            )
-            Text(
-                text = scoreBlue.toString(),
-                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp)
-            )
+            Text("Blue Team", style = MaterialTheme.typography.headlineMedium.copy(
+                color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                shadow = Shadow(Color.Black, Offset(5f, 5f), 4f)))
+            Text("$scoreBlue", style = MaterialTheme.typography.displayMedium.copy(
+                color = Color.White, fontSize = 50.sp,
+                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)))
         }
     }
 }
@@ -160,68 +228,11 @@ fun LockLandscapeOrientation() {
     }
 }
 
-@Preview(name = "Red Team Victory", showBackground = true)
 @Composable
-fun PreviewRedVictory() {
-    CodenamesAppTheme {
-        val fakeNavController = rememberNavController()
-        GameOverScreen(
-            navController = fakeNavController,
-            winningTeam = TeamRole.RED,
-            scoreRed = 8,
-            scoreBlue = 5
-        )
-    }
-}
-
-@Preview(name = "Blue Team Victory", showBackground = true)
-@Composable
-fun PreviewBlueVictory() {
-    CodenamesAppTheme {
-        val fakeNavController = rememberNavController()
-        GameOverScreen(
-            navController = fakeNavController,
-            winningTeam = TeamRole.BLUE,
-            scoreRed = 3,
-            scoreBlue = 9
-        )
-    }
-}
-
-@Preview(name = "Assassin Triggered", showBackground = true)
-@Composable
-fun PreviewAssassinTriggered() {
-    CodenamesAppTheme {
-        val fakeNavController = rememberNavController()
-        GameOverScreen(
-            navController = fakeNavController,
-            winningTeam = TeamRole.RED, // Red wins by default when assassin is triggered by blue
-            isAssassinTriggered = true,
-            scoreRed = 6,
-            scoreBlue = 2
-        )
-    }
-}
-
-@Preview(
-    name = "Game Over Landscape Preview",
-    showBackground = true,
-    widthDp = 800,
-    heightDp = 480
-)
-@Composable
-fun PreviewGameOverLandscape() {
-    CodenamesAppTheme {
-        val fakeNavController = rememberNavController()
-
-        // Even though this won't affect preview, it's good to include
-        LockLandscapeOrientation()
-
-        GameOverScreen(
-            navController = fakeNavController,
-            winningTeam = TeamRole.RED,
-            scoreRed = 9,
-            scoreBlue = 6
-        )
+fun UnlockOrientation() {
+    val context = LocalContext.current
+    val activity = context as? Activity
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 }
