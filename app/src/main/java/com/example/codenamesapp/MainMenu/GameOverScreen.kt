@@ -42,7 +42,7 @@ fun GameOverScreen(
     socketClient: WebSocketClient,
     viewModel: GameStateViewModel
 ) {
-    UnlockOrientation()
+    LockLandscapeOrientation()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
