@@ -44,7 +44,7 @@ fun LobbyScreen(
     val isAlreadyReady = localPlayer?.isReady == true
 
     Image(
-        painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo),
+        painter = painterResource(if (isSystemInDarkTheme()) R.drawable.muster_logo_black else R.drawable.muster_logo_white),
         contentDescription = null,
         modifier = Modifier
             .fillMaxSize()

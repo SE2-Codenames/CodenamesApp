@@ -86,7 +86,7 @@ fun GameOverScreen(
                 if (!isLandscape) {
                     Spacer(modifier = Modifier.height(6.dp))
                     Image(
-                        painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
+                        painter = painterResource(R.drawable.muster_logo_black),
                         contentDescription = "Game Logo",
                         modifier = Modifier.size(130.dp)
                     )
@@ -243,7 +243,7 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int, isLandscape: Boolean) {
 
         if (isLandscape) {
             Image(
-                painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
+                painter = painterResource(R.drawable.muster_logo_black),
                 contentDescription = "Game Logo",
                 modifier = Modifier.size(130.dp)
             )
