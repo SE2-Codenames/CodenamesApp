@@ -1,5 +1,6 @@
 package com.example.codenamesapp
 
+import com.example.codenamesapp.MainMenu.GameEndResult
 import com.example.codenamesapp.gamelogic.GameManager
 import com.example.codenamesapp.gamelogic.GameStateViewModel
 import com.example.codenamesapp.model.CardRole
@@ -187,4 +188,52 @@ class GameStateViewTest {
         assertEquals("Bob", viewModel.currentPlayer.value?.name)
     }
 
+    @Test
+    fun testHintTextFormatting() {
+        viewModel.loadGame(payload)
+        val expected = "fruit (2)"
+        assertEquals(expected, viewModel.hintText)
+    }
+
+    @Test
+    fun testIsPlayerTurnTrue() {
+        every { gameManager.getGameState()?.gameState } returns GamePhase.OPERATIVE_TURN
+        viewModel.myTeam.value = TeamRole.RED
+        viewModel.teamTurn.value = TeamRole.RED
+        viewModel.myIsSpymaster.value = false
+
+        assertTrue(viewModel.isPlayerTurn)
+    }
+
+    @Test
+    fun testIsPlayerTurnFalseIfNotOperative() {
+        every { gameManager.getGameState()?.gameState } returns GamePhase.SPYMASTER_TURN
+        viewModel.myTeam.value = TeamRole.RED
+        viewModel.teamTurn.value = TeamRole.RED
+        viewModel.myIsSpymaster.value = false
+
+        assertFalse(viewModel.isPlayerTurn)
+    }
+
+    @Test
+    fun testOnGameOverCallbackIsCalledWithCorrectData() {
+        var capturedResult: GameEndResult? = null
+        val expectedResult = GameEndResult(
+            winningTeam = TeamRole.BLUE,
+            isAssassinTriggered = true,
+            scoreRed = 3,
+            scoreBlue = 6
+        )
+
+        viewModel.onGameOver = { result -> capturedResult = result }
+
+        // Simuliere Spielende
+        viewModel.onGameOver(expectedResult)
+
+        assertEquals(expectedResult, capturedResult)
+        assertEquals(TeamRole.BLUE, capturedResult?.winningTeam)
+        assertTrue(capturedResult?.isAssassinTriggered ?: false)
+        assertEquals(3, capturedResult?.scoreRed)
+        assertEquals(6, capturedResult?.scoreBlue)
+    }
 }
