@@ -1,7 +1,6 @@
 package com.example.codenamesapp.network
 
 import kotlinx.serialization.*
-import kotlinx.serialization.json.JsonObject
 import okhttp3.WebSocket
 
 @Serializable
