@@ -16,7 +16,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -44,9 +46,14 @@ fun GameOverScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    val backgroundImageId = if (isLandscape){
+        R.drawable.gameoverscreen_landscape
+    }else{
+        R.drawable.codenamesgameoverscreen
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.codenamesgameoverscreen),
+            painter = painterResource(id = backgroundImageId),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
@@ -63,13 +70,13 @@ fun GameOverScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                
 
-                GameResultContent(winningTeam, isAssassinTriggered)
+                Spacer(modifier = Modifier.height(if (isLandscape) 85.dp else 0.dp))
+                GameResultContent(winningTeam, isAssassinTriggered, isLandscape)
 
 
                 ScoreDisplay(scoreRed, scoreBlue)
-                Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 16.dp))
+                Spacer(modifier = Modifier.height(if (isLandscape) 0.dp else 16.dp))
 
                 Image(
                     painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
@@ -115,7 +122,8 @@ fun ButtonsGui(
 @Composable
 private fun GameResultContent(
     winningTeam: TeamRole?,
-    isAssassinTriggered: Boolean
+    isAssassinTriggered: Boolean,
+    isLandscape : Boolean
 ) {
     if (isAssassinTriggered) {
         Spacer(modifier = Modifier.height(65.dp))
@@ -123,20 +131,34 @@ private fun GameResultContent(
             text = "GAME OVER!",
             style = MaterialTheme.typography.headlineLarge.copy(
                 color = Color.White,
-                fontWeight = FontWeight.Bold, fontSize = 40.sp
+                fontWeight = FontWeight.Bold, fontSize = 40.sp,
+                shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(4f, 4f),
+                    blurRadius = 4f
+                )
             )
         )
         Spacer(modifier = Modifier.height(100.dp))
         Text(
             text = "The assassin was triggered!",
-            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 29.sp, fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 29.sp, fontWeight = FontWeight.Bold,shadow = Shadow(
+                color = Color.Black,
+                offset = Offset(4f, 4f),
+                blurRadius = 4f
+            ))
         )
         val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "${losingTeam.name} Team loses!",
             style = MaterialTheme.typography.headlineMedium.copy(
-                color = if (losingTeam == TeamRole.RED) Color.White else Color.White,fontSize = 30.sp, fontWeight = FontWeight.Bold
+                color = if (losingTeam == TeamRole.RED) Color.White else Color.White,fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(4f, 4f),
+                    blurRadius = 4f
+                )
             )
         )
     } else {
@@ -145,13 +167,26 @@ private fun GameResultContent(
                 text = "VICTORY!",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = if (team == TeamRole.RED) Color.White else Color.White,
-                    fontWeight = FontWeight.Bold, fontSize = 40.sp
+                    fontWeight = FontWeight.Bold, fontSize = 40.sp,
+                    shadow = Shadow(
+                        color = Color.Black,
+                        offset = Offset(4f, 4f),
+                        blurRadius = 4f
+                    )
                 )
             )
-            Spacer(modifier = Modifier.height(100.dp))
+            if (!isLandscape) {
+                Spacer(modifier = Modifier.height(100.dp))
+            } else { Spacer(modifier = Modifier.height(35.dp))
+            }
             Text(
                 text = "${team.name} Team Wins!",
-                style = MaterialTheme.typography.headlineLarge.copy(color = Color.White,fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.headlineLarge.copy(color = Color.White,fontWeight = FontWeight.Bold,
+                    shadow = Shadow(
+                        color = Color.Black,
+                        offset = Offset(4f, 4f),
+                        blurRadius = 4f
+                    ))
             )
         } ?: run {
             Text(
@@ -172,22 +207,38 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int) {
             Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = "Red Team",
-                style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold,shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(4f, 4f),
+                    blurRadius = 4f
+                ))
             )
             Text(
                 text = scoreRed.toString(),
-                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, fontSize = 50.sp)
+                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, fontSize = 50.sp,shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(4f, 4f),
+                    blurRadius = 4f
+                ))
             )
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = "Blue Team",
-                style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.headlineMedium.copy(color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold,shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(5f, 5f),
+                    blurRadius = 4f
+                ))
             )
             Text(
                 text = scoreBlue.toString(),
-                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, fontSize = 50.sp)
+                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, fontSize = 50.sp,shadow = Shadow(
+                    color = Color.Black,
+                    offset = Offset(4f, 4f),
+                    blurRadius = 4f
+                ))
             )
         }
     }
