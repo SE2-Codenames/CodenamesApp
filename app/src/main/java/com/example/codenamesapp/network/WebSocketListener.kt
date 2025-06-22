@@ -124,7 +124,7 @@ class CodenamesWebSocketListener(
             "card" -> "Chosen Card: ${msg.card?.word ?: "?"}"
             "expose" -> "Expose: ${msg.message}"
             "win" -> "${msg.message} (${msg.team}, Points: ${msg.score})"
-            "text" -> msg.message ?: "Leere Nachricht"
+            "message" -> msg.message ?: "empty message"
             else -> "Unknown message: ${msg.type}"
         }
         onMessage(formatted)
