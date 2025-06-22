@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.codenamesapp.MainMenu.UnlockOrientation
 
 import com.example.codenamesapp.ui.theme.*
 
@@ -30,6 +31,7 @@ fun MainMenuScreen(
     onPlayClicked: () -> Unit,
     onRulesClicked: () -> Unit
 ) {
+    UnlockOrientation()
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 

@@ -40,10 +40,13 @@ import kotlin.math.sqrt
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.navigation.NavHostController
+import com.example.codenamesapp.MainMenu.GameEndResult
 
 
 @Composable
 fun GameBoardScreen(
+    navController: NavHostController,
     viewModel: GameStateViewModel,
     communication: Communication,
     messages: SnapshotStateList<String>
@@ -292,6 +295,18 @@ fun GameBoardScreen(
                 showExpose = false
             }
         )
+    }
+    val gameEndResult = viewModel.gameEndResult.value
+
+    LaunchedEffect(gameEndResult) {
+        gameEndResult?.let { result ->
+            navController.navigate(
+                "gameover?team=${result.winningTeam}&assassin=${result.isAssassinTriggered}" +
+                        "&scoreRed=${result.scoreRed}&scoreBlue=${result.scoreBlue}"
+            ) {
+                popUpTo("game") { inclusive = true }
+            }
+        }
     }
 }
 

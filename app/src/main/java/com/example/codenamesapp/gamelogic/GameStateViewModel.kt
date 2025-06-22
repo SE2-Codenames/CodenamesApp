@@ -45,6 +45,7 @@ open class GameStateViewModel(private val gameManager : GameManager) : ViewModel
         myTeam.value = null
         myIsSpymaster.value = false
         hasReset.value = false
+        onGameOver = {}
     }
 
     val hasReset = mutableStateOf(false)
