@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.codenamesapp.R
 import com.example.codenamesapp.model.TeamRole
-import com.example.codenamesapp.ui.theme.ButtonsGui
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.codenamesapp.ui.theme.CodenamesAppTheme
@@ -40,7 +37,8 @@ fun GameOverScreen(
     winningTeam: TeamRole?,
     isAssassinTriggered: Boolean = false,
     scoreRed: Int = 0,
-    scoreBlue: Int = 0
+    scoreBlue: Int = 0,
+    currentTeam: TeamRole
 ) {
     LockLandscapeOrientation()
     val configuration = LocalConfiguration.current
@@ -72,7 +70,7 @@ fun GameOverScreen(
             ) {
 
                 Spacer(modifier = Modifier.height(if (isLandscape) 85.dp else 0.dp))
-                GameResultContent(winningTeam, isAssassinTriggered, isLandscape)
+                GameResultContent(winningTeam, isAssassinTriggered, isLandscape, currentTeam)
 
 
                 ScoreDisplay(scoreRed, scoreBlue, isLandscape)
@@ -83,7 +81,7 @@ fun GameOverScreen(
 
                 // Only show logo here in portrait mode
                 if (!isLandscape) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Image(
                         painter = painterResource(R.drawable.muster_logo_black_removebg_preview),
                         contentDescription = "Game Logo",
@@ -130,7 +128,8 @@ fun ButtonsGui(
 private fun GameResultContent(
     winningTeam: TeamRole?,
     isAssassinTriggered: Boolean,
-    isLandscape : Boolean
+    isLandscape : Boolean,
+    currentTeam: TeamRole
 ) {
     if (isAssassinTriggered) {
         if(!isLandscape) {
@@ -178,8 +177,9 @@ private fun GameResultContent(
         )
     } else {
         winningTeam?.let { team ->
+            val resultText = if (currentTeam == team) "VICTORY!" else "DEFEAT!"
             Text(
-                text = "VICTORY!",
+                text = resultText,
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = if (team == TeamRole.RED) Color.White else Color.White,
                     fontWeight = FontWeight.Bold, fontSize = 40.sp,
@@ -286,7 +286,8 @@ fun PreviewRedVictory() {
             navController = fakeNavController,
             winningTeam = TeamRole.RED,
             scoreRed = 8,
-            scoreBlue = 5
+            scoreBlue = 5,
+            currentTeam = TeamRole.RED
         )
     }
 }
@@ -300,7 +301,8 @@ fun PreviewBlueVictory() {
             navController = fakeNavController,
             winningTeam = TeamRole.BLUE,
             scoreRed = 3,
-            scoreBlue = 9
+            scoreBlue = 9,
+            currentTeam = TeamRole.RED
         )
     }
 }
@@ -315,7 +317,8 @@ fun PreviewAssassinTriggered() {
             winningTeam = TeamRole.RED, // Red wins by default when assassin is triggered by blue
             isAssassinTriggered = true,
             scoreRed = 6,
-            scoreBlue = 2
+            scoreBlue = 2,
+            currentTeam = TeamRole.RED
         )
     }
 }
@@ -338,7 +341,8 @@ fun PreviewGameOverLandscape() {
             navController = fakeNavController,
             winningTeam = TeamRole.RED,
             scoreRed = 9,
-            scoreBlue = 6
+            scoreBlue = 6,
+            currentTeam = TeamRole.BLUE
         )
     }
 }
@@ -362,7 +366,8 @@ fun PreviewAssassinTriggeredLandscape() {
             winningTeam = TeamRole.RED,
             isAssassinTriggered = true,
             scoreRed = 6,
-            scoreBlue = 2
+            scoreBlue = 2,
+            currentTeam = TeamRole.BLUE
         )
     }
 }
