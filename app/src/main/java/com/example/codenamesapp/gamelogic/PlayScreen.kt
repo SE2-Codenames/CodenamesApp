@@ -59,10 +59,7 @@ fun GameBoardScreen(
     var showOverlay by remember { mutableStateOf(false) }
     var showSkipDialog by remember { mutableStateOf(false) }
     var showExpose by remember { mutableStateOf(false) }
-    val canExpose = !viewModel.myIsSpymaster.value &&
-            viewModel.teamTurn.value != viewModel.myTeam.value &&
-            viewModel.gameState == OPERATIVE_TURN
-
+    val canExpose = viewModel.teamTurn.value != viewModel.myTeam.value && viewModel.gameState == OPERATIVE_TURN
 
     GradientBoxBorder(
         modifier = Modifier
