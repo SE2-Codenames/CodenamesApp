@@ -149,12 +149,19 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            ButtonsGui(text = if (isAlreadyReady) "Ready" else "Ready ?", onClick = {
-                if (!isAlreadyReady) {
-                    sendMessage("READY:${player.name}")
-                }
-            }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp),
-                enabled = !isAlreadyReady)
+            ButtonsGui(
+                text = if (isAlreadyReady) "Ready" else "Ready ?",
+                onClick = {
+                    if (!isAlreadyReady) {
+                        sendMessage("READY:${player.name}")
+                    }
+                },
+                modifier = Modifier
+                    .width(250.dp)
+                    .height(48.dp)
+                    .padding(horizontal = 4.dp),
+                enabled = !isAlreadyReady && gameStateViewModel.myTeam.value != null
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
