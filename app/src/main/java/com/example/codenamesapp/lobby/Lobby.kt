@@ -32,6 +32,11 @@ fun LobbyScreen(
     onStartGame: () -> Unit,
     sendMessage: (String) -> Unit = { socketClient.send(it) }
 ) {
+
+    LaunchedEffect(Unit) {
+        gameStateViewModel.resetState()
+    }
+
     val ownName by gameStateViewModel.ownPlayerName
     val localPlayer = playerList.find {
         it.name.trim().equals(ownName?.trim(), ignoreCase = true)
@@ -172,7 +177,17 @@ fun LobbyScreen(
             Text("Waiting for all players...", style = MaterialTheme.typography.bodyMedium)
         }
 
-        ButtonsGui(text = "Back", onClick = onBackToConnection, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+        ButtonsGui(
+            text = "Back",
+            onClick = {
+                socketClient.close()
+                onBackToConnection()
+            },
+            modifier = Modifier
+                .width(250.dp)
+                .height(48.dp)
+                .padding(horizontal = 4.dp)
+        )
     }
 }
 
