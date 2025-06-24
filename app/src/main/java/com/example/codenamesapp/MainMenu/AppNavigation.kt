@@ -125,7 +125,7 @@ fun AppNavigation(
             val communication = socketClient.communication
 
 
-            if (payload != null && team != null && isSpymaster != null) {
+            if (payload != null && team != null) {
                 GameBoardScreen(
                     navController = navController,
                     viewModel = gameStateViewModel,

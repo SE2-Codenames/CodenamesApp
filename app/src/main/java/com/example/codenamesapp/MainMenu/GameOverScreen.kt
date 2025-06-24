@@ -28,9 +28,6 @@ import com.example.codenamesapp.R
 import com.example.codenamesapp.model.TeamRole
 import com.example.codenamesapp.network.WebSocketClient
 import com.example.codenamesapp.gamelogic.GameStateViewModel
-import com.example.codenamesapp.ui.theme.CodenamesAppTheme
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun GameOverScreen(
@@ -70,7 +67,6 @@ fun GameOverScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = if (isLandscape) Arrangement.SpaceBetween else Arrangement.Center
             ) {
-                Spacer(modifier = Modifier.height(if (isLandscape) 0.dp else 0.dp))
                 GameResultContent(winningTeam, isAssassinTriggered, isLandscape, currentTeam)
                 ScoreDisplay(scoreRed, scoreBlue, isLandscape)
 

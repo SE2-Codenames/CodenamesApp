@@ -41,7 +41,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
-import com.example.codenamesapp.MainMenu.GameEndResult
 
 
 @Composable
