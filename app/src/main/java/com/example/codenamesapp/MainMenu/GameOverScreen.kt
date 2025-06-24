@@ -164,6 +164,7 @@ private fun GameResultContent(
         )
     } else {
         winningTeam?.let { team ->
+            if (isLandscape) Spacer(modifier = Modifier.height(50.dp))
             val resultText = if (currentTeam.value == team) "VICTORY!" else "DEFEAT!"
             Text(
                 text = resultText,
@@ -174,7 +175,7 @@ private fun GameResultContent(
                     shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
                 )
             )
-            Spacer(modifier = Modifier.height(if (!isLandscape) 80.dp else 15.dp))
+            Spacer(modifier = Modifier.height(if (!isLandscape) 80.dp else 5.dp))
             Text(
                 text = "${team.name} Team Wins!",
                 style = MaterialTheme.typography.headlineLarge.copy(
