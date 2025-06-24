@@ -47,7 +47,7 @@ class WebSocketClient(
 
         val request = Request.Builder().url(url).build()
         val listener = CodenamesWebSocketListener(
-            onMessage = { msg -> onMessageReceived?.invoke(msg) },
+            onMessage = { msg -> onMessageReceived.invoke(msg) },
             onPlayersUpdated = { playerList ->
                 onPlayerListUpdated(playerList)
 
