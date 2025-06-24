@@ -25,7 +25,7 @@ fun ConnectionScreen(
     socketClient: WebSocketClient,
     modifier: Modifier = Modifier
 ) {
-    val defaultHost = System.getenv("SERVER_IP") ?: "10.0.2.2"  // needs to be 10.0.2.2 if testing on emulator
+    val defaultHost = System.getenv("SERVER_IP") ?: " 192.168.0.99"  // needs to be 10.0.2.2 if testing on emulator
     var host by remember { mutableStateOf(defaultHost) }
     var port by remember { mutableStateOf("8081") }
     var playerName by remember { mutableStateOf("") }
