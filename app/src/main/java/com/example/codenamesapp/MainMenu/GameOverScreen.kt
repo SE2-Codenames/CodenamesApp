@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -52,7 +53,7 @@ fun GameOverScreen(
         R.drawable.codenamesgameoverscreen
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f))) {
         Image(
             painter = painterResource(id = backgroundImageId),
             contentDescription = null,
@@ -64,12 +65,12 @@ fun GameOverScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(10.dp)
+                    .padding(if (isLandscape)5.dp else 10.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = if (isLandscape) Arrangement.SpaceBetween else Arrangement.Center
             ) {
-                Spacer(modifier = Modifier.height(if (isLandscape) 85.dp else 0.dp))
+                Spacer(modifier = Modifier.height(if (isLandscape) 0.dp else 0.dp))
                 GameResultContent(winningTeam, isAssassinTriggered, isLandscape, currentTeam)
                 ScoreDisplay(scoreRed, scoreBlue, isLandscape)
 
@@ -92,9 +93,10 @@ fun GameOverScreen(
                             popUpTo(0) { inclusive = true }
                         }
                     },
-                    modifier = Modifier.width(200.dp).height(50.dp),
+                    modifier = Modifier.width(200.dp).height(50.dp).padding(bottom = if (isLandscape) 8.dp else 16.dp),
                     containerColor = Color.White,
-                    contentColor = Color.Black
+                    contentColor = Color.Black,
+
                 )
             }
         }
@@ -129,17 +131,17 @@ private fun GameResultContent(
     currentTeam: MutableState<TeamRole?>
 ) {
     if (isAssassinTriggered) {
-        Spacer(modifier = Modifier.height(if (!isLandscape) 55.dp else 5.dp))
-        Text(
-            text = "GAME OVER!",
-            style = MaterialTheme.typography.headlineLarge.copy(
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 40.sp,
-                shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
+        Spacer(modifier = Modifier.height(if (!isLandscape) 55.dp else 50.dp))
+            Text(
+                text = "GAME OVER!",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 40.sp,
+                    shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
+                )
             )
-        )
-        Spacer(modifier = Modifier.height(if (!isLandscape) 100.dp else 50.dp))
+        Spacer(modifier = Modifier.height(if (!isLandscape) 100.dp else 0.dp))
         Text(
             text = "The assassin was triggered!",
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -150,7 +152,7 @@ private fun GameResultContent(
             )
         )
         val losingTeam = if (winningTeam == TeamRole.RED) TeamRole.BLUE else TeamRole.RED
-        Spacer(modifier = Modifier.height(if (!isLandscape) 20.dp else 10.dp))
+        Spacer(modifier = Modifier.height(if (!isLandscape) 20.dp else 5.dp))
         Text(
             text = "${losingTeam.name} Team loses!",
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -162,6 +164,7 @@ private fun GameResultContent(
         )
     } else {
         winningTeam?.let { team ->
+            if (isLandscape) Spacer(modifier = Modifier.height(50.dp))
             val resultText = if (currentTeam.value == team) "VICTORY!" else "DEFEAT!"
             Text(
                 text = resultText,
@@ -172,7 +175,7 @@ private fun GameResultContent(
                     shadow = Shadow(Color.Black, Offset(4f, 4f), 4f)
                 )
             )
-            Spacer(modifier = Modifier.height(if (!isLandscape) 80.dp else 85.dp))
+            Spacer(modifier = Modifier.height(if (!isLandscape) 80.dp else 5.dp))
             Text(
                 text = "${team.name} Team Wins!",
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -204,7 +207,7 @@ private fun ScoreDisplay(scoreRed: Int, scoreBlue: Int, isLandscape: Boolean) {
             Image(
                 painter = painterResource(R.drawable.muster_logo_black),
                 contentDescription = "Game Logo",
-                modifier = Modifier.size(130.dp)
+                modifier = Modifier.size(110.dp)
             )
         }
 
