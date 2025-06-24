@@ -121,7 +121,6 @@ fun AppNavigation(
         composable("gameboard") {
             val payload = gameStateViewModel.payload.value
             val team = gameStateViewModel.teamTurn.value
-            val isSpymaster = gameStateViewModel.playerRole.value
             val communication = socketClient.communication
 
 
