@@ -102,6 +102,9 @@ fun AppNavigation(
         }
 
         composable("lobby") {
+            LaunchedEffect(Unit) {
+                messages.clear()
+            }
             LobbyScreen(
                 playerList = playerListState.value,
                 socketClient = socketClient,
