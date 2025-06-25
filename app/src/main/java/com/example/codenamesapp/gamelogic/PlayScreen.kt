@@ -251,6 +251,9 @@ fun GameBoardScreen(
                             viewModel.sendHint(hintWordInput.trim(), number, communication)
                         }
                     }, modifier = Modifier.width(250.dp).height(48.dp).padding(horizontal = 4.dp))
+                    TextButton(onClick = { showOverlay = false }) {
+                        Text("Back") // or "Go back"
+                    }
                 }
             }
         }
